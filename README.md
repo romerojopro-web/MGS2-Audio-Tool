@@ -81,6 +81,9 @@ python sdt_core.py vc000101.sdt output.wav
 
 ---
 
+<img width="1915" height="1004" alt="image" src="https://github.com/user-attachments/assets/119f23aa-2fe5-4c53-8bd6-51ecd8ced318" />
+
+
 ## Dubbing Tips
 
 - Record your voice at **44100 Hz** whenever possible (otherwise the tool will automatically resample it).
