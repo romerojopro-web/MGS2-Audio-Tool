@@ -1,4 +1,4 @@
-# MGS2 SDT Tool
+# MGS2 SDT Tool for MGS2MC Better Audio Mod
 
 A dubbing tool for `.sdt` audio files from **Metal Gear Solid 2: Sons of Liberty** (Master Collection, PC version).
 
