@@ -16,8 +16,6 @@ It lets you open an `.sdt` file from the game, listen to the original dialogue, 
 
 Audio conversion (mono, 44100 Hz) and encoding are handled automatically.
 
-### What's New (v2)
-
 - **Remembered folders**: each section (Open, Export, Dub, Save) remembers the last folder you used, even across sessions. One click, no need to browse again.
 - **Original filename preserved**: generated `.sdt` files keep the exact same filename as the original (required by the game).
 - **Multilingual interface**: French, English, and Spanish (language selector in the top-right corner, remembered between sessions).
