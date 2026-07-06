@@ -16,6 +16,7 @@ Ce module ne dépend d'aucune bibliothèque externe : le décodage et
 l'encodage PS-ADPCM sont implémentés en Python pur.
 """
 
+import os
 import struct
 import wave
 from dataclasses import dataclass, field
@@ -329,6 +330,17 @@ def describe(sdt: SDTFile) -> str:
         f"Blocs audio : {len(sdt.blocks)}\n"
         f"Durée : {sdt.duration_seconds:.2f} s"
     )
+
+
+def metadata(sdt: SDTFile) -> dict:
+    """Renvoie les métadonnées sous forme de champs séparés (pour l'affichage)."""
+    return {
+        "file": os.path.basename(sdt.path),
+        "size": len(sdt.raw),
+        "sample_rate": sdt.sample_rate,
+        "blocks": len(sdt.blocks),
+        "duration": sdt.duration_seconds,
+    }
 
 
 if __name__ == "__main__":
