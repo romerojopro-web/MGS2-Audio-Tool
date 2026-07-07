@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-sdt_tool.py — Interface graphique pour le doublage des dialogues de
+sdt_tool.py — Graphical interface for dubbing the dialogue of
               Metal Gear Solid 2 (Master Collection, PC).
 
-Nouveautés v2 :
-  • Dossiers par défaut mémorisés pour chaque section (retenus d'une
-    session à l'autre) : moins de navigation, un clic suffit.
-  • Le SDT généré conserve exactement le nom du fichier original
-    (nécessaire pour le jeu) — plus de suffixe « _fr ».
-  • Interface multilingue : Français / English / Español.
-  • Affichage des métadonnées revu (grille lisible, plus à l'étroit).
+Highlights:
+  • Per-section default folders, remembered across sessions: less
+    navigation, one click is enough.
+  • The generated SDT keeps the exact name of the original file
+    (required by the game).
+  • Multilingual interface: Français / English / Español.
+  • Full stereo support (see sdt_core.py): stereo files are decoded and
+    re-encoded correctly, with no echo.
 
-Dépendances : PyQt6 (le moteur sdt_core.py est en Python pur).
+Dependencies: PyQt6 (the sdt_core.py engine is pure Python).
 """
 
 import os
@@ -31,13 +32,13 @@ import sdt_core as core
 from translations import tr, LANGUAGE_ORDER, TRANSLATIONS
 
 
-# Fichier de configuration (chemins mémorisés + langue), dans le dossier utilisateur
+# Configuration file (remembered paths + language), in the user's home folder
 CONFIG_PATH = os.path.join(
     os.path.expanduser("~"), ".mgs2_sdt_tool.json")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Thème visuel — écran tactique / Codec (vert-cyan sur noir)
+# Visual theme — tactical / Codec screen (cyan-green on black)
 # ─────────────────────────────────────────────────────────────────────────────
 
 STYLE = """
@@ -101,7 +102,7 @@ QSlider::handle:horizontal {
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Gestion de la configuration persistante
+# Persistent configuration handling
 # ─────────────────────────────────────────────────────────────────────────────
 
 def load_config() -> dict:
@@ -117,11 +118,11 @@ def save_config(cfg: dict):
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2)
     except Exception:
-        pass  # échec silencieux : les réglages ne sont pas critiques
+        pass  # silent failure: settings are not critical
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Fenêtre principale
+# Main window
 # ─────────────────────────────────────────────────────────────────────────────
 
 class SDTToolWindow(QMainWindow):
@@ -133,13 +134,13 @@ class SDTToolWindow(QMainWindow):
         if self.lang not in TRANSLATIONS:
             self.lang = "fr"
 
-        # Dossiers mémorisés par section
+        # Folders remembered per section
         self.dir_open = self.cfg.get("dir_open", "")
         self.dir_export = self.cfg.get("dir_export", "")
         self.dir_dub = self.cfg.get("dir_dub", "")
         self.dir_save = self.cfg.get("dir_save", "")
 
-        # État
+        # State
         self.sdt: core.SDTFile | None = None
         self.sdt_path = ""
         self.new_wav_path = ""
@@ -147,19 +148,22 @@ class SDTToolWindow(QMainWindow):
         self.new_wav_samples = None
         self.new_wav_rate = 0
 
-        # Lecteur audio
+        # Audio player
         self.player = QMediaPlayer()
         self.audio_out = QAudioOutput()
         self.player.setAudioOutput(self.audio_out)
         self.audio_out.setVolume(0.9)
         self.player.positionChanged.connect(self._on_position)
         self.player.durationChanged.connect(self._on_duration)
+        self.player.errorOccurred.connect(self._on_player_error)
+        self.player.mediaStatusChanged.connect(self._on_media_status)
+        self._want_play = False   # playback requested while waiting for the media to be ready
 
         self._build_ui()
         self.setStyleSheet(STYLE)
         self._retranslate()
 
-    # ── Construction ────────────────────────────────────────────────────────
+    # ── UI construction ─────────────────────────────────────────────────────
 
     def _build_ui(self):
         central = QWidget()
@@ -168,7 +172,7 @@ class SDTToolWindow(QMainWindow):
         root.setContentsMargins(20, 16, 20, 12)
         root.setSpacing(14)
 
-        # En-tête + sélecteur de langue
+        # Header + language selector
         top = QHBoxLayout()
         header = QVBoxLayout()
         header.setSpacing(2)
@@ -231,7 +235,7 @@ class SDTToolWindow(QMainWindow):
         row.addWidget(self.lbl_file, 1)
         lay.addLayout(row)
 
-        # Boîte de métadonnées en grille (lisible, aérée)
+        # Metadata box laid out as a grid (readable, airy)
         self.metabox = QFrame(); self.metabox.setObjectName("metabox")
         self.metabox.setVisible(False)
         grid = QGridLayout(self.metabox)
@@ -240,7 +244,7 @@ class SDTToolWindow(QMainWindow):
         grid.setVerticalSpacing(7)
         grid.setColumnStretch(1, 1)
 
-        # 5 lignes : clé (droite) + valeur (gauche)
+        # 5 rows: key (right) + value (left)
         self.meta_keys = []
         self.meta_vals = []
         for i in range(5):
@@ -331,7 +335,7 @@ class SDTToolWindow(QMainWindow):
         lay.addWidget(self.lbl_result)
         return card
 
-    # ── Traduction dynamique ────────────────────────────────────────────────
+    # ── Dynamic translation ─────────────────────────────────────────────────
 
     def _t(self, key, **kw):
         return tr(self.lang, key, **kw)
@@ -359,7 +363,7 @@ class SDTToolWindow(QMainWindow):
         self.lbl_step4.setText(self._t("step4_title"))
         self.btn_generate.setText(self._t("generate"))
 
-        # Rafraîchir les infos si un fichier est chargé
+        # Refresh the info if a file is loaded
         if self.sdt:
             self._show_metadata()
             if self.new_wav_path:
@@ -374,16 +378,17 @@ class SDTToolWindow(QMainWindow):
         save_config(self.cfg)
         self._retranslate()
 
-    # ── Affichage des métadonnées (grille) ──────────────────────────────────
+    # ── Metadata display (grid) ─────────────────────────────────────────────
 
     def _show_metadata(self):
         if not self.sdt:
             return
         md = core.metadata(self.sdt)
+        ch_label = self._t("unit_stereo") if md["channels"] == 2 else self._t("unit_mono")
         rows = [
             (self._t("info_file"), md["file"]),
             (self._t("info_size"), f"{md['size']:,} {self._t('unit_bytes')}"),
-            (self._t("info_rate"), f"{md['sample_rate']} Hz ({self._t('unit_mono')})"),
+            (self._t("info_rate"), f"{md['sample_rate']} Hz ({ch_label})"),
             (self._t("info_blocks"), str(md["blocks"])),
             (self._t("info_duration"), f"{md['duration']:.2f} {self._t('unit_seconds')}"),
         ]
@@ -392,7 +397,7 @@ class SDTToolWindow(QMainWindow):
             self.meta_vals[i].setText(v)
         self.metabox.setVisible(True)
 
-    # ── Étape 1 : ouverture ─────────────────────────────────────────────────
+    # ── Step 1: open ─────────────────────────────────────────────────────────
 
     def open_sdt(self):
         start_dir = self.dir_open or os.path.expanduser("~")
@@ -433,28 +438,78 @@ class SDTToolWindow(QMainWindow):
             dur=self.sdt.duration_seconds, blocks=len(self.sdt.blocks)))
 
     def _prepare_preview(self):
-        if self.preview_wav and os.path.exists(self.preview_wav):
+        # Release and delete the previous temporary file
+        old = self.preview_wav
+        self.preview_wav = ""
+        if old and os.path.exists(old):
             try:
                 self.player.setSource(QUrl())
-                os.unlink(self.preview_wav)
+                self.player.stop()
+                os.unlink(old)
             except Exception:
-                pass
-        fd, self.preview_wav = tempfile.mkstemp(suffix=".wav")
-        os.close(fd)
+                pass  # on Windows the file may stay locked for a moment
+
+        # Create the preview WAV in a properly closed file
         samples = core.sdt_to_pcm(self.sdt)
-        core.save_wav(samples, self.preview_wav, self.sdt.sample_rate)
-        self.player.setSource(QUrl.fromLocalFile(self.preview_wav))
+        fd, path = tempfile.mkstemp(suffix=".wav")
+        os.close(fd)  # important: close the handle before Qt reads the file
+        core.save_wav(samples, path, self.sdt.sample_rate, channels=self.sdt.channels)
+        self.preview_wav = path
+
+        self._want_play = False
+        self.player.setSource(QUrl.fromLocalFile(path))
         self.btn_play.setText("▶")
 
-    # ── Étape 2 : lecture / export ──────────────────────────────────────────
+    # ── Step 2: playback / export ────────────────────────────────────────────
 
     def toggle_play(self):
-        if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+        state = self.player.playbackState()
+        if state == QMediaPlayer.PlaybackState.PlayingState:
             self.player.pause()
             self.btn_play.setText("▶")
+            self._want_play = False
         else:
+            # If the media is not loaded yet, remember the intent: playback will
+            # start as soon as the media becomes ready (_on_media_status).
+            status = self.player.mediaStatus()
+            not_ready = status in (
+                QMediaPlayer.MediaStatus.NoMedia,
+                QMediaPlayer.MediaStatus.LoadingMedia,
+                QMediaPlayer.MediaStatus.InvalidMedia,
+            )
+            if not_ready and self.preview_wav:
+                # (Re)load the source, then wait for the "ready" signal
+                self._want_play = True
+                self.player.setSource(QUrl.fromLocalFile(self.preview_wav))
+                self.btn_play.setText("⏸")
+            else:
+                self.player.play()
+                self.btn_play.setText("⏸")
+
+    def _on_media_status(self, status):
+        # When the media becomes playable and playback was requested, start it
+        ready = status in (
+            QMediaPlayer.MediaStatus.LoadedMedia,
+            QMediaPlayer.MediaStatus.BufferedMedia,
+        )
+        if ready and self._want_play:
+            self._want_play = False
             self.player.play()
             self.btn_play.setText("⏸")
+        # End of playback: reset the button to ▶
+        if status == QMediaPlayer.MediaStatus.EndOfMedia:
+            self.btn_play.setText("▶")
+
+    def _on_player_error(self, *args):
+        # Possible signatures: (error) or (error, error_string)
+        error = args[0] if args else None
+        error_string = args[1] if len(args) > 1 else ""
+        if error == QMediaPlayer.Error.NoError:
+            return
+        self.btn_play.setText("▶")
+        self._want_play = False
+        msg = error_string or "playback failed"
+        self.status.showMessage(f"Audio: {msg}")
 
     def _on_position(self, pos):
         if not self.slider.isSliderDown():
@@ -500,7 +555,7 @@ class SDTToolWindow(QMainWindow):
         QMessageBox.information(self, self._t("ok_export_title"),
                                 self._t("ok_export_body", path=path))
 
-    # ── Étape 3 : doublage ──────────────────────────────────────────────────
+    # ── Step 3: dubbing ──────────────────────────────────────────────────────
 
     def pick_wav(self):
         start_dir = self.dir_dub or os.path.expanduser("~")
@@ -541,20 +596,28 @@ class SDTToolWindow(QMainWindow):
             comp = self._t("wav_longer") if longer else self._t("wav_shorter")
             action = self._t("wav_will_trim") if longer else self._t("wav_will_pad")
             note = f"{abs(diff):.1f}s {comp} → {action}"
+
+        # Announce the actual re-encoding target: the dub matches the source
+        # file's channel layout. On a stereo SDT the mono recording is placed
+        # on both channels (see core.replace_audio), so say "stereo" here.
+        if self.sdt.channels == 2:
+            target = f"{self._t('unit_stereo')} ({self._t('wav_target_stereo_note')})"
+        else:
+            target = self._t("unit_mono")
+
         self.lbl_wav_info.setText(
             f"{self._t('wav_duration')} : {dur:.2f}s "
             f"({self._t('wav_original')} {orig:.2f}s · {note})\n"
             f"{self._t('wav_source')} : {self.new_wav_rate} Hz → "
-            f"{self._t('wav_converted')} {self.sdt.sample_rate} Hz "
-            f"{self._t('wav_mono')}")
+            f"{self._t('wav_converted')} {self.sdt.sample_rate} Hz {target}")
 
-    # ── Étape 4 : génération ────────────────────────────────────────────────
+    # ── Step 4: generation ───────────────────────────────────────────────────
 
     def generate_sdt(self):
         if not self.sdt or not self.new_wav_path:
             return
 
-        # Nom IDENTIQUE à l'original (pour le jeu), dans le dossier de sortie mémorisé
+        # SAME name as the original (for the game), in the remembered output folder
         original_name = os.path.basename(self.sdt_path)
         start_dir = self.dir_save or os.path.expanduser("~")
         out_path, _ = QFileDialog.getSaveFileName(
@@ -588,7 +651,7 @@ class SDTToolWindow(QMainWindow):
         QMessageBox.information(self, self._t("ok_dub_title"),
                                 self._t("ok_dub_body", path=out_path))
 
-    # ── Fermeture ───────────────────────────────────────────────────────────
+    # ── Shutdown ─────────────────────────────────────────────────────────────
 
     def closeEvent(self, event):
         if self.preview_wav and os.path.exists(self.preview_wav):
