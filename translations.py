@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-translations.py — Textes de l'interface en français, anglais et espagnol.
+translations.py — User-interface strings in French, English and Spanish.
 
-Chaque langue est un dictionnaire avec les mêmes clés. La fonction tr()
-récupère le texte de la langue courante, avec repli sur le français.
+Each language is a dictionary sharing the same keys. The tr() helper returns
+the string for the current language, falling back to French if a key is missing.
+
+Note: these dictionaries are the *interface* text and are intentionally kept
+multilingual. Everything else in the codebase (comments, docstrings, internal
+messages) is in English.
 """
 
 TRANSLATIONS = {
@@ -25,6 +29,7 @@ TRANSLATIONS = {
         "info_duration": "Durée",
         "unit_bytes": "octets",
         "unit_mono": "mono",
+        "unit_stereo": "stéréo",
         "unit_seconds": "s",
 
         "step2_title": "② ÉCOUTER LE DIALOGUE ORIGINAL",
@@ -33,7 +38,8 @@ TRANSLATIONS = {
         "step3_title": "③ CHOISIR VOTRE DOUBLAGE (WAV)",
         "step3_hint": ("Enregistrez votre voix, idéalement à la même durée que "
                        "l'original. Le WAV sera converti automatiquement "
-                       "(mono, 44100 Hz)."),
+                       "(44100 Hz) pour correspondre au fichier."),
+        "wav_target_stereo_note": "votre voix sera placée sur les deux canaux",
         "pick_wav": "CHOISIR UN WAV…",
         "no_wav": "Aucun WAV choisi",
         "wav_duration": "Durée",
@@ -98,6 +104,7 @@ TRANSLATIONS = {
         "info_duration": "Duration",
         "unit_bytes": "bytes",
         "unit_mono": "mono",
+        "unit_stereo": "stereo",
         "unit_seconds": "s",
 
         "step2_title": "② LISTEN TO THE ORIGINAL DIALOGUE",
@@ -106,7 +113,8 @@ TRANSLATIONS = {
         "step3_title": "③ CHOOSE YOUR DUB (WAV)",
         "step3_hint": ("Record your voice, ideally at the same length as the "
                        "original. The WAV is converted automatically "
-                       "(mono, 44100 Hz)."),
+                       "(44100 Hz) to match the file."),
+        "wav_target_stereo_note": "your voice will be placed on both channels",
         "pick_wav": "CHOOSE A WAV…",
         "no_wav": "No WAV chosen",
         "wav_duration": "Length",
@@ -171,6 +179,7 @@ TRANSLATIONS = {
         "info_duration": "Duración",
         "unit_bytes": "bytes",
         "unit_mono": "mono",
+        "unit_stereo": "estéreo",
         "unit_seconds": "s",
 
         "step2_title": "② ESCUCHAR EL DIÁLOGO ORIGINAL",
@@ -179,7 +188,8 @@ TRANSLATIONS = {
         "step3_title": "③ ELEGIR TU DOBLAJE (WAV)",
         "step3_hint": ("Graba tu voz, idealmente con la misma duración que el "
                        "original. El WAV se convierte automáticamente "
-                       "(mono, 44100 Hz)."),
+                       "(44100 Hz) para coincidir con el archivo."),
+        "wav_target_stereo_note": "tu voz se colocará en ambos canales",
         "pick_wav": "ELEGIR UN WAV…",
         "no_wav": "Ningún WAV elegido",
         "wav_duration": "Duración",
@@ -231,7 +241,7 @@ LANGUAGE_ORDER = ["fr", "en", "es"]
 
 
 def tr(lang: str, key: str, **kwargs) -> str:
-    """Récupère un texte traduit ; repli sur le français si clé absente."""
+    """Return a translated string; fall back to French if the key is missing."""
     text = TRANSLATIONS.get(lang, {}).get(key)
     if text is None:
         text = TRANSLATIONS["fr"].get(key, key)
