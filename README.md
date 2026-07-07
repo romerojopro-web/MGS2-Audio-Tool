@@ -1,6 +1,8 @@
 # MGS2 SDT Tool for MGS2MC Better Audio Mod
 
-A dubbing tool for `.sdt` audio files from **Metal Gear Solid 2: Sons of Liberty** (Master Collection, PC version).
+A dubbing tool for `.sdt` audio files from     MGS2MCBetterAudioMod
+
+**Metal Gear Solid 2: Sons of Liberty** (Master Collection, PC version).
 
 It lets you open an `.sdt` file from the game, listen to the original dialogue, export it as a WAV file, then **replace the voice with your own** to create custom voice-overs.
 
