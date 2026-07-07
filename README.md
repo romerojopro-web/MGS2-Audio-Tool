@@ -90,7 +90,7 @@ python sdt_core.py vc000101.sdt output.wav
 
 - Record your voice at **44100 Hz** whenever possible (otherwise the tool will automatically resample it).
 - Aim for the **same duration** as the original clip: longer recordings are trimmed, shorter ones are padded with silence.
-- The output file keeps the exact same size as the original, which is required for the game to load it correctly.
+- The output file keeps the exact same size as the original.
 
 ---
 
