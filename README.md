@@ -16,7 +16,7 @@ It lets you open a game `.sdt` file, listen to the original dialogue, export it 
 
 Format conversion (44100 Hz) and encoding are automatic. On a mono file the dub is encoded as mono; on a stereo file your recording is placed on both channels — the app tells you which, so there are no surprises.
 
-### What's new in v3
+### What's new in 2.0.0
 
 - **Voice library panel.** Point the app at a folder of `.sdt` voice files (a hundred, or a thousand) and browse them in a side panel: click to select, double-click to load. Each line can be **manually tagged** — mark it as dubbed, give it a free-text label (Soldier, Codec…), note the speaker, and jot down what is said. Everything is saved to a small local database in a folder **you** choose, so your progress and notes survive across sessions. Filter by *done / to do* or search by name, tag, speaker or notes.
 - **Full stereo support.** Stereo `.sdt` files (the "dialogue bank" files) are now decoded and re-encoded correctly, with **no echo** and at the right speed. See the technical notes below for what was going on.
