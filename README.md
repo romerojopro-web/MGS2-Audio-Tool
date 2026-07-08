@@ -16,7 +16,7 @@ It lets you open a game `.sdt` file — **dialogue, music or sound effects** —
 
 Format conversion (44100 Hz) and encoding are automatic. On a mono file the audio is encoded as mono; on a stereo file your recording is placed on both channels — the app tells you which, so there are no surprises.
 
-### What's new in v3
+### What's new in 2.1.0
 
 - **Voice library panel.** Point the app at a folder of `.sdt` files (a hundred, or a thousand) and browse them in a side panel: click to select, double-click to load. Each file can be **manually tagged** — mark it as done, give it a free-text label (Soldier, Codec, Music…), note the speaker, and jot down what is said. Everything is saved to a small local database in a folder **you** choose, so your progress and notes survive across sessions. Filter by *done / to do* or search by name, tag, speaker or notes.
 - **Music and sound effects supported.** Beyond dialogue, the tool now reads the game's music and SFX `.sdt` files too — including a header variant (a "PACB" sub-header) that previously made them play back slowed-down. This opens the door to custom music swaps and reworked sound effects.
