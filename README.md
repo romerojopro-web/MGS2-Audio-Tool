@@ -134,9 +134,13 @@ The PS-ADPCM encoder is pure Python and brute-forces the best filter/shift per 2
 
 ---
 
-## Disclaimer
+Disclaimer & Legal
+This is an unofficial, fan-made tool with no affiliation with, endorsement by, or connection to Konami Digital Entertainment. Metal Gear Solid, Metal Gear Solid 2: Sons of Liberty, and all related names, characters, and assets are trademarks and copyrights of Konami.
 
-Unofficial project, not affiliated with Konami. Provided as-is, for personal creation and modding. Use only with files from your own copy of the game.
+No game files are included. This project contains only original code. It ships no audio, no .sdt files, and no other data from the game.
+Use your own copy. The tool is meant to be used only with files from a legal copy of the game that you own. You are responsible for how you use it.
+For personal, non-commercial modding. It exists to let players create their own dubs, music swaps, and sound edits for personal use.
+Back up your files. Always keep a backup of any original game file before replacing it. This tool is provided as-is, without warranty of any kind; the author is not responsible for any damage, data loss, or issues arising from its use.
 
 ## License
 
