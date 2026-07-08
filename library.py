@@ -153,23 +153,18 @@ def quick_header(path: str) -> dict:
     """Cheaply read just the header for sample_rate + channels.
 
     Reads only the first bytes of the file (no block scan, no decode), so this
-    is safe to call on thousands of files. Returns {'sample_rate','channels'}
-    with sensible defaults if the header is too short/unknown.
+    is safe to call on thousands of files. Uses the same robust detection as the
+    engine, so header-shifted variants (e.g. "PACB" music files) report the
+    correct channel count. Returns {'sample_rate','channels'} with sensible
+    defaults if the header is too short/unknown.
     """
-    sample_rate = core.DEFAULT_SAMPLE_RATE
-    channels = 1
     try:
         with open(path, "rb") as f:
-            head = f.read(0x100)
-        if len(head) >= 0x98:
-            sr = (head[0x96] << 8) | head[0x97]
-            if sr in (8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000):
-                sample_rate = sr
-        if len(head) >= 0x99 and head[0x98] in (1, 2):
-            channels = head[0x98]
+            head = f.read(0x400)
+        sample_rate, channels = core._detect_format(head)
+        return {"sample_rate": sample_rate, "channels": channels}
     except Exception:
-        pass
-    return {"sample_rate": sample_rate, "channels": channels}
+        return {"sample_rate": core.DEFAULT_SAMPLE_RATE, "channels": 1}
 
 
 def scan_metadata(path: str) -> dict:
