@@ -99,6 +99,45 @@ class SDTFile:
 # Parsing
 # ─────────────────────────────────────────────────────────────────────────────
 
+VALID_SAMPLE_RATES = (8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000)
+
+
+def _detect_format(raw: bytes):
+    """Return (sample_rate, channels) for an SDT file.
+
+    Most files store the sample rate big-endian at 0x96 and the channel count
+    at 0x98. Some variants (e.g. music/VR files carrying a "PACB" sub-header)
+    shift the whole header by a number of bytes, moving those fields. To stay
+    robust, we first try the usual fixed offsets, then fall back to scanning the
+    header for the anchor <0x7F><rate big-endian><channels> which is present in
+    both layouts.
+    """
+    # Primary: fixed offsets 0x96 (rate, big-endian) / 0x98 (channels)
+    if len(raw) >= 0x99:
+        sr = (raw[0x96] << 8) | raw[0x97]
+        ch = raw[0x98]
+        if sr in VALID_SAMPLE_RATES and ch in (1, 2):
+            return sr, ch
+
+    # Fallback: scan the header for the <0x7F><rate><channels> anchor
+    window = raw[:0x400]
+    for i in range(len(window) - 3):
+        if window[i] != 0x7F:
+            continue
+        sr = (window[i + 1] << 8) | window[i + 2]
+        ch = window[i + 3]
+        if sr in VALID_SAMPLE_RATES and ch in (1, 2):
+            return sr, ch
+
+    # Last resort: keep a valid rate if we can read one, assume mono
+    sample_rate = DEFAULT_SAMPLE_RATE
+    if len(raw) >= 0x98:
+        sr = (raw[0x96] << 8) | raw[0x97]
+        if sr in VALID_SAMPLE_RATES:
+            sample_rate = sr
+    return sample_rate, 1
+
+
 def parse_sdt(path: str) -> SDTFile:
     """Read an SDT file and locate its audio blocks."""
     with open(path, "rb") as f:
@@ -106,19 +145,8 @@ def parse_sdt(path: str) -> SDTFile:
 
     sdt = SDTFile(path=path, raw=raw)
 
-    # Sample rate: stored big-endian at 0x96 in the header
-    if len(raw) >= 0x98:
-        sr = (raw[0x96] << 8) | raw[0x97]
-        if sr in (8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000):
-            sdt.sample_rate = sr
-
-    # Channel count: byte at 0x98. 1 = mono (the common case), 2 = stereo —
-    # in which case the channels are interleaved in chunks of CHANNEL_INTERLEAVE
-    # bytes (see deinterleave_channels).
-    if len(raw) >= 0x99:
-        ch = raw[0x98]
-        if ch in (1, 2):
-            sdt.channels = ch
+    # Sample rate + channel count (robust to header-shifted variants)
+    sdt.sample_rate, sdt.channels = _detect_format(raw)
 
     # Locate the audio blocks (type 1). The last one may be smaller.
     pos = 0
