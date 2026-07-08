@@ -24,11 +24,15 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QFileDialog, QFrame, QMessageBox, QSlider,
     QStatusBar, QSizePolicy, QGridLayout, QComboBox,
+    QSplitter, QListWidget, QListWidgetItem, QLineEdit, QPlainTextEdit,
+    QCheckBox, QCompleter, QProgressDialog,
 )
 from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QFont
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 import sdt_core as core
+import library as lib
 from translations import tr, LANGUAGE_ORDER, TRANSLATIONS
 
 
@@ -46,23 +50,25 @@ STYLE = """
 
 QMainWindow, QWidget { background-color: #04100c; color: #7fe0b0; }
 
-QLabel#title { color: #4dffb0; font-size: 20px; font-weight: bold; letter-spacing: 4px; }
-QLabel#subtitle { color: #2f7a5a; font-size: 10px; letter-spacing: 3px; }
-QLabel#step { color: #4dffb0; font-size: 12px; font-weight: bold; letter-spacing: 1px; }
-QLabel#body { color: #7fe0b0; font-size: 11px; }
-QLabel#dim  { color: #3f8060; font-size: 10px; }
-QLabel#value { color: #b8ffdc; font-size: 12px; }
-QLabel#metakey { color: #3f8060; font-size: 11px; }
-QLabel#metaval { color: #b8ffdc; font-size: 11px; }
+QLabel#title { color: #4dffb0; font-size: 22px; font-weight: bold; letter-spacing: 4px; }
+QLabel#subtitle { color: #2f7a5a; font-size: 12px; letter-spacing: 3px; }
+QLabel#step { color: #4dffb0; font-size: 14px; font-weight: bold; letter-spacing: 1px; }
+QLabel#body { color: #7fe0b0; font-size: 13px; }
+QLabel#dim  { color: #3f8060; font-size: 12px; }
+QLabel#value { color: #b8ffdc; font-size: 14px; }
+QLabel#metakey { color: #3f8060; font-size: 13px; }
+QLabel#metaval { color: #b8ffdc; font-size: 13px; }
+QLabel#panel { color: #4dffb0; font-size: 13px; font-weight: bold; letter-spacing: 2px; }
 
 QFrame#card { background-color: #061a12; border: 1px solid #123a28; border-radius: 3px; }
 QFrame#metabox { background-color: #04140e; border: 1px solid #0e2c1e; border-radius: 2px; }
+QFrame#library { background-color: #051710; border: 1px solid #123a28; border-radius: 3px; }
 QFrame#sep { background-color: #123a28; max-height: 1px; }
 
 QPushButton {
     background-color: #06251a; color: #4dffb0;
     border: 1px solid #1c5c40; border-radius: 2px;
-    padding: 9px 16px; font-size: 11px; letter-spacing: 1px;
+    padding: 9px 16px; font-size: 13px; letter-spacing: 1px;
 }
 QPushButton:hover { background-color: #0a3626; border-color: #4dffb0; color: #86ffcb; }
 QPushButton:pressed { background-color: #4dffb0; color: #04100c; }
@@ -71,15 +77,19 @@ QPushButton:disabled { background-color: #04140e; color: #245038; border-color: 
 QPushButton#primary { background-color: #0a3626; border-color: #4dffb0; font-weight: bold; }
 QPushButton#primary:hover { background-color: #0e4a34; }
 
+QPushButton#small {
+    padding: 6px 10px; font-size: 12px; letter-spacing: 0px;
+}
+
 QPushButton#play {
     background-color: #06251a; border-color: #1c5c40;
-    min-width: 44px; max-width: 44px; font-size: 14px;
+    min-width: 44px; max-width: 44px; font-size: 16px;
 }
 
 QComboBox {
     background-color: #06251a; color: #86ffcb;
     border: 1px solid #1c5c40; border-radius: 2px;
-    padding: 4px 8px; font-size: 11px; min-width: 110px;
+    padding: 4px 8px; font-size: 13px; min-width: 110px;
 }
 QComboBox:hover { border-color: #4dffb0; }
 QComboBox QAbstractItemView {
@@ -88,9 +98,33 @@ QComboBox QAbstractItemView {
     border: 1px solid #1c5c40;
 }
 
+QLineEdit, QPlainTextEdit {
+    background-color: #04140e; color: #b8ffdc;
+    border: 1px solid #1c5c40; border-radius: 2px;
+    padding: 5px 7px; font-size: 13px;
+    selection-background-color: #0a3626;
+}
+QLineEdit:focus, QPlainTextEdit:focus { border-color: #4dffb0; }
+
+QCheckBox { color: #86ffcb; font-size: 13px; spacing: 8px; }
+QCheckBox::indicator {
+    width: 16px; height: 16px; border: 1px solid #1c5c40;
+    background: #04140e; border-radius: 2px;
+}
+QCheckBox::indicator:checked { background: #4dffb0; border-color: #4dffb0; }
+
+QListWidget {
+    background-color: #04140e; color: #9fe8c4;
+    border: 1px solid #123a28; border-radius: 2px; font-size: 13px;
+    outline: none;
+}
+QListWidget::item { padding: 4px 6px; border-bottom: 1px solid #0b241a; }
+QListWidget::item:selected { background-color: #0a3626; color: #b8ffdc; }
+QListWidget::item:hover { background-color: #072016; }
+
 QStatusBar {
     background-color: #020a07; border-top: 1px solid #123a28;
-    color: #3f8060; font-size: 10px;
+    color: #3f8060; font-size: 12px;
 }
 
 QSlider::groove:horizontal { height: 4px; background: #123a28; border-radius: 2px; }
@@ -140,6 +174,15 @@ class SDTToolWindow(QMainWindow):
         self.dir_dub = self.cfg.get("dir_dub", "")
         self.dir_save = self.cfg.get("dir_save", "")
 
+        # Voice library (folder of .sdt lines + tagging database)
+        self.voice_folder = self.cfg.get("voice_folder", "")
+        self.db_folder = self.cfg.get("db_folder", "")
+        self.library = {"version": lib.LIBRARY_VERSION, "entries": {}}
+        self.lib_files = []          # filenames currently listed
+        self.current_lib_file = ""   # selected filename in the library
+        self._loading_entry = False  # guard against feedback while filling fields
+        self._quick_ch = {}          # filename -> channel count (cheap header scan)
+
         # State
         self.sdt: core.SDTFile | None = None
         self.sdt_path = ""
@@ -163,12 +206,32 @@ class SDTToolWindow(QMainWindow):
         self.setStyleSheet(STYLE)
         self._retranslate()
 
+        # Restore a previously used voice/database folder
+        if self.db_folder:
+            self.library = lib.load_library(self.db_folder)
+            self._update_tag_completer()
+        if self.voice_folder and os.path.isdir(self.voice_folder):
+            self._load_library_folder()
+        else:
+            self._refresh_list()
+
     # ── UI construction ─────────────────────────────────────────────────────
 
     def _build_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
-        root = QVBoxLayout(central)
+        outer = QVBoxLayout(central)
+        outer.setContentsMargins(0, 0, 0, 0)
+
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        outer.addWidget(splitter)
+
+        # Left: voice library panel
+        splitter.addWidget(self._build_library())
+
+        # Right: the existing dubbing workflow
+        right = QWidget()
+        root = QVBoxLayout(right)
         root.setContentsMargins(20, 16, 20, 12)
         root.setSpacing(14)
 
@@ -210,12 +273,103 @@ class SDTToolWindow(QMainWindow):
         root.addWidget(self._build_step4())
         root.addStretch()
 
+        splitter.addWidget(right)
+        splitter.setStretchFactor(0, 0)
+        splitter.setStretchFactor(1, 1)
+        splitter.setSizes([340, 760])
+
         self.status = QStatusBar()
         self.setStatusBar(self.status)
 
     def _card(self):
         f = QFrame(); f.setObjectName("card")
         return f
+
+    # ── Left panel: voice library ────────────────────────────────────────────
+
+    def _build_library(self):
+        panel = QFrame(); panel.setObjectName("library")
+        panel.setMinimumWidth(300)
+        lay = QVBoxLayout(panel)
+        lay.setContentsMargins(12, 12, 12, 12)
+        lay.setSpacing(8)
+
+        self.lbl_lib_title = QLabel(); self.lbl_lib_title.setObjectName("panel")
+        lay.addWidget(self.lbl_lib_title)
+
+        # Folder pickers
+        self.btn_lib_voice = QPushButton(); self.btn_lib_voice.setObjectName("small")
+        self.btn_lib_voice.clicked.connect(self.pick_voice_folder)
+        lay.addWidget(self.btn_lib_voice)
+        self.lbl_lib_voice = QLabel(); self.lbl_lib_voice.setObjectName("dim")
+        self.lbl_lib_voice.setWordWrap(True)
+        lay.addWidget(self.lbl_lib_voice)
+
+        self.btn_lib_db = QPushButton(); self.btn_lib_db.setObjectName("small")
+        self.btn_lib_db.clicked.connect(self.pick_db_folder)
+        lay.addWidget(self.btn_lib_db)
+        self.lbl_lib_db = QLabel(); self.lbl_lib_db.setObjectName("dim")
+        self.lbl_lib_db.setWordWrap(True)
+        lay.addWidget(self.lbl_lib_db)
+
+        # Search + filter
+        self.edit_search = QLineEdit()
+        self.edit_search.textChanged.connect(self._refresh_list)
+        lay.addWidget(self.edit_search)
+
+        self.combo_filter = QComboBox()
+        # items are (re)labelled in _retranslate; userData is the filter key
+        self.combo_filter.addItem("", "all")
+        self.combo_filter.addItem("", "todo")
+        self.combo_filter.addItem("", "done")
+        self.combo_filter.currentIndexChanged.connect(self._refresh_list)
+        lay.addWidget(self.combo_filter)
+
+        # File list
+        self.list_files = QListWidget()
+        self.list_files.currentItemChanged.connect(self._on_lib_selected)
+        self.list_files.itemDoubleClicked.connect(self._on_lib_activated)
+        lay.addWidget(self.list_files, 1)
+
+        self.lbl_lib_count = QLabel(); self.lbl_lib_count.setObjectName("dim")
+        lay.addWidget(self.lbl_lib_count)
+
+        self.btn_lib_scan = QPushButton(); self.btn_lib_scan.setObjectName("small")
+        self.btn_lib_scan.clicked.connect(self.scan_folder)
+        lay.addWidget(self.btn_lib_scan)
+
+        sep = QFrame(); sep.setObjectName("sep"); sep.setFrameShape(QFrame.Shape.HLine)
+        lay.addWidget(sep)
+
+        # Tagging fields for the selected file
+        self.chk_done = QCheckBox()
+        self.chk_done.stateChanged.connect(self._on_entry_edited)
+        lay.addWidget(self.chk_done)
+
+        self.lbl_tag = QLabel(); self.lbl_tag.setObjectName("dim")
+        lay.addWidget(self.lbl_tag)
+        self.edit_tag = QLineEdit()
+        self.edit_tag.editingFinished.connect(self._on_entry_edited)
+        lay.addWidget(self.edit_tag)
+
+        self.lbl_speaker = QLabel(); self.lbl_speaker.setObjectName("dim")
+        lay.addWidget(self.lbl_speaker)
+        self.edit_speaker = QLineEdit()
+        self.edit_speaker.editingFinished.connect(self._on_entry_edited)
+        lay.addWidget(self.edit_speaker)
+
+        self.lbl_notes = QLabel(); self.lbl_notes.setObjectName("dim")
+        lay.addWidget(self.lbl_notes)
+        self.edit_notes = QPlainTextEdit()
+        self.edit_notes.setFixedHeight(70)
+        lay.addWidget(self.edit_notes)
+
+        self.btn_save_entry = QPushButton(); self.btn_save_entry.setObjectName("small")
+        self.btn_save_entry.clicked.connect(self._save_current_entry)
+        lay.addWidget(self.btn_save_entry)
+
+        self._set_entry_fields_enabled(False)
+        return panel
 
     def _build_step1(self):
         card = self._card()
@@ -346,6 +500,24 @@ class SDTToolWindow(QMainWindow):
         self.lbl_subtitle.setText(self._t("app_subtitle"))
         self.lbl_lang.setText(self._t("language_label"))
 
+        # Library panel
+        self.lbl_lib_title.setText(self._t("lib_title"))
+        self.btn_lib_voice.setText(self._t("lib_pick_voice"))
+        self.btn_lib_db.setText(self._t("lib_pick_db"))
+        self.lbl_lib_voice.setText(self.voice_folder or self._t("lib_no_voice"))
+        self.lbl_lib_db.setText(self.db_folder or self._t("lib_no_db"))
+        self.edit_search.setPlaceholderText(self._t("lib_search"))
+        for i, key in enumerate(("lib_filter_all", "lib_filter_todo", "lib_filter_done")):
+            self.combo_filter.setItemText(i, self._t(key))
+        self.btn_lib_scan.setText(self._t("lib_scan"))
+        self.chk_done.setText(self._t("lib_done"))
+        self.lbl_tag.setText(self._t("lib_tag"))
+        self.edit_tag.setPlaceholderText(self._t("lib_tag_hint"))
+        self.lbl_speaker.setText(self._t("lib_speaker"))
+        self.lbl_notes.setText(self._t("lib_notes"))
+        self.btn_save_entry.setText(self._t("lib_save_entry"))
+        self._update_count()
+
         self.lbl_step1.setText(self._t("step1_title"))
         self.btn_open.setText(self._t("browse"))
         if not self.sdt:
@@ -405,13 +577,17 @@ class SDTToolWindow(QMainWindow):
             self, self._t("dlg_open_sdt"), start_dir, self._t("filter_sdt"))
         if not path:
             return
+        self._load_sdt_path(path)
 
+    def _load_sdt_path(self, path) -> bool:
+        """Load an SDT file into the workflow. Reused by the Browse button and
+        by the library list. Returns True on success."""
         try:
             self.sdt = core.parse_sdt(path)
         except Exception as e:
             QMessageBox.critical(self, self._t("err_title"),
                                  self._t("err_read", e=e))
-            return
+            return False
 
         self.sdt_path = path
         self.dir_open = os.path.dirname(path)
@@ -436,6 +612,242 @@ class SDTToolWindow(QMainWindow):
         self.status.showMessage(self._t(
             "status_loaded", name=os.path.basename(path),
             dur=self.sdt.duration_seconds, blocks=len(self.sdt.blocks)))
+
+        # Cache metadata for this file in the library, if it belongs to the
+        # current voice folder (keeps the list display in sync).
+        self._cache_current_into_library(path)
+        return True
+
+    # ── Library: folder pickers and loading ──────────────────────────────────
+
+    def pick_voice_folder(self):
+        start = self.voice_folder or os.path.expanduser("~")
+        folder = QFileDialog.getExistingDirectory(
+            self, self._t("dlg_pick_voice"), start)
+        if not folder:
+            return
+        self.voice_folder = folder
+        self.cfg["voice_folder"] = folder
+        save_config(self.cfg)
+        self._load_library_folder()
+
+    def pick_db_folder(self):
+        start = self.db_folder or self.voice_folder or os.path.expanduser("~")
+        folder = QFileDialog.getExistingDirectory(
+            self, self._t("dlg_pick_db"), start)
+        if not folder:
+            return
+        self.db_folder = folder
+        self.cfg["db_folder"] = folder
+        save_config(self.cfg)
+        self.library = lib.load_library(self.db_folder)
+        self.lbl_lib_db.setText(folder)
+        self._update_tag_completer()
+        self._refresh_list()
+
+    def _load_library_folder(self):
+        """List the voice folder and prefetch cheap per-file channel info."""
+        self.lbl_lib_voice.setText(self.voice_folder or self._t("lib_no_voice"))
+        if self.db_folder:
+            self.library = lib.load_library(self.db_folder)
+        self.lib_files = lib.list_sdt_files(self.voice_folder)
+
+        # Cheap header scan (a few hundred bytes/file) for the mono/stereo tag
+        self._quick_ch = {}
+        for name in self.lib_files:
+            try:
+                info = lib.quick_header(os.path.join(self.voice_folder, name))
+                self._quick_ch[name] = info["channels"]
+            except Exception:
+                pass
+
+        self._update_tag_completer()
+        self._refresh_list()
+
+    # ── Library: list rendering + filtering ──────────────────────────────────
+
+    def _row_text(self, name) -> str:
+        entry = lib.get_entry(self.library, name)
+        marker = "✓" if entry["done"] else "○"
+        ch = self._quick_ch.get(name)
+        chtxt = "ST" if ch == 2 else ("MO" if ch == 1 else "  ")
+        dur = entry.get("duration")
+        durtxt = f"{dur:4.0f}s" if isinstance(dur, (int, float)) else ""
+        tag = (entry.get("tag") or "").strip()
+        tagtxt = f"  [{tag}]" if tag else ""
+        return f"{marker} {name}   {chtxt} {durtxt}{tagtxt}"
+
+    def _passes_filter(self, name) -> bool:
+        # search text
+        q = self.edit_search.text().strip().lower()
+        if q:
+            entry = lib.get_entry(self.library, name)
+            hay = f"{name} {entry.get('tag','')} {entry.get('speaker','')} {entry.get('notes','')}".lower()
+            if q not in hay:
+                return False
+        # done/todo filter
+        mode = self.combo_filter.currentData() or "all"
+        if mode == "done" and not lib.get_entry(self.library, name)["done"]:
+            return False
+        if mode == "todo" and lib.get_entry(self.library, name)["done"]:
+            return False
+        return True
+
+    def _refresh_list(self):
+        if not hasattr(self, "list_files"):
+            return
+        keep = self.current_lib_file
+        self.list_files.blockSignals(True)
+        self.list_files.clear()
+        for name in self.lib_files:
+            if not self._passes_filter(name):
+                continue
+            it = QListWidgetItem(self._row_text(name))
+            it.setData(Qt.ItemDataRole.UserRole, name)
+            self.list_files.addItem(it)
+            if name == keep:
+                self.list_files.setCurrentItem(it)
+        self.list_files.blockSignals(False)
+        self._update_count()
+
+    def _find_item(self, name):
+        for i in range(self.list_files.count()):
+            it = self.list_files.item(i)
+            if it.data(Qt.ItemDataRole.UserRole) == name:
+                return it
+        return None
+
+    def _update_row_inplace(self, name):
+        it = self._find_item(name)
+        if it is not None:
+            it.setText(self._row_text(name))
+
+    def _update_count(self):
+        c = lib.counts(self.library, self.lib_files)
+        self.lbl_lib_count.setText(self._t(
+            "lib_count", total=c["total"], done=c["done"], todo=c["todo"]))
+
+    def _update_tag_completer(self):
+        tags = lib.collect_tags(self.library)
+        if hasattr(self, "edit_tag"):
+            comp = QCompleter(tags, self)
+            comp.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            self.edit_tag.setCompleter(comp)
+
+    # ── Library: selection + entry editing ───────────────────────────────────
+
+    def _on_lib_selected(self, current, previous):
+        # Single selection just fills the (cheap) tag fields; the audio is only
+        # loaded on double-click to keep arrowing through 1000 files snappy.
+        if current is None:
+            self.current_lib_file = ""
+            self._set_entry_fields_enabled(False)
+            return
+        name = current.data(Qt.ItemDataRole.UserRole)
+        self.current_lib_file = name
+        self._fill_entry_fields(name)
+        self._set_entry_fields_enabled(True)
+
+    def _on_lib_activated(self, item):
+        # Double-click / Enter: load the file into the dubbing workflow
+        if item is None:
+            return
+        name = item.data(Qt.ItemDataRole.UserRole)
+        path = os.path.join(self.voice_folder, name)
+        self._load_sdt_path(path)
+
+    def _fill_entry_fields(self, name):
+        entry = lib.get_entry(self.library, name)
+        self._loading_entry = True
+        self.chk_done.setChecked(bool(entry["done"]))
+        self.edit_tag.setText(entry.get("tag", "") or "")
+        self.edit_speaker.setText(entry.get("speaker", "") or "")
+        self.edit_notes.setPlainText(entry.get("notes", "") or "")
+        self._loading_entry = False
+
+    def _set_entry_fields_enabled(self, on):
+        for w in (self.chk_done, self.edit_tag, self.edit_speaker,
+                  self.edit_notes, self.btn_save_entry):
+            w.setEnabled(on)
+
+    def _on_entry_edited(self, *args):
+        # Auto-save on checkbox toggle / tag / speaker editing finished
+        if self._loading_entry or not self.current_lib_file:
+            return
+        self._persist_entry_from_fields(refresh=self.sender() is self.chk_done)
+
+    def _save_current_entry(self):
+        if not self.current_lib_file:
+            return
+        self._persist_entry_from_fields(refresh=True)
+        self.status.showMessage(self._t("lib_saved", name=self.current_lib_file))
+
+    def _persist_entry_from_fields(self, refresh=False):
+        if not self.current_lib_file:
+            return
+        if not self.db_folder:
+            self.status.showMessage(self._t("lib_no_db"))
+            return
+        lib.set_entry(
+            self.library, self.current_lib_file,
+            done=self.chk_done.isChecked(),
+            tag=self.edit_tag.text().strip(),
+            speaker=self.edit_speaker.text().strip(),
+            notes=self.edit_notes.toPlainText(),
+        )
+        lib.save_library(self.db_folder, self.library)
+        self._update_tag_completer()
+        if refresh:
+            # done-state may change filter membership → rebuild
+            self._refresh_list()
+        else:
+            self._update_row_inplace(self.current_lib_file)
+            self._update_count()
+
+    def _cache_current_into_library(self, path):
+        if not self.voice_folder or not self.sdt:
+            return
+        if os.path.normpath(os.path.dirname(path)) != os.path.normpath(self.voice_folder):
+            return
+        name = os.path.basename(path)
+        lib.set_entry(
+            self.library, name,
+            channels=self.sdt.channels,
+            duration=self.sdt.duration_seconds,
+            size=len(self.sdt.raw),
+            blocks=len(self.sdt.blocks),
+            sample_rate=self.sdt.sample_rate,
+        )
+        self._quick_ch[name] = self.sdt.channels
+        if self.db_folder:
+            lib.save_library(self.db_folder, self.library)
+        self._update_row_inplace(name)
+
+    # ── Library: optional full folder scan (durations for every file) ────────
+
+    def scan_folder(self):
+        if not self.lib_files:
+            return
+        total = len(self.lib_files)
+        dlg = QProgressDialog(self._t("lib_scanning", n=0, total=total),
+                              "Cancel", 0, total, self)
+        dlg.setWindowModality(Qt.WindowModality.WindowModal)
+        dlg.setMinimumDuration(0)
+        for i, name in enumerate(self.lib_files):
+            if dlg.wasCanceled():
+                break
+            try:
+                md = lib.scan_metadata(os.path.join(self.voice_folder, name))
+                lib.set_entry(self.library, name, **md)
+                self._quick_ch[name] = md["channels"]
+            except Exception:
+                pass
+            dlg.setValue(i + 1)
+            dlg.setLabelText(self._t("lib_scanning", n=i + 1, total=total))
+        dlg.close()
+        if self.db_folder:
+            lib.save_library(self.db_folder, self.library)
+        self._refresh_list()
 
     def _prepare_preview(self):
         # Release and delete the previous temporary file
