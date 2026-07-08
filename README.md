@@ -142,6 +142,8 @@ Use your own copy. The tool is meant to be used only with files from a legal cop
 For personal, non-commercial modding. It exists to let players create their own dubs, music swaps, and sound edits for personal use.
 Back up your files. Always keep a backup of any original game file before replacing it. This tool is provided as-is, without warranty of any kind; the author is not responsible for any damage, data loss, or issues arising from its use.
 
+The .sdt format details were determined through independent analysis for interoperability. If you are a rights holder and have any concern about this project, please open an issue and it will be addressed.
+
 ## License
 
 Free — do whatever you want with it.
