@@ -13,4 +13,4 @@ The reverse-engineering notes live in docs/FORMATS.md — that document, not thi
 code, is what someone adapting the tool to another game will need.
 """
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
