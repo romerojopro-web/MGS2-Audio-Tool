@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 — MGS2 Audio Tool
+## 3.0.0 — MGS2 Audio Tool
 
 The project outgrew its old name. It now handles two formats and ships as a
 package, with tests and a written record of the file formats.
@@ -27,19 +27,3 @@ package, with tests and a written record of the file formats.
 - Bigger, more readable interface; the codebase is in English.
 - Settings move to `~/.mgs2_audio_tool.json` (the old file is read once, so
   your folders and language carry over).
-
-## 1.5.0
-
-### Fixed
-- **Stereo `.sdt` files no longer echo.** Their two channels are interleaved in
-  0x800-byte chunks; decoding the raw stream as mono glued channel R about 81 ms
-  behind channel L. The channel count is now read from the header, the channels
-  are separated, and each is decoded on its own.
-
-### Added
-- Clear mono/stereo feedback when picking a replacement.
-- A command line for the engine.
-
-## 1.0.0
-
-First release: open, listen to, export and replace `.sdt` dialogue.
