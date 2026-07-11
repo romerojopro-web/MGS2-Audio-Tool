@@ -1,4 +1,4 @@
-![GitHub release](https://img.shields.io/github/v/release/romerojopro-web/SDT-Tool-for-MGS2MCBetterAudioMod) ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6) ![Codec](https://img.shields.io/badge/Codec-PS--ADPCM-success) ![License](https://img.shields.io/github/license/romerojopro-web/SDT-Tool-for-MGS2MCBetterAudioMod)
+![GitHub release](https://img.shields.io/github/v/release/romerojopro-web/SDT-Tool-for-MGS2MCBetterAudioMod) ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6) ![Codec](https://img.shields.io/badge/Codec-PS--ADPCM-success)
 
 # MGS2 Audio Tool
 
