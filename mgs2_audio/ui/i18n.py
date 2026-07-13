@@ -83,13 +83,15 @@ TRANSLATIONS = {
         "mcbgm_list_title": "MUSIQUES DU SCÉNARIO",
         "mcbgm_pick_game": "DOSSIER DU JEU (MC)…",
         "mcbgm_no_game": "Aucun dossier de jeu sélectionné",
-        "mcbgm_hint": ("La musique de Master Collection vit dans des AssetBundles "
-                       "Unity (un fichier .bundle par morceau). Choisissez le "
-                       "dossier d\'installation du jeu (celui qui contient "
-                       "launcher.exe) pour lister les 6 morceaux du scénario "
-                       "plus la musique du menu et des crédits, les écouter, "
-                       "les exporter — ou les remplacer par vos propres WAV "
-                       "pour modder le jeu."),
+        "mcbgm_hint": ("La musique du LAUNCHER de Master Collection vit dans "
+                       "des AssetBundles Unity (un fichier .bundle par "
+                       "morceau). Choisissez le dossier d\'installation du jeu "
+                       "(celui qui contient launcher.exe) pour lister les 6 "
+                       "morceaux du scénario plus la musique du menu et des "
+                       "crédits, les écouter, les exporter — ou les remplacer "
+                       "par vos propres WAV. Attention : ces fichiers ne "
+                       "pilotent que le launcher, pas la musique en partie "
+                       "(recherche en cours, voir docs/ORCHESTRATION.md)."),
         "mcbgm_select_hint": "Sélectionnez un morceau dans la liste",
         "mcbgm_no_unitypy": ("La librairie UnityPy est requise pour lire les "
                              "bundles Unity de Master Collection.\n"
@@ -377,12 +379,14 @@ TRANSLATIONS = {
         "mcbgm_list_title": "SCENARIO MUSIC TRACKS",
         "mcbgm_pick_game": "GAME FOLDER (MC)…",
         "mcbgm_no_game": "No game folder selected",
-        "mcbgm_hint": ("Master Collection's music lives in Unity AssetBundles "
-                       "(one .bundle file per track). Pick the game's install "
-                       "folder (the one containing launcher.exe) to list the 6 "
-                       "scenario tracks plus the menu and credits music, "
-                       "listen to them, export them — or replace them with "
-                       "your own WAVs to mod the game."),
+        "mcbgm_hint": ("Master Collection's LAUNCHER music lives in Unity "
+                       "AssetBundles (one .bundle file per track). Pick the "
+                       "game's install folder (the one containing "
+                       "launcher.exe) to list the 6 scenario tracks plus the "
+                       "menu and credits music, listen to them, export them — "
+                       "or replace them with your own WAVs. Note: these files "
+                       "only drive the launcher, not the in-game gameplay "
+                       "music (research ongoing, see docs/ORCHESTRATION.md)."),
         "mcbgm_select_hint": "Select a track from the list",
         "mcbgm_no_unitypy": ("The UnityPy library is required to read Master "
                              "Collection's Unity bundles.\n"
@@ -671,13 +675,15 @@ TRANSLATIONS = {
         "mcbgm_list_title": "MÚSICAS DEL ESCENARIO",
         "mcbgm_pick_game": "CARPETA DEL JUEGO (MC)…",
         "mcbgm_no_game": "Ninguna carpeta de juego seleccionada",
-        "mcbgm_hint": ("La música de Master Collection vive en AssetBundles de "
-                       "Unity (un archivo .bundle por pista). Elige la carpeta "
-                       "de instalación del juego (la que contiene launcher.exe) "
-                       "para listar las 6 pistas del escenario más la música "
-                       "del menú y de los créditos, escucharlas, exportarlas — "
-                       "o reemplazarlas con tus propios WAV para modificar el "
-                       "juego."),
+        "mcbgm_hint": ("La música del LAUNCHER de Master Collection vive en "
+                       "AssetBundles de Unity (un archivo .bundle por pista). "
+                       "Elige la carpeta de instalación del juego (la que "
+                       "contiene launcher.exe) para listar las 6 pistas del "
+                       "escenario más la música del menú y de los créditos, "
+                       "escucharlas, exportarlas — o reemplazarlas con tus "
+                       "propios WAV. Atención: estos archivos solo controlan "
+                       "el launcher, no la música dentro de la partida "
+                       "(investigación en curso, ver docs/ORCHESTRATION.md)."),
         "mcbgm_select_hint": "Selecciona una pista de la lista",
         "mcbgm_no_unitypy": ("Se necesita la librería UnityPy para leer los "
                              "bundles de Unity de Master Collection.\n"

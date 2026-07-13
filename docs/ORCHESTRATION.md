@@ -4,13 +4,54 @@
 > (`mgs2_audio/core/`, `games/`) permet d'ajouter d'autres jeux avec leurs
 > propres formats — chaque jeu est un plugin indépendant.
 
-## RÉSOLU pour Master Collection (2026-07-13) — MC n'a jamais eu de `mdx`
+## ⚠️ CORRECTION MAJEURE (2026-07-13, soir) — les bundles Unity = LAUNCHER seulement
 
-Toute la section ci-dessous (hypothèse `mdx`, structure `sng_data`, codes son PS2)
-décrit fidèlement comment **la version PS2/raven originale** orchestre sa musique.
-Mais **Master Collection (2023) ne porte pas ce système** — c'est une réécriture
-Unity complète, et sa musique de scénario vit ailleurs, dans un format standard,
-public et immédiatement exploitable :
+Un test in-game généralisé trop vite avait fait conclure « musique du jeu
+remplaçable via les bundles Unity ». **C'est faux** : un second test (remplacer
+INFILTRATION, lancer une partie) a montré que **les bundles Unity ne pilotent
+que le launcher** (musique du pré-launcher/menu, crédits, et le lecteur de
+musiques de l'app scénario). **La musique in-game vient d'ailleurs** — et
+l'investigation qui a suivi pointe fort vers la survie du système PS2 :
+
+- **`METAL GEAR SOLID2.exe`** (le moteur du jeu porté, hors Unity) contient
+  les chemins PS2 d'origine en dur, dont **`host0:./sound/mdx1/`** — le jeu
+  attend toujours des données MDX, réempaquetées quelque part.
+- **Candidats n°1 : `assets/sar/us/gbs_stage_*.sar`** — 17 fichiers, un par
+  stage, **15-18 Ko chacun : pile la taille prédite plus bas pour un `mdx`**
+  (`sng_data` ≤ 16 Ko). Format SAR décodé : en-tête 64 o (magic
+  `0x000154F6`) + table de 380 entrées × 32 o (identique dans tous les
+  fichiers) + payload par stage (3-6 Ko) découpé en blocs délimités par
+  `FF FF 00 00` : chaque bloc = compteur u32 + N records de 8 o + tuples
+  de 4 o `(val, type, 0x04, flag)`.
+- **Indices forts dans les records** : des types dans la plage
+  **0xDD-0xE3 = exactement les opcodes raven d'expression** (`0xDD` pan_set,
+  `0xDE` pan_move, `0xDF` trans_set, `0xE0` detune_set, `0xE1` vib_set,
+  `0xE3` rdm_set — le « random pitch » qui simule des prises multiples) ;
+  la valeur `0x000A` correspond à l'index de cue 10 des `.sdx` ; la constante
+  `0x1770` (6000, ×265 occurrences) évoque du timing. Hypothèse de travail :
+  **tables de déclenchement** (« quelle cue, avec quel pan/transposition/
+  random, quand ») plutôt que flux d'événements bruts — le payload ne parse
+  pas comme des événements raven à aucun alignement.
+- Autres pièces : `gbs.sar` (fichier « base », 155 entrées actives),
+  `gbs.var`, et `Misc/us/BP_SE.DAT` (4 Mo, header `SEO2` — base des SE,
+  référencée par les `.sdt` via leur header `LCGB`).
+- Scripts d'analyse dans `scripts/` (`analyze_gbs_sar.py` et compagnons).
+- Prochaines étapes : croiser les records avec les cues des `pk*.sdx` du même
+  stage ; Process Monitor pendant une partie pour confirmer le chargement des
+  `.sar` ; en dernier recours, désassembler la routine de parsing dans l'EXE.
+
+**Ce qui reste vrai et confirmé** : le pipeline de remplacement Unity
+(FSB5 + conformation + patch CRC du catalogue, détails ci-dessous) fonctionne
+— le launcher joue bien l'audio remplacé. C'est l'étiquette « musique du jeu »
+qui était fausse, pas la technique.
+
+---
+
+Toute la section historique ci-dessous (hypothèse `mdx`, structure `sng_data`,
+codes son PS2) décrit comment **la version PS2/raven originale** orchestre sa
+musique — et la correction ci-dessus la remet au centre du jeu : le moteur
+in-game de MC en descend directement. La partie Unity suivante ne concerne
+que **le launcher** :
 
 ```
 <install MC>/launcher_Data/StreamingAssets/aa/StandaloneWindows64/
@@ -37,17 +78,15 @@ vrais noms** : `ARMS DEPOT`, `BATTLE`, `COUNTDOWN TO DISASTER`, `INFILTRATION`,
 `IT'S THE HARRIER`, `YELL "DEAD CELL"` — chacun pointant vers son `AudioClip`
 par `m_PathID`. Catalogue fermé et complet pour cette scène (`ScenarioApp`).
 
-**Ce que ça change** : plus besoin de chercher/décoder un `mdx` pour MC. Le
-séquenceur `.sdx` qu'on a construit reste juste pour ce qu'il a toujours fait
-(les *cues* SE 1-3 pistes) — la vraie musique orchestrée de MC est déjà en clair,
-extractible, **et remplaçable : c'est l'onglet « Musique · BGM » du mode MC**
-(`formats/mcbgm.py` + `ui/mcbgm_page.py`). Le remplacement réécrit le
-sous-fichier `.resource` du CAB interne du bundle avec du PCM 16 bits brut et
-met à jour les métadonnées de l'`AudioClip` (canaux/fréquence/durée,
-`m_CompressionFormat=0`) — round-trip vérifié par test (`tests/test_mcbgm.py`).
-**Verdict in-game (2026-07-13) : ✅ CONFIRMÉ FONCTIONNEL** — musique du
-pré-launcher remplacée et jouée par le jeu réel. Les tests sur `mainmenu`
-avaient révélé **deux verrous**, tous deux levés :
+**Portée réelle (corrigée)** : ces bundles sont **la musique du launcher** —
+le remplacement est l'onglet « Musique · BGM » du mode MC (`formats/mcbgm.py`
++ `ui/mcbgm_page.py`). Le remplacement réécrit le sous-fichier `.resource` du
+CAB interne du bundle et met à jour les métadonnées de l'`AudioClip` —
+round-trip vérifié par test (`tests/test_mcbgm.py`).
+**Verdict in-game (2026-07-13) : ✅ confirmé pour le LAUNCHER** (musique du
+pré-launcher remplacée et jouée) — **pas pour la musique in-game**, voir la
+correction en tête de document. Les tests sur `mainmenu` avaient révélé
+**deux verrous**, tous deux levés :
 
 1. **Le conteneur FSB5.** Le `.resource` n'est pas de l'audio brut mais un
    FSB5 (FMOD Sound Bank : en-tête, sample header, chunks LOOP/VORBIS) — le
@@ -72,11 +111,12 @@ remplacements sont en PCM16 (pas d'encodeur Vorbis en Python pur) — FMOD lit
 les deux nativement, seule la taille du fichier diffère (~3×).
 
 **Encore ouvert** : quel mécanisme décide QUAND jouer quelle piste (infiltration
-→ alerte → évasion). Ce n'est presque certainement plus les codes son PS2
-(`0x01FFFF10` etc.) du système `raven` décrit plus bas — probablement un script
-C# côté jeu (le dossier `MonoBleedingEdge` à la racine de l'install confirme un
-runtime **Mono**, pas IL2CPP, donc les assemblages C# sont potentiellement
-décompilables si on veut creuser ce point précis).
+→ alerte → évasion) — mais la correction en tête de document change la donne :
+le moteur in-game est **le jeu d'origine porté** (`METAL GEAR SOLID2.exe`, avec
+ses chemins `host0:` en dur), pas du C# Unity. Les codes son PS2 du système
+`raven` décrits plus bas (`0x01FFFF10` = alerte, etc.) sont donc probablement
+**toujours le mécanisme réel** in-game. (Le runtime Mono du launcher, lui, ne
+concerne que l'enrobage Unity.)
 
 **Ce qui reste vrai pour Substance (2003, PS2→PC)** : cette version-là suit
 réellement les conventions `raven` (voir plus bas), et son `mdx` — s'il existe —

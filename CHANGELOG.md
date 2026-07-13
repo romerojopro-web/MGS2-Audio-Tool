@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Corrected — the Unity music bundles drive the LAUNCHER, not gameplay
+A second in-game test (replace INFILTRATION, then actually play a mission)
+showed the 4.0.0 claim "music replacement confirmed in-game" was
+over-generalised: **the Unity `.wav.bundle`s only feed the launcher**
+(pre-launcher/menu music, credits, the scenario app's music player). The
+replacement pipeline itself (FSB5 rebuild, audio conforming, Addressables
+catalog CRC patch) works exactly as described — the launcher does play the
+replaced audio — but gameplay music is served elsewhere. README,
+`docs/ORCHESTRATION.md` and the tab's interface text now say so.
+
+The in-game music trail is under active research: `METAL GEAR SOLID2.exe`
+still contains the PS2 path `host0:./sound/mdx1/`, and the per-stage
+`assets/sar/us/gbs_stage_*.sar` files (15-18 KB — the predicted `mdx`
+size) contain records typed in the raven expression-opcode range
+(pan/transpose/detune/vibrato/random-pitch) plus `.sdx` cue references.
+Analysis scripts live in `scripts/`.
+
 ## 4.0.0 — 2026-07-13
 
 The tool grows from an SDT dialogue editor into a full audio suite — hence

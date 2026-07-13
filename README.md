@@ -14,11 +14,15 @@ Master Collection, amber for Substance.
 
 - **MGS2 Master Collection — stable.** Every MC tab works on real game data:
   dialogue browsing/export/replacement (SDT), sound-bank scan and replacement
-  (SDX), the cue sequencer, and music replacement (Musique · BGM) —
-  **confirmed working in the actual game**, including the Unity
-  FSB5/Addressables-CRC handling that makes replaced bundles load.
-- **More MC features are in development** (e.g. the launcher's 13 UI sounds
-  share one bundle and can't be replaced individually yet).
+  (SDX), the cue sequencer, and **launcher** music replacement (Musique ·
+  BGM) — confirmed working (the launcher plays the replaced audio), including
+  the Unity FSB5/Addressables-CRC handling that makes replaced bundles load.
+- **In-game music replacement is under active research** — the Unity bundles
+  turned out to drive only the launcher's music; the gameplay music follows
+  the original PS2 engine model (`gbs_stage_*.sar` files are the prime
+  suspects, see `docs/ORCHESTRATION.md`). Other MC features are also in
+  development (e.g. the launcher's 13 UI sounds share one bundle and can't
+  be replaced individually yet).
 - **MGS2 Substance (2003) — work in progress.** Browsing and WAV export work
   (VOX, BGM, Dém, SDX open-only), but several formats are still being
   reverse-engineered: the `vox.dat` codec is unconfirmed, `demo.dat` decodes
@@ -29,12 +33,14 @@ Master Collection, amber for Substance.
 ### Master Collection tabs
 
 - **SDT · Dialogues** — character voice lines (replaceable, for custom dubs).
-- **Musique · BGM** — the 6 scenario music tracks (ARMS DEPOT, BATTLE,
-  INFILTRATION…) plus the launcher's main-menu and credits music, stored as
-  Unity AssetBundles in the game install. Listen, export to WAV, and
-  **replace a track with your own WAV** — the tool rebuilds a valid `.bundle`
-  and shows each file's exact path inside the game folder so you know what to
-  swap. Requires the optional `UnityPy` dependency (below).
+- **Musique · BGM** — the launcher's music: the 6 scenario tracks (ARMS
+  DEPOT, BATTLE, INFILTRATION…) plus the main-menu and credits themes,
+  stored as Unity AssetBundles. Listen, export to WAV, and **replace a track
+  with your own WAV** — the tool rebuilds a valid `.bundle` and shows each
+  file's exact path inside the game folder. Note: these bundles drive the
+  **launcher**, not the in-game gameplay music (that one follows the original
+  PS2 engine model and is under active research — see
+  `docs/ORCHESTRATION.md`). Requires the optional `UnityPy` dependency.
 - **SDX · Sound banks** — the stage sample banks (footsteps, doors, weapons…).
   Full scan mode: index every bank in the game, group identical sounds, edit
   one and rewrite all copies at once.
