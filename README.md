@@ -1,264 +1,312 @@
-![GitHub release](https://img.shields.io/github/v/release/romerojopro-web/SDT-Tool-for-MGS2MCBetterAudioMod) ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6) ![Codec](https://img.shields.io/badge/Codec-PS--ADPCM-success)
-
 # MGS2 Audio Tool
 
-> An audio-modding tool for **Metal Gear Solid 2: Sons of Liberty (Master Collection, PC)**.
+An audio-modding tool for **Metal Gear Solid** games on PC — currently
+**Metal Gear Solid 2: Master Collection** (2023) and **Substance** (2003),
+with an architecture designed to support more games in the future
+(MGS3, ZoE, etc.).
 
-Open the game's audio files, listen to them, export them to WAV, and replace them with your own — for custom dubs, parody voiceovers, restored voices, or reworked sound effects.
+Open the game's audio, listen, export to WAV, and (for dialogue) replace it
+with your own. A **game selector** at the top switches which tabs are shown
+and recolours the whole window. Each game gets its own colour theme: green for
+Master Collection, amber for Substance.
 
-<img width="1904" height="1005" alt="image" src="https://github.com/user-attachments/assets/05ca1156-9f98-4709-96d4-3bf09d9682e1" />
-<img width="1913" height="1000" alt="image" src="https://github.com/user-attachments/assets/56b7d44d-54ce-4932-9cc4-d63b550d3166" />
+## Project status
+
+- **MGS2 Master Collection — stable.** Every MC tab works on real game data:
+  dialogue browsing/export/replacement (SDT), sound-bank scan and replacement
+  (SDX), the cue sequencer, and music replacement (Musique · BGM) —
+  **confirmed working in the actual game**, including the Unity
+  FSB5/Addressables-CRC handling that makes replaced bundles load.
+- **More MC features are in development** (e.g. the launcher's 13 UI sounds
+  share one bundle and can't be replaced individually yet).
+- **MGS2 Substance (2003) — work in progress.** Browsing and WAV export work
+  (VOX, BGM, Dém, SDX open-only), but several formats are still being
+  reverse-engineered: the `vox.dat` codec is unconfirmed, `demo.dat` decodes
+  with artefacts, the Substance `.sdx` layout diverges from MC's, and no
+  Substance replacement path exists yet. See `docs/AUDIT.md` for the open
+  questions.
+
+### Master Collection tabs
+
+- **SDT · Dialogues** — character voice lines (replaceable, for custom dubs).
+- **Musique · BGM** — the 6 scenario music tracks (ARMS DEPOT, BATTLE,
+  INFILTRATION…) plus the launcher's main-menu and credits music, stored as
+  Unity AssetBundles in the game install. Listen, export to WAV, and
+  **replace a track with your own WAV** — the tool rebuilds a valid `.bundle`
+  and shows each file's exact path inside the game folder so you know what to
+  swap. Requires the optional `UnityPy` dependency (below).
+- **SDX · Sound banks** — the stage sample banks (footsteps, doors, weapons…).
+  Full scan mode: index every bank in the game, group identical sounds, edit
+  one and rewrite all copies at once.
+- **Séquenceur · Cues SDX** — the raven-accurate synth that renders the SE cue
+  sequences hidden in the `.sdx` banks. **These are raw sound effects, not the
+  game's full orchestrated music** — real orchestration needs a separate `mdx`
+  file (see below) that has never been found; if one turns up, it would likely
+  get its own dedicated tab rather than folding into this one.
+
+### Substance (2003) tabs
+
+- **VOX · Voices** — `vox.dat`, the game's full voice archive (53 K PS-ADPCM
+  blocks at 44 100 Hz). Listen, export, or dub individual blocks.
+- **SDX · Sound effects** — `pk000000`–`pk000005.sdx`, six banks of stage
+  samples (22 050 Hz). Open one at a time.
+- **Musique · BGM** — `bgm.dat`, `movie.dat`: pre-rendered MS-ADPCM music
+  streams (98 + 90 entries), decoded straight to WAV.
+- **Dém Cutscenes** — `demo.dat`: the cutscene and demo audio (135 MS-ADPCM
+  entries), same decode-and-export workflow.
+
+> **How the music works.** The `.sdx` cue sequences are driven like a MIDI file
+> by the PS2 sound driver — faithfully reproduced here from the **`KieronJ/raven`**
+> reference (tempo, pitch via `freq_tbl`, per-instrument tuning/pan/ADSR, sweep,
+> glissandi, portamento, vibrato, reverb). Those cues are mostly **sound effects**;
+> the actual orchestrated **BGM** is streamed as MS-ADPCM in `bgm.dat` on PC and
+> extracted directly. See `docs/AUDIT_SDX.md`, `docs/ORCHESTRATION.md`, `docs/AUDIT.md`.
+>
+> Reading works everywhere. **Replacing** works for Master Collection music
+> (the Musique · BGM tab, via Unity bundles) and for dialogue — not yet for
+> Substance's streamed `bgm.dat` music.
+
+> **The `.sdt` files come from the Better Audio Mod.** That mod restores the PS3
+> HD Collection audio in PS-ADPCM, which is what this tool decodes. Many stock
+> Steam `.sdt` files use a different codec; the tool detects them and says so
+> rather than playing noise.
 
 ---
 
-## Features
+## Requirements
 
-- Decode and play `.sdt` dialogue files
-- Replace voices with automatic PS-ADPCM encoding
-- Export every clip to WAV
-- Browse thousands of dialogue files instantly
-- Tag, search and organize dubbing progress
-- Decode `.sdx` stage sound banks
-- Detect duplicate sound effects across the entire game
-- Replace every occurrence of a sound with a single operation
-- Pure Python library with a graphical interface and command-line tools
+- **Python 3.10+**
+- **PyQt6** — `pip install PyQt6` (only needed for the graphical interface)
+- **UnityPy** — `pip install UnityPy` (optional; only needed by the Master
+  Collection **Musique · BGM** tab, which reads/rebuilds Unity AssetBundles)
+- **[MGS2MC Better Audio Mod](https://www.nexusmods.com/metalgearsolid2mc)** for
+  the `.sdt` dialogue files
+- A legal copy of the game. Use only files from your own installation.
 
----
+The engine underneath (`mgs2_audio.codec`, `mgs2_audio.formats`) is pure Python
+with **no dependencies at all** — the command line works without PyQt6.
 
-# Supported formats
+## Install and run
 
-Two formats, two tabs:
-
-- **`.sdt`** — dialogue, plus some music and sound effects.
-- **`.sdx`** — stage sound-effect banks (footsteps, doors, weapons, ambience, etc.).
-
-The game's main soundtrack has **not been found yet**.
-
-The music accessible through this tool is only incidental audio, such as a cutscene background track or the VR Mission completion jingle.
-
-Where the actual soundtrack is stored remains an open reverse-engineering question.
-
-See **docs/FORMATS.md**, section 4.
-
-The `.sdt` files supported by this project come from the **MGS2MC Better Audio Mod**, which restores the PS3 HD Collection audio in **PS-ADPCM**.
-
-Many stock Steam `.sdt` files use a different codec. Those files are detected automatically and reported as unsupported rather than producing corrupted playback.
-
----
-
-# Requirements
-
-- Python 3.10+
-- PyQt6 (`pip install PyQt6`) *(GUI only)*
-- MGS2MC Better Audio Mod (for `.sdt` dialogue)
-- A legal copy of the game
-
-Use only files from your own installation.
-
----
-
-# Install
+Download the project, then:
 
 ```bash
 pip install PyQt6
 python run.py
 ```
 
-The core engine (`mgs2_audio.codec` and `mgs2_audio.formats`) is pure Python and has **no external dependencies**.
-
-The command-line tools work without PyQt6.
-
 ---
 
-# What it does
+## What it does
 
-## SDT — Dialogue
+### The SDT tab — dialogue (Master Collection)
 
-- Open an entire folder of `.sdt` files
-- Instantly browse thousands of dialogue files
-- Listen to any clip
-- Export to WAV
-- Replace dialogue with your own recording
-- Automatically encode back to PS-ADPCM
-- Organize your work with tags, speakers, notes and completion status
+1. **Voice folder** — point it at a folder of `.sdt` files. The list appears
+   instantly, even for a thousand of them.
+2. **Database folder** — where your tags and notes are stored, kept separate
+   from the game files.
+3. Single-click a file to tag it, double-click to load and hear it.
+4. Mark it **done**, give it a free-text **tag**, a **speaker**, and **notes**.
+5. Pick your recording, generate the modified `.sdt`, and drop it back in the game.
 
-The tagging system is entirely manual.
+Search by name, tag, speaker or notes; filter by *done / to do* or by tag.
+Tagging is entirely manual — the tool never guesses whether a line is finished.
 
-The tool never tries to guess whether a line is finished.
+> **Every tab can be tagged**, not just SDT — SDX, VOX, BGM, Dém and Séquenceur
+> each keep a done/tag/notes panel and their own database file. The **database
+> folder is picked once per game** (a control in the app header, next to the
+> mode selector) — Master Collection and Substance never share tags.
 
----
+### The VOX tab — voice archive (Substance)
 
-## SDX — Stage sound effects
+Open `vox.dat` (the Substance voice archive). Its 53 K PS-ADPCM blocks are
+listed; pick one to listen and export, or pick a WAV to dub it. The file
+dialogue opens on `.dat` by default.
 
-Open a single sound bank or scan the entire game.
+### The SDX tab — sound effects
 
-Simply point the tool at your MGS2 installation and it automatically finds the `us/stage` folder, indexes every sound bank, detects identical sounds, and groups them into a single editable entry.
+**Master Collection** — open a single bank, or **scan the whole game**: point
+it at your MGS2 folder and it finds `us/stage` on its own, indexes every bank,
+and groups identical sounds.
 
-### Why this matters
+**Substance** — open one of the six `pk*.sdx` banks (scan mode is not available:
+Substance banks use a different internal layout). The open dialog filters on
+`.sdx` by default.
 
-Many sound effects are duplicated throughout the game.
+### The BGM / Dém tabs — streamed music
 
-For example, the same footstep may exist in dozens—or even hundreds—of different stage banks.
+**Master Collection** — open a `.sdx` bank and its musical pieces appear in a
+list. Click one and it is synthesised and played, right there. Export a piece,
+or every piece at once. Two options change the synthesis: **stereo** (uses each
+track's pan) and **tune** (uses each instrument's base rate, 44 100 Hz).
 
-Editing only one copy often has **no audible effect**, because another stage bank supplies the version the game actually plays.
+**Substance** — the **BGM** tab opens `bgm.dat` or `movie.dat` (pre-rendered
+MS-ADPCM streams). The **Dém** tab opens `demo.dat` (cutscene audio). Both
+list entries with sample rate, channel count and duration; select one to listen
+and export, or export all at once.
 
-The tool solves this by:
+### The music sequencer, from the command line
 
-- detecting every duplicate automatically
-- displaying how many copies exist (for example **×47** or **×380**)
-- replacing every occurrence in a single operation
-
-Original files are automatically backed up as `.bak`.
-
----
-
-# Command line
-
-Everything is also available without the GUI.
+The `.sdx` banks carry more than samples: they carry the score. List a bank's
+cues and render them to WAV:
 
 ```bash
-python -m mgs2_audio.cli sdt info vc000101.sdt
-python -m mgs2_audio.cli sdt export vc000101.sdt out.wav
+python -m mgs2_audio.cli seq cues   pk000002.sdx --min-notes 20
+python -m mgs2_audio.cli seq render pk000002.sdx melody.wav
+python -m mgs2_audio.cli seq render pk000002.sdx out/ --all --min-notes 8
+```
+
+Without `--cue`, the busiest cue is rendered — usually the music. Rendering is a
+small software SPU: one voice per track, samples that loop while a note holds,
+volume, pan, pitch bend, portamento and transpose.
+
+It will sound thinner than the game. The PlayStation applied reverb in hardware,
+and that was never stored in any file.
+
+### The command line
+
+No Qt, no GUI, scriptable:
+
+```bash
+python -m mgs2_audio.cli sdt info    vc000101.sdt
+python -m mgs2_audio.cli sdt export  vc000101.sdt out.wav
 python -m mgs2_audio.cli sdt replace vc000101.sdt dub.wav out.sdt
 
-python -m mgs2_audio.cli sdx list pk000000.sdx
-python -m mgs2_audio.cli sdx scan "C:/Games/.../MGS2"
-python -m mgs2_audio.cli sdx export-key "C:/Games/.../MGS2" <key> sound.wav
+python -m mgs2_audio.cli sdx list        pk000000.sdx
+python -m mgs2_audio.cli sdx scan        "C:/Games/.../MGS2"
+python -m mgs2_audio.cli sdx export-key  "C:/Games/.../MGS2" <key> sound.wav
 python -m mgs2_audio.cli sdx replace-all "C:/Games/.../MGS2" <key> mine.wav
 ```
 
-`scan` accepts:
-
-- the game folder
-- a language folder
-- or the `stage` folder directly
+`scan` accepts the game folder, a language folder, or the stage folder itself.
 
 ---
 
-# Tips
+## Tips
 
-- Record using the original sample rate whenever possible.
-  - `.sdt` → **44100 Hz**
-  - `.sdx` → **22050 Hz**
-- Otherwise the tool resamples automatically.
-- Audio length is fixed.
-    - Longer recordings are trimmed.
-    - Shorter recordings are padded with silence.
-- Output files always preserve the exact byte size expected by the game.
-- Mono recordings replacing stereo dialogue are duplicated to both channels.
-- Before using **replace-all**, keep a backup of your `stage/` folder.
+- Record at the file's own rate if you can — **44100 Hz** for `.sdt`,
+  **22050 Hz** for `.sdx`. Otherwise the tool resamples.
+- **Length is fixed.** Longer audio is trimmed, shorter is padded with silence.
+  The output keeps the original's exact byte size, which the game requires.
+- On a stereo `.sdt`, your mono recording is placed on both channels.
+- **Back up before your first `replace-all`.** `.bak` files are written
+  automatically, but a copy of `stage/` costs nothing.
 
 ---
 
-# Project structure
+## Architecture
 
 ```
-run.py
-    Launch the GUI
-
+run.py                 launch the GUI
 mgs2_audio/
-    codec/
-        PS-ADPCM codec and WAV support
-        Independent from MGS2
-
-    formats/
-        sdt.py
-        sdx.py
-        MGS2 file formats
-
-    library/
-        Tagging database
-
-    ui/
-        PyQt6 interface
-
-    cli.py
-        Command-line interface
-
-docs/
-    FORMATS.md
-        Reverse-engineering notes
-
-tests/
-    pytest suite
+    codec/             PS-ADPCM, MS-ADPCM and WAV. Knows nothing about MGS2.
+    formats/           sdt.py, sdx.py, sequence.py, bgm.py — the game's file formats.
+                       detect.py does structural auto-detection.
+    library/           the tagging databases.
+    render.py          a small software SPU: plays a sequencer cue.
+    core/              GamePlugin ABC, PageSpec, REGISTRY — the plugin interface.
+        base.py        GamePlugin, PageSpec, AudioFormat, AudioContainer
+        registry.py    Plugin discovery and global registry
+    games/             Each game is a subpackage that registers itself.
+        mgs2_mc/       MGS2 Master Collection (SDT, SDX, Sequencer)
+        mgs2_substance/ MGS2 Substance 2003 (VOX, SDX, BGM, DEMOS)
+    ui/                PyQt6 interface (app.py = shell, one page per tab).
+    cli.py             the command line.
+docs/FORMATS.md        the reverse-engineering notes.
+tests/                 pytest suite, no game files needed.
 ```
 
-Each layer only depends on the layers beneath it.
+Each layer only knows about the ones below it. Games are self-contained
+plugins discovered at import time — the UI shell never imports game-specific
+code directly. Adding a new game means creating a new subpackage in
+`mgs2_audio/games/<id>/` with a `Plugin` class that extends `GamePlugin`.
 
-Supporting another game would mainly require replacing the `formats/` package while keeping the rest of the architecture.
+**Read [`docs/FORMATS.md`](docs/FORMATS.md) first** if you want to understand the
+files, contribute, or build something else on this. The code can be rewritten;
+that knowledge took much longer to find.
 
-If you're interested in the reverse engineering behind these formats, start with **docs/FORMATS.md**.
-
-> The code can always be rewritten. The knowledge required to understand the formats took much longer to discover.
-
----
-
-# Running the tests
+Run the tests with:
 
 ```bash
 pip install pytest
 python -m pytest
 ```
 
-The tests generate synthetic `.sdt` and `.sdx` files entirely from scratch.
+They build synthetic `.sdt` and `.sdx` files from scratch — no game data needed,
+and this default run stays deliberately light (a few seconds, no brute-force
+PS-ADPCM encoding of anything but real test content). A handful of tests
+additionally validate against real game files if you have them under
+`tests/mgs2_substance_2003/` — those are opt-in (`python -m pytest --realdata`)
+since parsing a 1+ GB file is slow and genuinely CPU-heavy; they're skipped by
+default so a plain test run never pins a core for that long.
 
-No game files are required.
+### Running just what you're touching
 
----
+The suite is split one file per subsystem, so `pytest tests/test_X.py` runs
+only what's relevant to `X` — no need for the full suite (or `--realdata`)
+while iterating on one area. Cheaper on the CPU, and faster to read.
 
-# Known limitations
+| Working on…                              | Run                          |
+|-------------------------------------------|-------------------------------|
+| PS-ADPCM / MS-ADPCM codecs                 | `pytest tests/test_codec.py` |
+| `.sdt` format (dialogue) / `vox.dat`       | `pytest tests/test_sdt.py`   |
+| `.sdx` format (sound banks)                | `pytest tests/test_sdx.py`   |
+| `bgm.dat` / `movie.dat` / `demo.dat`       | `pytest tests/test_bgm.py`   |
+| MC music bundles (`formats/mcbgm.py`)      | `pytest tests/test_mcbgm.py` |
+| The sequencer / `render.py` (SPU, reverb)  | `pytest tests/test_sequence.py` |
+| Tagging databases (`library/db.py`)        | `pytest tests/test_library.py` |
+| The app shell (`ui/app.py`, `db_folder`)   | `pytest tests/test_app.py`   |
 
-- Encoding is relatively slow.
+A single test also works (handy while chasing one failure):
+`pytest tests/test_bgm.py::test_quad_matches_separate_stereo_decode`.
 
-  The PS-ADPCM encoder is written entirely in pure Python and brute-forces the optimal filter and shift for every 28 samples.
-
-  Large dialogue files may therefore take some time to generate.
-
-- Scanning the whole game reads roughly **200 sound banks** (~1 MB each).
-
-  The progress bar reflects real progress and the scan can be cancelled.
-
-- Stereo replacement currently duplicates mono audio to both channels.
-
-  True stereo editing is not yet supported.
-
-- `replace-all` modifies game files directly.
-
-  Automatic `.bak` backups are created.
-
-- Windows is the primary target platform.
-
-  Other operating systems should work wherever PyQt6 runs but have not yet been tested.
-
----
-
-# Disclaimer
-
-This is an unofficial fan-made project.
-
-It is not affiliated with, endorsed by, sponsored by, or connected to Konami Digital Entertainment.
-
-Metal Gear Solid 2: Sons of Liberty and all related names, characters and assets remain the property of Konami.
-
-- No game files are included.
-- This repository contains only original source code.
-- Use only files from your own legally obtained copy of the game.
-- Intended for personal, non-commercial modding.
-- Always keep backups of your files.
-
-The software is provided **as is**, without warranty of any kind.
-
-The author is not responsible for data loss or damage resulting from its use.
-
-The file formats were determined through independent reverse engineering for interoperability purposes.
-
-If you represent the rights holder and have concerns regarding this project, please open an issue.
+Reach for the full `pytest` (or `--realdata`) run before a release, or
+whenever a change might have touched more than one subsystem — not as the
+default while developing.
 
 ---
 
-# License
+## Known limitations
 
-MIT — do what you like with it, just keep the copyright notice.
+- **Encoding is slow.** The PS-ADPCM encoder is pure Python and brute-forces the
+  best filter and shift for every 28 samples of real audio. Generating a long
+  dub can take a while and may look frozen. Silence is fast-pathed (a `.sdt`
+  replacement always pads or trims to the target's exact byte size, and the
+  padding/trimmed-away portion is often mostly silence), but the real recorded
+  audio itself still goes through the full search. Decoding is fast.
+- **Scanning the whole game** (Master Collection only) reads ~200 banks of about
+  1 MB each. Give it a minute; the progress bar is honest, and you can cancel.
+- **Substance `.sdx` banks** use a different internal layout (`voice_tbl` not at
+  `0x800`); they don't parse in the raven sequencer yet. Open-only mode.
+- **Substance `vox.dat` playback is suspect.** It's currently decoded as PS-ADPCM,
+  but the container structure suggests the actual codec may be Konami's
+  DPCM_KCEJ instead — unconfirmed by ear. See `docs/AUDIT.md` before relying on it.
+- **Substance `codec.dat`** (`b9 2a 90 3d` header) is an unknown format; reverse
+  engineering is still needed. It is excluded from the UI for now.
+- **Stereo dubs are duplicated** across both channels. True left/right stereo
+  replacement is not supported.
+- **`replace-all` writes to your game files** in place (with `.bak` backups).
+- **Windows-focused.** It should run anywhere PyQt6 does; other platforms are
+  untested.
 
+---
 
+## Disclaimer
 
+Unofficial, fan-made, and not affiliated with, endorsed by, or connected to
+Konami Digital Entertainment. *Metal Gear Solid 2: Sons of Liberty* and all
+related names, characters and assets are trademarks and copyrights of Konami.
+
+- **No game files are included.** This project contains only original code.
+- **Use your own copy.** You are responsible for how you use it.
+- **For personal, non-commercial modding.**
+- **Back up your files.** Provided as-is, without warranty of any kind; the
+  author is not responsible for any damage or data loss arising from its use.
+
+The file formats were determined through independent analysis for
+interoperability. If you are a rights holder with a concern about this project,
+please open an issue and it will be addressed.
+
+## License
+
+[MIT](LICENSE) — do what you like with it, keep the notice.

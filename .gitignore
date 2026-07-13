@@ -1,0 +1,27 @@
+# ── Game data: NEVER in the repo (copyrighted Konami files) ──────────────────
+# Dumps, archives, banks, bundles, extracted audio — whatever the folder.
+*.dat
+*.sdx
+*.sdt
+*.wav
+*.bundle
+*.dar
+*.qar
+*.gcx
+*.cnf
+*.bak
+tests/mgs2_substance_2003/
+scripts/sdx_mgs2_MC/
+
+# ── Build / packaging output ─────────────────────────────────────────────────
+dist/
+
+# ── Python noise ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# ── Tooling / IDE ────────────────────────────────────────────────────────────
+.claude/
+.vscode/
+.idea/
