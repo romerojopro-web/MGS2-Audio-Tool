@@ -45,6 +45,52 @@ l'investigation qui a suivi pointe fort vers la survie du système PS2 :
 — le launcher joue bien l'audio remplacé. C'est l'étiquette « musique du jeu »
 qui était fausse, pas la technique.
 
+### Investigation du 13/07 (suite) : les `.sar` élucidés, la musique toujours pas
+
+Résultats de la session d'analyse sur les pistes ouvertes ci-dessus :
+
+1. **Les `gbs_stage_*.sar` sont élucidés — ce sont des plannings de sons
+   d'ambiance, PAS la musique orchestrale.** Format complet décodé :
+   - record 8 o = `(id u16, 00, tag u8) + valeur u32` ; les valeurs se
+     réduisent à **deux constantes {6000, 10}** (durées/fondus par défaut ?) ;
+   - tuple 4 o = `(temps u16, 0x04, flag u8)` ; les temps sont des
+     **multiples de 5 croissants** et les flags **alternent 1/0** — des
+     fenêtres ON/OFF. Exemple probant (bloc 16, records identiques dans deux
+     stages) : a02a = `(75,ON)(145,OFF)(225,ON)(295,OFF)`,
+     w25b = `(30,ON)(100,OFF)(165,ON)(230,OFF)` — même son, planning
+     différent par stage ;
+   - l'espace d'ids est **global** (2..142 + 356/357/734 dans *tous* les
+     stages — d'où les 191 hashes partagés) ; `gbs.sar` est la table de
+     base (payload au préfixe identique), chaque entrée de la table 380×32 o
+     mappe `(offset, taille)` → un bloc ;
+   - attention à l'acronyme : les chaînes `gbs_*` de l'EXE (gbs_hand1,
+     gbs_eye2, rai_gbs_body…) sont des noms d'**os de squelette 3D** sans
+     rapport — ne pas sur-interpréter « GBS ».
+2. **`.hzx` = données de scène** (courbes/rampes, pas d'audio) ; les scans
+   naïfs de structures `sng_data` y noient le signal sous les faux positifs.
+   **`.mar` = modèles/physique** (magic `MARa` / « Physics 3D Model »).
+3. **L'EXE du jeu référence les conteneurs `.dat` du monde PS2/Substance**
+   (`stage.dat`, `stage2.dat`, `vox.dat`, `demo.dat`, `movie.dat`,
+   `codec.dat`, `face.dat`, `Misc/%s/BP_SE.DAT`…) — éclatés en dossiers sur
+   le disque (`us/stage/<stage>/`, `us/vox/`…). **Mais AUCUNE référence à
+   `bgm.dat`** : contrairement à Substance, MC ne streame pas sa musique
+   in-game depuis un conteneur MS-ADPCM. Combiné au chemin dev
+   `host0:./sound/mdx1/`, tout indique une musique **séquencée**.
+4. **Les chansons à 13 pistes ne sont PAS dans les tables de cues des `.sdx`**
+   — vérifié sur les banques haut-numérotées des stages (pk000011/12/14/15,
+   256 cues) : maximum **3 pistes par cue**, partout.
+
+**État : la localisation des données de musique in-game reste ouverte.**
+Pistes restantes, par ordre de rendement :
+- **Process Monitor pendant une partie** (filtre `METAL GEAR SOLID2.exe`,
+  `ReadFile`, déclencher une alerte) — le test décisif, dira exactement quel
+  fichier sert la musique ;
+- une **seconde table/directory dans les `pk*.sdx`** hors de la zone que
+  notre parseur lit (le `mdx` fusionné dans la banque ?) ;
+- les scripts **`.gcx`** (94 Mo, `assets/gcx/`) — le système de script
+  pourrait embarquer les séquences ;
+- désassembler la routine de l'EXE qui consomme `host0:./sound/mdx1/`.
+
 ---
 
 Toute la section historique ci-dessous (hypothèse `mdx`, structure `sng_data`,
