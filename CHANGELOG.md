@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Added — Russian interface language
+The UI is now available in **Russian** (Русский) alongside French, English and
+Spanish — a full fourth translation of all 236 strings, selectable from the
+language dropdown.
+
+### Added — stock audio format identified as Konami XWMA (support in progress)
+The stock (un-modded) MGS2 MC `.sdt` audio is **Konami XWMA** (`AMWX` container
+wrapping WMA v2), not PS-ADPCM — so the tool currently only reads files
+converted by the Better Audio Mod. Decode/re-encode of the stock format (via
+ffmpeg) is being added so the tool works without that mod. Credit to
+**RockeyLol/RIFF-XWMA-Konami-XWMA-Converter** for documenting the format
+(see the README acknowledgements).
+
 ### Corrected — the Unity music bundles drive the LAUNCHER, not gameplay
 A second in-game test (replace INFILTRATION, then actually play a mission)
 showed the 4.0.0 claim "music replacement confirmed in-game" was

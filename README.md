@@ -73,9 +73,11 @@ Master Collection, amber for Substance.
 > Substance's streamed `bgm.dat` music.
 
 > **The `.sdt` files come from the Better Audio Mod.** That mod restores the PS3
-> HD Collection audio in PS-ADPCM, which is what this tool decodes. Many stock
-> Steam `.sdt` files use a different codec; the tool detects them and says so
-> rather than playing noise.
+> HD Collection audio in PS-ADPCM, which is what this tool decodes. The stock
+> Steam `.sdt` files use **Konami XWMA** (`AMWX` container wrapping WMA v2)
+> instead; today the tool detects them and says so rather than playing noise.
+> Decoding/re-encoding that stock format (via ffmpeg) is in development — see
+> `docs/ORCHESTRATION.md` and the acknowledgements below.
 
 ---
 
@@ -312,6 +314,16 @@ related names, characters and assets are trademarks and copyrights of Konami.
 The file formats were determined through independent analysis for
 interoperability. If you are a rights holder with a concern about this project,
 please open an issue and it will be addressed.
+
+## Acknowledgements
+
+- **[KieronJ/raven](https://github.com/KieronJ/raven)** — the PS2 sound-driver
+  reference that made the `.sdx` cue sequencer faithful (tempo, pitch tables,
+  ADSR, reverb…).
+- **[RockeyLol/RIFF-XWMA-Konami-XWMA-Converter](https://github.com/RockeyLol/RIFF-XWMA-Konami-XWMA-Converter)**
+  — for documenting the **Konami XWMA** (`AMWX`) container format, which is what
+  identified the stock MGS2 audio format and makes decoding/re-encoding it
+  possible. Thank you! 🙏
 
 ## License
 

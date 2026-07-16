@@ -898,9 +898,304 @@ TRANSLATIONS = {
                         "Reemplaza el archivo original del juego por este "
                         "(recuerda hacer una copia de seguridad del original)."),
     },
+
+    "ru": {
+        "lang_name": "Русский",
+        "window_title": "MGS2 SDT Tool — Озвучивание",
+        "app_title": "MGS2 · SDT TOOL",
+        "app_subtitle_mc": "ИЗВЛЕЧЕНИЕ И ОЗВУЧИВАНИЕ — MASTER COLLECTION (PC)",
+        "app_subtitle_substance": "ИЗВЛЕЧЕНИЕ И ОЗВУЧИВАНИЕ — SUBSTANCE (2003)",
+        "language_label": "Язык:",
+        "mode_label": "Версия:",
+        "db_folder_label": "База:",
+        "mode_mc": "Master Collection",
+        "mode_substance": "Substance (2003)",
+
+        "lib_title": "БИБЛИОТЕКА",
+        "tab_sdt": "SDT · ДИАЛОГИ",
+        "tab_mcbgm": "МУЗЫКА · BGM",
+        "tab_sdx": "SDX · ЗВУКИ",
+        "tab_seq": "СЕКВЕНСОР · SDX-КЬЮ",
+        "tab_bgm": "МУЗЫКА · BGM",
+        "tab_vox": "VOX · ГОЛОСА",
+        "tab_demos": "ДЕМО · КАТСЦЕНЫ",
+        "seq_open_title": "1 · ОТКРЫТЬ БАНК",
+        "seq_browse": "ОБЗОР…",
+        "seq_no_file": "Банк не загружен",
+        "seq_list_title": "ФРАГМЕНТЫ В БАНКЕ",
+        "seq_count": "{n} фрагментов · {instruments} инструментов",
+        "seq_select_hint": "Выберите фрагмент из списка",
+        "seq_filter_all": "Все фрагменты",
+        "seq_filter_music": "Не менее 8 нот",
+        "seq_filter_long": "Не менее 20 нот",
+        "seq_listen_title": "2 · ПРОСЛУШАТЬ ФРАГМЕНТ",
+        "seq_rendering": "Синтез…",
+        "seq_export_title": "3 · ЭКСПОРТ",
+        "seq_export": "ЭКСПОРТ В WAV…",
+        "seq_export_all": "ЭКСПОРТ ВСЕХ ФРАГМЕНТОВ…",
+        "seq_exporting": "Экспорт… {n}/{total}",
+        "seq_exported_all": "✓ Экспортировано фрагментов: {n}",
+        "seq_options_title": "4 · ПАРАМЕТРЫ СИНТЕЗА",
+        "seq_stereo": "Стерео (панорама)",
+        "seq_tune": "Настроить инструменты (44100 Гц)",
+        "seq_info": "Фрагмент #{i} · дорожек: {tracks} · нот: {notes}",
+        "seq_no_sequence": ("В этом банке нет секвенсора "
+                            "(нет каталога инструментов)."),
+        "seq_hint": ("Эти кью — в основном сырые звуковые эффекты SPU (SE), а не "
+                     "полноценная музыка игры (для неё см. вкладку Музыка · BGM). "
+                     "Применяется программная реверберация, но точный игровой "
+                     "пресет для каждого звука в файле не хранится. Нативная "
+                     "оркестровка (до 13 дорожек, файл `mdx`) так и не найдена."),
+        "bgm_list_title": "ЗАПИСИ АРХИВА BGM",
+        "bgm_browse": "ОБЗОР…",
+        "bgm_no_file": "Архив BGM не загружен",
+        "bgm_select_hint": "Выберите запись из списка",
+        "bgm_open_title": "1 · ОТКРЫТЬ АРХИВ BGM",
+        "bgm_hint": ("bgm.dat — это архив с заранее записанной фоновой музыкой "
+                     "игры. Каждая запись закодирована в MS-ADPCM "
+                     "(стерео или 4 канала). Выберите запись для прослушивания "
+                     "или экспортируйте все в WAV."),
+        "bgm_listen_title": "2 · ПРОСЛУШАТЬ ЗАПИСЬ",
+        "bgm_rendering": "Декодирование…",
+        "bgm_export_title": "3 · ЭКСПОРТ",
+        "bgm_export": "ЭКСПОРТ В WAV…",
+        "bgm_export_all": "ЭКСПОРТ ВСЕХ ЗАПИСЕЙ…",
+        "bgm_exporting": "Экспорт… {n}/{total}",
+        "bgm_exported_all": "✓ Экспортировано записей: {n}",
+        "bgm_count": "{n} записей · {duration} звука",
+        "bgm_entry_info": "Запись #{index} · {sr} Гц {ch}ч · {dur:.2f} с",
+        "bgm_no_entries": "В этом файле нет записей BGM.",
+        "bgm_status_loaded": "Загружено: {name} · записей BGM: {n}",
+        "dlg_open_bgm": "Открыть архив BGM",
+        "mcbgm_list_title": "МУЗЫКА СЦЕНАРИЯ",
+        "mcbgm_pick_game": "ПАПКА ИГРЫ (MC)…",
+        "mcbgm_no_game": "Папка игры не выбрана",
+        "mcbgm_hint": ("Музыка ЛАУНЧЕРА Master Collection хранится в Unity "
+                       "AssetBundle (по одному файлу .bundle на трек). Выберите "
+                       "папку установки игры (ту, что содержит launcher.exe), "
+                       "чтобы увидеть 6 треков сценария плюс музыку меню и "
+                       "титров, прослушать их, экспортировать — или заменить "
+                       "своими WAV. Внимание: эти файлы управляют только "
+                       "лаунчером, а не игровой музыкой (идёт исследование, "
+                       "см. docs/ORCHESTRATION.md)."),
+        "mcbgm_select_hint": "Выберите трек из списка",
+        "mcbgm_no_unitypy": ("Для чтения Unity-бандлов Master Collection нужна "
+                             "библиотека UnityPy.\n"
+                             "Установите её командой:  pip install UnityPy"),
+        "mcbgm_bad_folder": "Неверная папка игры: {e}",
+        "mcbgm_no_tracks": "В этой папке треки не найдены.",
+        "mcbgm_status_loaded": "✓ Загружено треков сценария: {n}",
+        "mcbgm_count": "{n} треков · {duration} звука",
+        "mcbgm_track_title": "1 · ТРЕК",
+        "mcbgm_track_info": "{name} · {sr} Гц {ch} · {dur:.1f} с",
+        "mcbgm_rel_path": "Файл в игре: {path}",
+        "mcbgm_listen_title": "2 · ПРОСЛУШАТЬ / ЭКСПОРТ",
+        "mcbgm_rendering": "Извлечение из бандла…",
+        "mcbgm_ready": "Готово: {name}",
+        "mcbgm_export": "ЭКСПОРТ В WAV…",
+        "mcbgm_replace_title": "3 · ЗАМЕНИТЬ (МОДДИНГ)",
+        "mcbgm_pick_wav": "ВЫБРАТЬ WAV…",
+        "mcbgm_wav_info": ("{name} · {sr} Гц {ch}ч · {dur:.1f} с "
+                           "(оригинал: {orig:.1f} с)"),
+        "mcbgm_generate": "СОЗДАТЬ БАНДЛ…",
+        "mcbgm_generating": "Пересборка бандла…",
+        "mcbgm_generated": ("✓ Бандл создан: {path}\n"
+                            "Поместите его в игру по пути:\n{rel}"),
+        "mcbgm_status_generated": "✓ Бандл создан: {name}",
+        "mcbgm_use_install": ("Чтобы записать прямо в игру, используйте кнопку "
+                              "УСТАНОВИТЬ (она сначала создаёт резервную "
+                              "копию .bak)."),
+        "mcbgm_install": "УСТАНОВИТЬ В ИГРУ (.bak)",
+        "mcbgm_install_title": "Установить в игру",
+        "mcbgm_install_confirm": ("Заменить файл игры:\n{rel}\n\n"
+                                  "Оригинал будет сохранён как .bak "
+                                  "(если он ещё не существует), а проверка CRC "
+                                  "этого бандла будет отключена в catalog.json "
+                                  "(тоже с резервной копией .bak)."
+                                  "\n\nПродолжить?"),
+        "mcbgm_installed": ("✓ Установлено (оригинал сохранён как .bak, CRC "
+                            "каталога отключён): {rel}"),
+        "mcbgm_catalog_failed": ("Бандл установлен, но пропатчить каталог не "
+                                 "удалось: {e}\nИгра будет отклонять этот "
+                                 "бандл, пока его CRC не обнулён в "
+                                 "catalog.json."),
+        "dlg_pick_mc_game": "Выберите папку установки MGS2 Master Collection",
+        "dlg_save_bundle": "Сохранить бандл",
+        "filter_bundle": "Unity AssetBundle (*.bundle);;Все файлы (*)",
+        "dlg_open_vox": "Открыть файл vox.dat",
+        "dlg_open_demos": "Открыть файл demo.dat",
+        "dlg_open_seq": "Открыть банк SDX",
+        "dlg_export_all": "Выберите папку экспорта",
+        "seq_status_loaded": "Загружено: {name} · фрагментов: {n}",
+        "dlg_save_script": "Сохранить скрипт",
+        "dlg_open_script": "Открыть скрипт",
+        "filter_script": "JSON-скрипт (*.json);;Все файлы (*)",
+        "filter_dat": "Архивы MGS2 (*.dat);;Все файлы (*)",
+        "vox_browse": "ОБЗОР…",
+        "vox_open_title": "1 · ОТКРЫТЬ ФАЙЛ VOX.DAT",
+        "vox_no_file": "vox.dat не загружен",
+        "vox_no_blocks": "В этом файле нет аудиоблоков.",
+        "vox_select_hint": "Выберите блок из списка",
+        "vox_listen_title": "2 · ПРОСЛУШАТЬ БЛОК",
+        "vox_rendering": "Декодирование…",
+        "vox_export_title": "3 · ЭКСПОРТ",
+        "vox_export": "ЭКСПОРТ В WAV…",
+        "vox_export_all": "ЭКСПОРТ ВСЕХ БЛОКОВ…",
+        "vox_exporting": "Экспорт… {n}/{total}",
+        "vox_exported_all": "✓ Экспортировано блоков: {n}",
+        "vox_count": "{n} блоков · {duration} звука",
+        "vox_block_info": "Блок #{index} · {sr} Гц моно · {dur:.2f} с",
+        "vox_status_loaded": "Загружено: {name} · блоков: {n}",
+        "vox_hint": ("vox.dat содержит все голоса игры (диалоги, восклицания, "
+                     "шаги…). Каждый блок закодирован в PS-ADPCM на 44100 Гц. "
+                     "Выберите блок для прослушивания или экспортируйте все "
+                     "в WAV."),
+        "vox_list_title": "БЛОКИ VOX",
+        "demos_hint": ("demo.dat содержит звук катсцен и демо. "
+                       "Каждая запись закодирована в MS-ADPCM (стерео). "
+                       "Выберите запись для прослушивания или экспортируйте "
+                       "все в WAV."),
+        "demos_list_title": "ЗАПИСИ ДЕМО",
+        "sdx_open_title": "1 · ОТКРЫТЬ БАНК SDX",
+        "sdx_browse": "ОБЗОР…",
+        "sdx_scan": "СКАНИРОВАТЬ ИГРУ (ВСЕ СТЕЙДЖИ)…",
+        "sdx_stage_found": "Стейджи: {path}",
+        "sdx_no_stage": ("В этой папке не найдено ни одного файла .sdx.\n\n"
+                         "Выберите папку установки MGS2 "
+                         "(ту, что содержит us\\stage)."),
+        "sdx_scanning": "Сканирование банков… {n}/{total}",
+        "sdx_scan_done": "{banks} банков · {sounds} различных звуков",
+        "sdx_group_count": "присутствует в {n} банках",
+        "sdx_replace_all": "ЗАМЕНИТЬ ВО ВСЕХ БАНКАХ…",
+        "sdx_confirm_all_title": "Заменить везде?",
+        "sdx_confirm_all": ("Этот звук встречается в {n} банках.\n\n"
+                            "Все они будут изменены на диске "
+                            "(оригиналы сохраняются как .bak).\n\nПродолжить?"),
+        "sdx_done_all": "✓ Обновлено банков: {n} (созданы копии .bak)",
+        "sdx_done_partial": "⚠ Обновлено банков: {n}, ошибок: {failed} (см. логи)",
+        "dlg_pick_stage": "Выберите папку игры MGS2",
+        "sdx_no_file": "Банк не загружен",
+        "sdx_list_title": "ЗВУКИ В БАНКЕ",
+        "sdx_info_samples": "Звуки",
+        "sdx_info_region": "Аудиообласть",
+        "sdx_count": "{n} звуков · {bytes} байт звука",
+        "sdx_select_hint": "Выберите звук из списка",
+        "sdx_listen_title": "2 · ПРОСЛУШАТЬ ЗВУК",
+        "sdx_export": "ЭКСПОРТ В WAV…",
+        "sdx_replace_title": "3 · ЗАМЕНИТЬ СВОИМ ЗВУКОМ (WAV)",
+        "sdx_hint": ("Длина звука фиксирована: более длинный WAV обрезается, "
+                     "более короткий дополняется тишиной. Конвертируется "
+                     "автоматически (моно, 22050 Гц)."),
+        "sdx_pick_wav": "ВЫБРАТЬ WAV…",
+        "sdx_no_wav": "WAV не выбран",
+        "sdx_gen_title": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ БАНК",
+        "sdx_generate": "ЗАМЕНИТЬ ЗВУК И СОХРАНИТЬ…",
+        "sdx_result": "✓ Банк создан — тот же размер ({size} байт)",
+        "dlg_open_sdx": "Открыть банк SDX",
+        "dlg_save_sdx": "Сохранить изменённый банк",
+        "filter_sdx": "Банки SDX (*.sdx);;Все файлы (*)",
+        "sdx_status_loaded": "Загружено: {name} · звуков: {n}",
+        "sdx_status_sample": "Звук #{i} · {dur:.2f} с · {size} байт",
+        "sdx_status_done": "Готово: {name}",
+        "sdx_warn_empty": "В этом банке нет пригодных звуков.",
+        "lib_pick_voice": "ПАПКА ГОЛОСОВ…",
+        "lib_pick_db": "ПАПКА БАЗЫ ДАННЫХ…",
+        "lib_no_voice": "Папка голосов не выбрана",
+        "lib_no_db": "База данных не задана",
+        "lib_search": "Поиск…",
+        "lib_filter_all": "Все",
+        "filter_all_tags": "Все метки",
+        "lib_filter_todo": "К работе",
+        "lib_filter_done": "Готово",
+        "lib_scan": "СКАНИРОВАТЬ ПАПКУ",
+        "lib_scanning": "Сканирование… {n}/{total}",
+        "lib_count": "{total} файлов · {done} готово · {todo} к работе",
+        "lib_done": "Озвучено",
+        "lib_tag": "Метка",
+        "lib_tag_hint": "Солдат, Кодек… (произвольный текст)",
+        "lib_speaker": "Говорящий",
+        "lib_notes": "Заметки / реплика",
+        "lib_save_entry": "СОХРАНИТЬ ЗАПИСЬ",
+        "lib_saved": "Запись сохранена: {name}",
+        "lib_select_hint": "Выберите файл из списка",
+        "dlg_pick_voice": "Выберите папку голосов",
+        "dlg_pick_db": "Выберите папку базы данных меток",
+
+        "step1_title": "1 · ОТКРЫТЬ ФАЙЛ SDT",
+        "step1_title_vox": "1 · ОТКРЫТЬ ФАЙЛ VOX.DAT",
+        "browse": "ОБЗОР…",
+        "no_file": "Файл не загружен",
+
+        "info_file": "Файл",
+        "info_size": "Размер",
+        "info_rate": "Частота дискретизации",
+        "info_blocks": "Аудиоблоки",
+        "info_duration": "Длительность",
+        "unit_bytes": "байт",
+        "unit_mono": "моно",
+        "unit_stereo": "стерео",
+        "unit_seconds": "с",
+
+        "step2_title": "2 · ПРОСЛУШАТЬ ОРИГИНАЛЬНЫЙ ДИАЛОГ",
+        "export_wav": "ЭКСПОРТ В WAV…",
+
+        "step3_title": "3 · ВЫБЕРИТЕ СВОЮ ОЗВУЧКУ (WAV)",
+        "step3_hint": ("Запишите свой голос, по возможности той же длины, что "
+                       "и оригинал. WAV конвертируется автоматически "
+                       "(44100 Гц) под файл."),
+        "wav_target_stereo_note": "ваш голос будет помещён на оба канала",
+        "pick_wav": "ВЫБРАТЬ WAV…",
+        "no_wav": "WAV не выбран",
+        "wav_duration": "Длина",
+        "wav_original": "оригинал",
+        "wav_same": "идентично",
+        "wav_longer": "длиннее",
+        "wav_shorter": "короче",
+        "wav_will_trim": "будет обрезано",
+        "wav_will_pad": "будет дополнено тишиной",
+        "wav_source": "Источник",
+        "wav_converted": "конвертировано в",
+        "wav_mono": "моно",
+
+        "step4_title": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ SDT",
+        "step4_title_vox": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ VOX.DAT",
+        "generate": "ЗАМЕНИТЬ ЗВУК И СОХРАНИТЬ…",
+        "result_ok": "✓ Файл создан",
+        "result_detail": ("Тот же размер, что и оригинал ({size} байт) — "
+                          "готов к возврату в игру."),
+
+        "dlg_open_sdt": "Открыть файл SDT",
+        "dlg_export_wav": "Экспорт в WAV",
+        "dlg_pick_wav": "Выберите WAV с озвучкой",
+        "dlg_save_sdt": "Сохранить изменённый SDT",
+        "dlg_save_vox": "Сохранить изменённый vox.dat",
+        "filter_sdt": "Файлы SDT (*.sdt);;Все файлы (*)",
+        "filter_wav": "Файлы WAV (*.wav);;Все файлы (*)",
+
+        "status_ready": "Готово · Откройте игровой файл .sdt, чтобы начать",
+        "status_loaded": "Загружено: {name} · {dur:.1f} с · блоков: {blocks}",
+        "status_exported": "Экспортировано: {name} (сэмплов: {n})",
+        "status_dub_ready": "Озвучка готова: {name}",
+        "status_encoding": "Кодирование PS-ADPCM…",
+        "status_done": "Готово: {name}",
+        "status_gen_failed": "Сбой создания",
+
+        "err_title": "Ошибка",
+        "err_read": "Не удаётся прочитать файл:\n{e}",
+        "warn_no_audio": "В этом файле нет звука для редактирования (0 блоков).",
+        "warn_unsupported": "Неподдерживаемый кодек (не PS-ADPCM) — этот файл нельзя редактировать.",
+        "err_wav_read": "Нечитаемый WAV:\n{e}",
+        "err_generate": "Не удаётся создать:\n{e}",
+        "ok_export_title": "Экспорт выполнен",
+        "ok_export_body": "WAV сохранён:\n{path}",
+        "ok_dub_title": "Озвучка завершена",
+        "ok_dub_body": ("Изменённый файл SDT сохранён:\n{path}\n\n"
+                        "Замените им оригинальный файл игры "
+                        "(не забудьте сделать резервную копию оригинала)."),
+    },
 }
 
-LANGUAGE_ORDER = ["fr", "en", "es"]
+LANGUAGE_ORDER = ["fr", "en", "es", "ru"]
 
 
 def tr(lang: str, key: str, **kwargs) -> str:
