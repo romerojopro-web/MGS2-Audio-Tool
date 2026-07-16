@@ -91,6 +91,40 @@ Pistes restantes, par ordre de rendement :
   pourrait embarquer les séquences ;
 - désassembler la routine de l'EXE qui consomme `host0:./sound/mdx1/`.
 
+### Découverte du format audio natif : Konami XWMA (`AMWX` = WMA v2)
+
+Piste apportée par l'utilisateur (repo `RockeyLol/RIFF-XWMA-Konami-XWMA-Converter`)
+puis **confirmée par scan de l'installation** (2026-07-13) : le format audio
+d'origine de MGS2 MC (voix, cutscenes, films) est le **Konami XWMA**, signature
+**`AMWX`** (« XWMA » à l'envers), qui encapsule du **WMA v2** (`wFormatTag`
+`0x0161`, 48 kHz, stéréo 16 bits). Répartition des `.sdt` d'origine
+(scan complet) : `us/vox/` **3530** (voix) · `us/demo/` 120 · `us/movie/` 94 ·
+`us/demo2/` 13 · `us/movievr/` 5 (cutscenes/films). Uniquement de la voix et
+des cutscenes — aucun dossier « musique » séparé.
+
+Tous trouvés en `.vortex_backup` : ce sont les **fichiers d'origine** que le
+**Better Audio Mod** (installé chez l'utilisateur via Vortex) a remplacés par du
+PS-ADPCM. **C'est pour ça que notre outil lit les `.sdt` de cette install** : il
+décode la variante PS-ADPCM du mod, PAS le XWMA d'origine. Un `.sdt` MC vierge
+(`LCGB…` / `AMWX`) n'est aujourd'hui pas décodable par l'outil.
+
+Structure du conteneur `AMWX` (d'après les fichiers réels) : en-tête Konami
+propre + un `WAVEFORMATEX` standard **dupliqué** (les « combined header with
+duplicated parameters » du repo), alignement par blocs de 16 o, table de seek
+`dpds` embarquée. Le convertisseur du repo produit un `.xwma` RIFF standard
+(régénère la table `dpds`), ensuite décodable par ffmpeg/xWMA.
+
+**Ce que ça règle / ne règle pas** :
+- ✅ explique le **format natif** de tout l'audio voix+cutscene de MC, et
+  pourquoi l'outil dépend du Better Audio Mod ;
+- ✅ ouvre une évolution possible : **lire le XWMA d'origine** (pour les
+  utilisateurs sans le mod) ;
+- ❌ ne localise **toujours pas la musique orchestrale interactive** in-game
+  (infiltration→alerte→évasion) : aucun dossier XWMA « musique » séparé — la
+  musique des cutscenes est *mixée* dans les flux `demo`, pas isolable. Le
+  mystère du `mdx1`/musique de gameplay reste entier. **ProcMon en partie**
+  reste le test décisif.
+
 ---
 
 Toute la section historique ci-dessous (hypothèse `mdx`, structure `sng_data`,
