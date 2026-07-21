@@ -72,12 +72,13 @@ Master Collection, amber for Substance.
 > (the Musique · BGM tab, via Unity bundles) and for dialogue — not yet for
 > Substance's streamed `bgm.dat` music.
 
-> **The `.sdt` files come from the Better Audio Mod.** That mod restores the PS3
-> HD Collection audio in PS-ADPCM, which is what this tool decodes. The stock
-> Steam `.sdt` files use **Konami XWMA** (`AMWX` container wrapping WMA v2)
-> instead; today the tool detects them and says so rather than playing noise.
-> Decoding/re-encoding that stock format (via ffmpeg) is in development — see
-> `docs/ORCHESTRATION.md` and the acknowledgements below.
+> **Two `.sdt` audio formats are supported.** The Better Audio Mod ships
+> PS-ADPCM (PS3 HD Collection audio) — decoded in pure Python. The **stock**
+> Steam `.sdt` files use **Konami XWMA** (a multiplexed container with an
+> `AMWX`/WMA v2 stream) — the SDT tab now de-interleaves and decodes those too,
+> via **ffmpeg** (see Requirements). So the tool works whether or not you have
+> the Better Audio Mod installed. Replacing stock XWMA audio (re-encoding) is
+> not wired up yet — export works, replacement is PS-ADPCM-only for now.
 
 ---
 
@@ -87,6 +88,10 @@ Master Collection, amber for Substance.
 - **PyQt6** — `pip install PyQt6` (only needed for the graphical interface)
 - **UnityPy** — `pip install UnityPy` (optional; only needed by the Master
   Collection **Musique · BGM** tab, which reads/rebuilds Unity AssetBundles)
+- **ffmpeg** — optional; only needed to decode **stock** (un-modded) `.sdt`
+  audio, which is Konami XWMA/WMA. Install it (e.g. `winget install ffmpeg`)
+  and put it on your PATH, or point the SDT tab at your `ffmpeg.exe`. Not
+  needed for Better Audio Mod (PS-ADPCM) files.
 - **[MGS2MC Better Audio Mod](https://www.nexusmods.com/metalgearsolid2mc)** for
   the `.sdt` dialogue files
 - A legal copy of the game. Use only files from your own installation.
@@ -261,6 +266,7 @@ while iterating on one area. Cheaper on the CPU, and faster to read.
 | `.sdx` format (sound banks)                | `pytest tests/test_sdx.py`   |
 | `bgm.dat` / `movie.dat` / `demo.dat`       | `pytest tests/test_bgm.py`   |
 | MC music bundles (`formats/mcbgm.py`)      | `pytest tests/test_mcbgm.py` |
+| Stock XWMA `.sdt` (`formats/xwma.py`)       | `pytest tests/test_xwma.py`  |
 | The sequencer / `render.py` (SPU, reverb)  | `pytest tests/test_sequence.py` |
 | Tagging databases (`library/db.py`)        | `pytest tests/test_library.py` |
 | The app shell (`ui/app.py`, `db_folder`)   | `pytest tests/test_app.py`   |

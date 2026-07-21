@@ -21,7 +21,9 @@ from PyQt6.QtWidgets import (
     QSplitter, QVBoxLayout, QWidget,
 )
 
+from .. import ffmpeg as ffmpeg_bridge
 from ..formats import sdt as core
+from ..formats import xwma as xwma_fmt
 from ..library import db as lib
 from .config import save_config
 from .widgets import PlayOnSpaceList, PlaybackMixin, PopupLineEdit
@@ -262,6 +264,12 @@ class SDTPage(PlaybackMixin, QWidget):
         self.btn_export = QPushButton(); self.btn_export.setEnabled(False)
         self.btn_export.clicked.connect(self.export_wav)
         lay.addWidget(self.btn_export)
+
+        # Shown only when a stock XWMA file is open but ffmpeg can't be found.
+        self.btn_locate_ffmpeg = QPushButton(); self.btn_locate_ffmpeg.setObjectName("small")
+        self.btn_locate_ffmpeg.clicked.connect(self.locate_ffmpeg)
+        self.btn_locate_ffmpeg.setVisible(False)
+        lay.addWidget(self.btn_locate_ffmpeg)
         return card
 
     def _build_step3(self):
@@ -337,6 +345,7 @@ class SDTPage(PlaybackMixin, QWidget):
 
         self.lbl_step2.setText(self._t("step2_title"))
         self.btn_export.setText(self._t("export_wav"))
+        self.btn_locate_ffmpeg.setText(self._t("xwma_locate_ffmpeg"))
 
         self.lbl_step3.setText(self._t("step3_title"))
         self.lbl_step3_hint.setText(self._t("step3_hint"))
@@ -443,17 +452,40 @@ class SDTPage(PlaybackMixin, QWidget):
             self.btn_export.setEnabled(False)
             self.btn_pick_wav.setEnabled(False)
             self.btn_generate.setEnabled(False)
+            self.btn_locate_ffmpeg.setVisible(False)
             self.preview_wav = ""
             self.win.status.showMessage(msg)
             self._cache_current_into_library(path)
             return True
 
-        self._prepare_preview()
+        # Stock XWMA files decode through ffmpeg. When it isn't available,
+        # guide the user instead of failing silently.
+        if self.sdt.is_xwma and not ffmpeg_bridge.available(self._ffmpeg_path()):
+            msg = self._t("xwma_need_ffmpeg")
+            self.lbl_result.setText(msg)
+            self.btn_play.setEnabled(False)
+            self.slider.setEnabled(False)
+            self.btn_export.setEnabled(False)
+            self.btn_pick_wav.setEnabled(False)
+            self.btn_generate.setEnabled(False)
+            self.btn_locate_ffmpeg.setVisible(True)
+            self.preview_wav = ""
+            self.win.status.showMessage(msg)
+            self._cache_current_into_library(path)
+            return True
+
+        self.btn_locate_ffmpeg.setVisible(False)
+        try:
+            self._prepare_preview()
+        except Exception as e:
+            QMessageBox.critical(self, self._t("err_title"), self._t("err_read", e=e))
+            return True
 
         self.btn_play.setEnabled(True)
         self.slider.setEnabled(True)
         self.btn_export.setEnabled(True)
-        self.btn_pick_wav.setEnabled(True)
+        # Replacing stock XWMA (re-encode) isn't wired up yet — export only.
+        self.btn_pick_wav.setEnabled(not self.sdt.is_xwma)
 
         self.win.status.showMessage(self._t(
             "status_loaded", name=os.path.basename(path),
@@ -735,6 +767,27 @@ class SDTPage(PlaybackMixin, QWidget):
             lib.save_library(self.db_folder, self.library)
         self._refresh_list()
 
+    # ── Stock XWMA (ffmpeg) ──────────────────────────────────────────────────
+
+    def _ffmpeg_path(self):
+        return self.win.cfg.get("ffmpeg_path", "")
+
+    def _decode_xwma_to_wav(self, out_path):
+        """De-interleave the .sdt, convert AMWX→RIFF xWMA, decode via ffmpeg."""
+        riff = xwma_fmt.sdt_to_riff_xwma(self.sdt.raw)
+        ffmpeg_bridge.decode_to_wav(riff, out_path, ffmpeg_path=self._ffmpeg_path())
+
+    def locate_ffmpeg(self):
+        start = self._ffmpeg_path() or os.path.expanduser("~")
+        path, _ = QFileDialog.getOpenFileName(
+            self, self._t("xwma_pick_ffmpeg"), start, self._t("filter_ffmpeg"))
+        if not path:
+            return
+        self.win.cfg["ffmpeg_path"] = path
+        save_config(self.win.cfg)
+        if self.sdt_path:
+            self._load_sdt_path(self.sdt_path)   # retry now that ffmpeg is set
+
     def _prepare_preview(self):
         # Release and delete the previous temporary file
         old = self.preview_wav
@@ -747,11 +800,15 @@ class SDTPage(PlaybackMixin, QWidget):
                 pass  # on Windows the file may stay locked for a moment
 
         # Create the preview WAV in a properly closed file
-        samples = core.sdt_to_pcm(self.sdt)
         fd, path = tempfile.mkstemp(suffix=".wav")
         os.close(fd)  # important: close the handle before Qt reads the file
         try:
-            core.save_wav(samples, path, self.sdt.sample_rate, channels=self.sdt.channels)
+            if self.sdt.is_xwma:
+                self._decode_xwma_to_wav(path)
+            else:
+                samples = core.sdt_to_pcm(self.sdt)
+                core.save_wav(samples, path, self.sdt.sample_rate,
+                              channels=self.sdt.channels)
         except Exception:
             try:
                 os.unlink(path)
@@ -791,7 +848,11 @@ class SDTPage(PlaybackMixin, QWidget):
         if not path:
             return
         try:
-            n = core.sdt_to_wav(self.sdt, path)
+            if self.sdt.is_xwma:
+                self._decode_xwma_to_wav(path)
+                n = 0
+            else:
+                n = core.sdt_to_wav(self.sdt, path)
         except Exception as e:
             QMessageBox.critical(self, self._t("err_title"), str(e))
             return

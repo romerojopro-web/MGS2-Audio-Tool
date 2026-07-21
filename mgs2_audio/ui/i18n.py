@@ -298,6 +298,13 @@ TRANSLATIONS = {
         "err_read": "Lecture impossible :\n{e}",
         "warn_no_audio": "Ce fichier ne contient pas d'audio à éditer (0 bloc).",
         "warn_unsupported": "Codec non pris en charge (pas du PS-ADPCM) — ce fichier ne peut pas être édité.",
+        "xwma_need_ffmpeg": ("Audio d\'origine Konami XWMA (WMA). Le décodage "
+                             "nécessite ffmpeg, introuvable. Installez-le "
+                             "(ex. : winget install ffmpeg) puis relancez, ou "
+                             "indiquez le ffmpeg.exe ci-dessous."),
+        "xwma_locate_ffmpeg": "LOCALISER FFMPEG.EXE…",
+        "xwma_pick_ffmpeg": "Sélectionner ffmpeg.exe",
+        "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;Tous les fichiers (*)",
         "err_wav_read": "WAV illisible :\n{e}",
         "err_generate": "Génération impossible :\n{e}",
         "ok_export_title": "Export réussi",
@@ -593,6 +600,13 @@ TRANSLATIONS = {
         "err_read": "Cannot read file:\n{e}",
         "warn_no_audio": "This file has no audio to edit (0 blocks).",
         "warn_unsupported": "Unsupported codec (not PS-ADPCM) — this file can't be edited.",
+        "xwma_need_ffmpeg": ("Stock Konami XWMA (WMA) audio. Decoding needs "
+                             "ffmpeg, which wasn't found. Install it "
+                             "(e.g. winget install ffmpeg) and reopen, or "
+                             "point to your ffmpeg.exe below."),
+        "xwma_locate_ffmpeg": "LOCATE FFMPEG.EXE…",
+        "xwma_pick_ffmpeg": "Select ffmpeg.exe",
+        "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;All files (*)",
         "err_wav_read": "Unreadable WAV:\n{e}",
         "err_generate": "Cannot generate:\n{e}",
         "ok_export_title": "Export successful",
@@ -889,6 +903,13 @@ TRANSLATIONS = {
         "err_read": "No se puede leer el archivo:\n{e}",
         "warn_no_audio": "Este archivo no tiene audio para editar (0 bloques).",
         "warn_unsupported": "Códec no compatible (no es PS-ADPCM) — este archivo no se puede editar.",
+        "xwma_need_ffmpeg": ("Audio original Konami XWMA (WMA). La "
+                             "decodificación necesita ffmpeg, no encontrado. "
+                             "Instálalo (p. ej. winget install ffmpeg) y vuelve "
+                             "a abrir, o indica tu ffmpeg.exe abajo."),
+        "xwma_locate_ffmpeg": "LOCALIZAR FFMPEG.EXE…",
+        "xwma_pick_ffmpeg": "Seleccionar ffmpeg.exe",
+        "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;Todos los archivos (*)",
         "err_wav_read": "WAV ilegible:\n{e}",
         "err_generate": "No se puede generar:\n{e}",
         "ok_export_title": "Exportación exitosa",
@@ -1184,6 +1205,13 @@ TRANSLATIONS = {
         "err_read": "Не удаётся прочитать файл:\n{e}",
         "warn_no_audio": "В этом файле нет звука для редактирования (0 блоков).",
         "warn_unsupported": "Неподдерживаемый кодек (не PS-ADPCM) — этот файл нельзя редактировать.",
+        "xwma_need_ffmpeg": ("Оригинальный звук Konami XWMA (WMA). Для "
+                             "декодирования нужен ffmpeg, но он не найден. "
+                             "Установите его (напр. winget install ffmpeg) и "
+                             "откройте заново, либо укажите ffmpeg.exe ниже."),
+        "xwma_locate_ffmpeg": "УКАЗАТЬ FFMPEG.EXE…",
+        "xwma_pick_ffmpeg": "Выберите ffmpeg.exe",
+        "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;Все файлы (*)",
         "err_wav_read": "Нечитаемый WAV:\n{e}",
         "err_generate": "Не удаётся создать:\n{e}",
         "ok_export_title": "Экспорт выполнен",

@@ -2,9 +2,10 @@
 """
 sdt.py — The `.sdt` audio files of Metal Gear Solid 2 (Master Collection, PC).
 
-`.sdt` files hold dialogue, music and some sound effects. They are what the
-Better Audio Mod ships; the stock Steam files use a different codec (see
-`looks_like_psadpcm`).
+`.sdt` files hold dialogue, music and some sound effects. The Better Audio Mod
+ships them as PS-ADPCM (decoded here); the stock Steam files are Konami XWMA
+(a multiplexed container, decoded via `formats/xwma.py` + ffmpeg). `parse_sdt`
+detects which and sets `SDTFile.codec`.
 
 Layout
 ------
@@ -71,15 +72,28 @@ class SDTFile:
     channels: int = 1
     blocks: List[AudioBlock] = field(default_factory=list)
     is_psadpcm: bool = True   # False if the audio is not PS-ADPCM (unsupported)
+    # Codec of the file: "psadpcm" (Better Audio Mod) or "xwma" (stock Konami
+    # XWMA — decoded via ffmpeg, see formats/xwma.py + ffmpeg.py).
+    codec: str = "psadpcm"
 
     @property
     def has_audio(self) -> bool:
-        """True if the file actually contains PS-ADPCM audio blocks."""
-        return len(self.blocks) > 0
+        """True if the file actually contains audio (PS-ADPCM blocks or XWMA)."""
+        return len(self.blocks) > 0 or self.codec == "xwma"
+
+    @property
+    def is_xwma(self) -> bool:
+        return self.codec == "xwma"
 
     @property
     def supported(self) -> bool:
-        """True if this file can be decoded/replaced by the tool."""
+        """True if this file can be decoded by the tool.
+
+        PS-ADPCM is decoded in pure Python; stock XWMA needs ffmpeg (the UI
+        checks availability and guides the user to install it).
+        """
+        if self.codec == "xwma":
+            return True
         return self.has_audio and self.is_psadpcm
 
     @property
@@ -328,6 +342,20 @@ def parse_sdt(path: str) -> SDTFile:
         raw = f.read()
 
     sdt = SDTFile(path=path, raw=raw)
+
+    # Stock (un-modded) files are a multiplexed container carrying Konami XWMA
+    # instead of PS-ADPCM blocks — detected by the AMWX magic. These decode via
+    # ffmpeg (formats/xwma.py); the block scan below does not apply to them.
+    from . import xwma as _xwma
+    if _xwma.is_xwma_sdt(raw):
+        try:
+            clip = _xwma.parse_amwx(_xwma.find_amwx_stream(raw))
+            sdt.codec = "xwma"
+            sdt.sample_rate = clip.sample_rate
+            sdt.channels = clip.channels
+            return sdt
+        except Exception:
+            pass   # fall through and try the PS-ADPCM path
 
     # Sample rate + channel count (robust to header-shifted variants). The
     # channel count may come back None when the header does not expose it.

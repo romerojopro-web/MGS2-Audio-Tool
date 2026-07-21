@@ -7,13 +7,22 @@ The UI is now available in **Russian** (Русский) alongside French, Englis
 Spanish — a full fourth translation of all 236 strings, selectable from the
 language dropdown.
 
-### Added — stock audio format identified as Konami XWMA (support in progress)
-The stock (un-modded) MGS2 MC `.sdt` audio is **Konami XWMA** (`AMWX` container
-wrapping WMA v2), not PS-ADPCM — so the tool currently only reads files
-converted by the Better Audio Mod. Decode/re-encode of the stock format (via
-ffmpeg) is being added so the tool works without that mod. Credit to
-**RockeyLol/RIFF-XWMA-Konami-XWMA-Converter** for documenting the format
-(see the README acknowledgements).
+### Added — stock (un-modded) `.sdt` audio now decodes: Konami XWMA via ffmpeg
+The stock MGS2 MC `.sdt` audio is **Konami XWMA**, not PS-ADPCM — a multiplexed
+container whose `AMWX`/WMA v2 stream is interleaved with other streams. The SDT
+tab now **de-interleaves and decodes it** (listen + export to WAV), so the tool
+works whether or not the Better Audio Mod is installed:
+- New `formats/xwma.py` (container de-interleaving + AMWX→standard RIFF xWMA)
+  and `ffmpeg.py` (optional external-binary bridge — the first in the project;
+  found via PATH or a path you set in the SDT tab).
+- The SDT tab auto-detects the codec and routes stock files through ffmpeg;
+  when ffmpeg is missing it explains how to install it and offers a
+  "Locate ffmpeg.exe…" button.
+- The de-interleaving and AMWX→RIFF conversion are adapted, with thanks, from
+  **RockeyLol/RIFF-XWMA-Konami-XWMA-Converter** (MIT) — see the README
+  acknowledgements. Confirmed decoding real voice/cutscene files end to end.
+- **Replacing** stock XWMA (re-encoding) is not implemented yet; export works,
+  replacement remains PS-ADPCM-only.
 
 ### Corrected — the Unity music bundles drive the LAUNCHER, not gameplay
 A second in-game test (replace INFILTRATION, then actually play a mission)
