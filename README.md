@@ -97,7 +97,10 @@ Master Collection, amber for Substance.
 - A legal copy of the game. Use only files from your own installation.
 
 The engine underneath (`mgs2_audio.codec`, `mgs2_audio.formats`) is pure Python
-with **no dependencies at all** — the command line works without PyQt6.
+with **no third-party Python packages** — the command line works without PyQt6.
+Two features reach outside that core when you use them: the BGM tab needs the
+`UnityPy` package, and decoding stock XWMA audio shells out to the `ffmpeg`
+binary. Both are optional; everything else is stdlib-only.
 
 ## Install and run
 

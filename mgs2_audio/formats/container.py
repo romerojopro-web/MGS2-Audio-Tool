@@ -20,7 +20,6 @@ Pure Python, no dependencies.
 
 import os
 from dataclasses import dataclass
-from enum import Enum, auto
 from typing import Any, Callable, Dict, List, Optional
 
 from .detect import Format, detect_path
@@ -52,9 +51,9 @@ class RavenContainer:
     @classmethod
     def from_path(cls, path: str) -> "RavenContainer":
         """Auto-detect and parse the file at *path*."""
-        from .bgm import BGMFile, parse_bgm
-        from .sdt import SDTFile, parse_sdt
-        from .sdx import SDXFile, parse_sdx
+        from .bgm import parse_bgm
+        from .sdt import parse_sdt
+        from .sdx import parse_sdx
 
         fmt = detect_path(path)
         if fmt is None:

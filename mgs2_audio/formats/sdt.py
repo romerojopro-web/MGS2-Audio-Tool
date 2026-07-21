@@ -29,12 +29,9 @@ import math
 import os
 import struct
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from ..codec.psadpcm import (
-    FRAME_SIZE, SAMPLES_PER_FRAME, VAG_COEFS,
-    decode_psadpcm, encode_psadpcm,
-)
+from ..codec.psadpcm import decode_psadpcm, encode_psadpcm
 from ..codec.wav import DEFAULT_SAMPLE_RATE, load_wav_mono, save_wav
 
 
@@ -75,6 +72,9 @@ class SDTFile:
     # Codec of the file: "psadpcm" (Better Audio Mod) or "xwma" (stock Konami
     # XWMA — decoded via ffmpeg, see formats/xwma.py + ffmpeg.py).
     codec: str = "psadpcm"
+    # For XWMA files, the de-interleaved AMWX stream, cached at parse time so the
+    # multiplexed container is only walked once (not again at decode).
+    amwx_stream: Optional[bytes] = None
 
     @property
     def has_audio(self) -> bool:
@@ -354,15 +354,18 @@ def parse_sdt(path: str) -> SDTFile:
     # ffmpeg (formats/xwma.py); the block scan below does not apply to them.
     from . import xwma as _xwma
     if _xwma.is_xwma_sdt(raw):
-        try:
-            clip = _xwma.parse_amwx(_xwma.find_amwx_stream(raw))
-            sdt.codec = "xwma"
-            sdt.sample_rate = clip.sample_rate
-            sdt.channels = clip.channels
-            sdt.xwma_length = clip.duration_seconds
-            return sdt
-        except Exception:
-            pass   # fall through and try the PS-ADPCM path
+        amwx = _xwma.find_amwx_stream(raw)
+        if amwx is not None:
+            try:
+                clip = _xwma.parse_amwx(amwx)
+                sdt.codec = "xwma"
+                sdt.sample_rate = clip.sample_rate
+                sdt.channels = clip.channels
+                sdt.xwma_length = clip.duration_seconds
+                sdt.amwx_stream = amwx
+                return sdt
+            except Exception:
+                pass   # fall through and try the PS-ADPCM path
 
     # Sample rate + channel count (robust to header-shifted variants). The
     # channel count may come back None when the header does not expose it.

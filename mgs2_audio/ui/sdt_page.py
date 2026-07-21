@@ -792,8 +792,15 @@ class SDTPage(PlaybackMixin, QWidget):
         return self.win.cfg.get("ffmpeg_path", "")
 
     def _decode_xwma_to_wav(self, out_path):
-        """De-interleave the .sdt, convert AMWX→RIFF xWMA, decode via ffmpeg."""
-        riff = xwma_fmt.sdt_to_riff_xwma(self.sdt.raw)
+        """Convert the AMWX stream to RIFF xWMA, decode via ffmpeg.
+
+        Reuses the AMWX stream cached by parse_sdt (single de-interleave).
+        """
+        amwx = self.sdt.amwx_stream
+        if amwx is not None:
+            riff = xwma_fmt.to_riff_xwma(xwma_fmt.parse_amwx(amwx))
+        else:
+            riff = xwma_fmt.sdt_to_riff_xwma(self.sdt.raw)
         ffmpeg_bridge.decode_to_wav(riff, out_path, ffmpeg_path=self._ffmpeg_path())
 
     def locate_ffmpeg(self):

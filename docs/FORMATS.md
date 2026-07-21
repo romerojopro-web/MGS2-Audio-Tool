@@ -64,8 +64,10 @@ A cheap and reliable check: in valid PS-ADPCM, the filter nibble is always 0–4
 and the flag byte is small (≤ 7). Sample a few thousand frames and count the
 violations. Real PS-ADPCM scores ~0 %. Files using another codec score high — one
 tested file (`t10a1d.sdt`, from stock Steam data) scored **73 %**, and turned out
-to be WMA-family audio wrapped in a Konami container. Those files cannot be
-decoded by a PS-ADPCM decoder and should be reported, not played.
+to be **Konami XWMA** (`AMWX`, WMA v2 wrapped in a multiplexed container). Those
+files aren't PS-ADPCM, so the PS-ADPCM path reports them rather than playing
+noise — but they are now decoded via a separate path (see §XWMA below and
+`formats/xwma.py`).
 
 ---
 
@@ -659,9 +661,11 @@ is still needed. Excluded from the UI for now.
   zero. Their meaning is unknown.
 - **The cue table's `kind` byte** and its two flags.
 - **The bank table of §3**, whose record types beyond the pointer are opaque.
-- **The non-PS-ADPCM `.sdt` files.** Structurally mapped, codec not decoded. The
-  most promising route is Microsoft's `xWMAEncode.exe`, since ffmpeg rejects the
-  padded bitstream.
+- ~~**The non-PS-ADPCM `.sdt` files.**~~ **RESOLVED** — they are Konami XWMA
+  (`AMWX`, WMA v2) inside a multiplexed container. De-interleave the audio
+  stream, strip the 16-byte packet padding, rewrap as standard RIFF xWMA, and
+  ffmpeg decodes it cleanly. See `formats/xwma.py` (adapted from RockeyLol's
+  MIT converter) and `ffmpeg.py`. Re-encoding (replacement) is still open.
 - **The `.sdx` sample rate for effects.** Confirmed by ear at 22050 Hz, not read
   from the file. It may vary per bank.
 - **Where cutscene music lives.** It appears to be mixed into the dialogue audio

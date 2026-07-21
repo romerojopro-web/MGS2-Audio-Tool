@@ -14,7 +14,6 @@ Pure Python, no dependencies beyond stdlib.
 
 import importlib
 import logging
-import os
 import pkgutil
 from typing import Dict, List, Optional
 

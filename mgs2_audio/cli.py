@@ -23,7 +23,7 @@ from typing import Optional
 
 from .codec.wav import save_wav
 from .formats import sdt, sdx, bgm
-from .formats.detect import detect_path, open_file, Format
+from .formats.detect import detect_path, Format
 
 # ── Game plugin discovery ────────────────────────────────────────────────────
 from . import games  # noqa: F401  (side-effect: registers plugins)
