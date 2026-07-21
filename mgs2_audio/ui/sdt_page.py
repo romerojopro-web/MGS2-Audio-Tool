@@ -146,6 +146,15 @@ class SDTPage(PlaybackMixin, QWidget):
         self.combo_tag.currentIndexChanged.connect(self._refresh_list)
         lay.addWidget(self.combo_tag)
 
+        # On a Better-Audio-modded install every line appears twice (the mod's
+        # PS-ADPCM .sdt and the stock .sdt.vortex_backup). Let the user hide the
+        # stock originals to work on just the mod's PS-ADPCM files.
+        self.chk_show_backups = QCheckBox()
+        self.chk_show_backups.setChecked(
+            self.win.cfg.get("sdt_show_backups", True))
+        self.chk_show_backups.stateChanged.connect(self._on_show_backups)
+        lay.addWidget(self.chk_show_backups)
+
         # File list
         self.list_files = PlayOnSpaceList(self.toggle_play)
         self.list_files.currentItemChanged.connect(self._on_lib_selected)
@@ -328,6 +337,7 @@ class SDTPage(PlaybackMixin, QWidget):
         self.edit_search.setPlaceholderText(self._t("lib_search"))
         for i, key in enumerate(("lib_filter_all", "lib_filter_todo", "lib_filter_done")):
             self.combo_filter.setItemText(i, self._t(key))
+        self.chk_show_backups.setText(self._t("lib_show_backups"))
         self._refresh_tag_filter()
         self.btn_lib_scan.setText(self._t("lib_scan"))
         self.chk_done.setText(self._t("lib_done"))
@@ -559,7 +569,16 @@ class SDTPage(PlaybackMixin, QWidget):
         tagtxt = f"  [{tag}]" if tag else ""
         return f"{marker} {name}   {chtxt} {durtxt}{tagtxt}"
 
+    def _on_show_backups(self):
+        self.win.cfg["sdt_show_backups"] = self.chk_show_backups.isChecked()
+        save_config(self.win.cfg)
+        self._refresh_list()
+
     def _passes_filter(self, name) -> bool:
+        # Stock originals (.vortex_backup) hidden when the box is unchecked.
+        if (name.lower().endswith(".vortex_backup")
+                and not self.chk_show_backups.isChecked()):
+            return False
         entry = lib.get_entry(self.library, name)
         # search text
         q = self.edit_search.text().strip().lower()
