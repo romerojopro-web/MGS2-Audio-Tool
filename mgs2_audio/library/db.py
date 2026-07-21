@@ -230,10 +230,16 @@ def counts(data: dict, filenames: List[str], defaults: dict = None) -> Dict[str,
 # ─────────────────────────────────────────────────────────────────────────────
 
 def list_sdt_files(voice_folder: str) -> List[str]:
-    """Return the sorted list of .sdt filenames in voice_folder (non-recursive)."""
+    """Return the sorted list of .sdt filenames in voice_folder (non-recursive).
+
+    Also lists ``.sdt.vortex_backup`` files: on an install modded through
+    Vortex (e.g. the Better Audio Mod), those are the untouched **stock**
+    originals — the Konami XWMA audio the tool can now decode.
+    """
     try:
         names = [n for n in os.listdir(voice_folder)
-                 if n.lower().endswith(".sdt")
+                 if (n.lower().endswith(".sdt")
+                     or n.lower().endswith(".sdt.vortex_backup"))
                  and os.path.isfile(os.path.join(voice_folder, n))]
     except Exception:
         return []

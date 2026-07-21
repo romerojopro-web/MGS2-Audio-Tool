@@ -283,7 +283,7 @@ TRANSLATIONS = {
         "dlg_pick_wav": "Choisir votre doublage WAV",
         "dlg_save_sdt": "Sauvegarder le SDT modifié",
         "dlg_save_vox": "Sauvegarder le vox.dat modifié",
-        "filter_sdt": "Fichiers SDT (*.sdt);;Tous les fichiers (*)",
+        "filter_sdt": "Fichiers SDT (*.sdt *.sdt.vortex_backup);;Tous les fichiers (*)",
         "filter_wav": "Fichiers WAV (*.wav);;Tous les fichiers (*)",
 
         "status_ready": "Prêt · Ouvrez un fichier .sdt du jeu pour commencer",
@@ -585,7 +585,7 @@ TRANSLATIONS = {
         "dlg_pick_wav": "Choose your dub WAV",
         "dlg_save_sdt": "Save the modified SDT",
         "dlg_save_vox": "Save the modified vox.dat",
-        "filter_sdt": "SDT files (*.sdt);;All files (*)",
+        "filter_sdt": "SDT files (*.sdt *.sdt.vortex_backup);;All files (*)",
         "filter_wav": "WAV files (*.wav);;All files (*)",
 
         "status_ready": "Ready · Open a game .sdt file to begin",
@@ -888,7 +888,7 @@ TRANSLATIONS = {
         "dlg_pick_wav": "Elegir tu WAV de doblaje",
         "dlg_save_sdt": "Guardar el SDT modificado",
         "dlg_save_vox": "Guardar el vox.dat modificado",
-        "filter_sdt": "Archivos SDT (*.sdt);;Todos los archivos (*)",
+        "filter_sdt": "Archivos SDT (*.sdt *.sdt.vortex_backup);;Todos los archivos (*)",
         "filter_wav": "Archivos WAV (*.wav);;Todos los archivos (*)",
 
         "status_ready": "Listo · Abre un archivo .sdt del juego para empezar",
@@ -1190,7 +1190,7 @@ TRANSLATIONS = {
         "dlg_pick_wav": "Выберите WAV с озвучкой",
         "dlg_save_sdt": "Сохранить изменённый SDT",
         "dlg_save_vox": "Сохранить изменённый vox.dat",
-        "filter_sdt": "Файлы SDT (*.sdt);;Все файлы (*)",
+        "filter_sdt": "Файлы SDT (*.sdt *.sdt.vortex_backup);;Все файлы (*)",
         "filter_wav": "Файлы WAV (*.wav);;Все файлы (*)",
 
         "status_ready": "Готово · Откройте игровой файл .sdt, чтобы начать",

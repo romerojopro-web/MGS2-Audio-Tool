@@ -111,8 +111,14 @@ class SDTFile:
         total_units = self.total_audio_bytes // 16
         return total_units // self.channels
 
+    # Duration of a stock XWMA clip (from its seek table), set at parse time;
+    # PS-ADPCM files leave it 0 and use the block-based calculation below.
+    xwma_length: float = 0.0
+
     @property
     def duration_seconds(self) -> float:
+        if self.codec == "xwma":
+            return self.xwma_length
         # PS-ADPCM: 16 bytes -> 28 samples (per channel)
         n_samples = self.units_per_channel * 28
         return n_samples / self.sample_rate
@@ -353,6 +359,7 @@ def parse_sdt(path: str) -> SDTFile:
             sdt.codec = "xwma"
             sdt.sample_rate = clip.sample_rate
             sdt.channels = clip.channels
+            sdt.xwma_length = clip.duration_seconds
             return sdt
         except Exception:
             pass   # fall through and try the PS-ADPCM path
