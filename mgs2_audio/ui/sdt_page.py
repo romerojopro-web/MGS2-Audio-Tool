@@ -488,6 +488,13 @@ class SDTPage(PlaybackMixin, QWidget):
         try:
             self._prepare_preview()
         except Exception as e:
+            # Leave the UI in a clean disabled state rather than keeping the
+            # previous file's enabled buttons over a now-empty preview.
+            self.btn_play.setEnabled(False)
+            self.slider.setEnabled(False)
+            self.btn_export.setEnabled(False)
+            self.btn_pick_wav.setEnabled(False)
+            self.preview_wav = ""
             QMessageBox.critical(self, self._t("err_title"), self._t("err_read", e=e))
             return True
 
@@ -876,7 +883,9 @@ class SDTPage(PlaybackMixin, QWidget):
         try:
             if self.sdt.is_xwma:
                 self._decode_xwma_to_wav(path)
-                n = 0
+                import wave
+                with wave.open(path, "rb") as w:
+                    n = w.getnframes()
             else:
                 n = core.sdt_to_wav(self.sdt, path)
         except Exception as e:

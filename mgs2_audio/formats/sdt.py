@@ -75,6 +75,9 @@ class SDTFile:
     # For XWMA files, the de-interleaved AMWX stream, cached at parse time so the
     # multiplexed container is only walked once (not again at decode).
     amwx_stream: Optional[bytes] = None
+    # Duration of a stock XWMA clip (from its seek table), set at parse time;
+    # PS-ADPCM files leave it 0 and use the block-based calculation instead.
+    xwma_length: float = 0.0
 
     @property
     def has_audio(self) -> bool:
@@ -110,10 +113,6 @@ class SDTFile:
         """
         total_units = self.total_audio_bytes // 16
         return total_units // self.channels
-
-    # Duration of a stock XWMA clip (from its seek table), set at parse time;
-    # PS-ADPCM files leave it 0 and use the block-based calculation below.
-    xwma_length: float = 0.0
 
     @property
     def duration_seconds(self) -> float:
@@ -471,7 +470,15 @@ def sdt_to_pcm(sdt: SDTFile) -> List[int]:
       in standard WAV order (L, R, L, R…). This is what fixes the echo bug:
       decoding the raw ADPCM stream without deinterleaving glues channel R about
       0x800 bytes (~81 ms) behind L, which is heard as an overlap/echo.
+
+    Stock XWMA files have no PS-ADPCM blocks — decoding them this way would
+    silently yield an empty/silent result, so it is refused. Decode those via
+    the ffmpeg path (`formats/xwma.py` + `mgs2_audio.ffmpeg`) instead.
     """
+    if sdt.codec == "xwma":
+        raise ValueError(
+            "this .sdt is Konami XWMA, not PS-ADPCM; decode it via "
+            "formats.xwma.sdt_to_riff_xwma() + mgs2_audio.ffmpeg, not sdt_to_pcm")
     stream = get_audio_stream(sdt)
     if sdt.channels <= 1:
         return decode_psadpcm(stream)

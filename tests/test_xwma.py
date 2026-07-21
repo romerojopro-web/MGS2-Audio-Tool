@@ -147,6 +147,15 @@ def test_sdt_to_riff_xwma_end_to_end_synthetic():
     assert riff[:4] == b"RIFF" and riff[8:12] == b"XWMA"
 
 
+def test_sdt_to_pcm_refuses_xwma():
+    # The PS-ADPCM decode path must reject an XWMA file loudly rather than
+    # silently returning an empty/silent result (it has no PS-ADPCM blocks).
+    from mgs2_audio.formats import sdt as sdtmod
+    f = sdtmod.SDTFile(path="x", raw=b"", codec="xwma")
+    with pytest.raises(ValueError, match="XWMA"):
+        sdtmod.sdt_to_pcm(f)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Real decode (opt-in: --realdata, needs ffmpeg + the install)
 # ─────────────────────────────────────────────────────────────────────────────

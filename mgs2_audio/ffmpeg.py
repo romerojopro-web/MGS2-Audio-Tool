@@ -28,15 +28,28 @@ class FfmpegMissing(RuntimeError):
             "your PATH, or point the tool at the ffmpeg.exe you downloaded.")
 
 
+# Cache of resolved ffmpeg paths, keyed by the configured path (or "" for PATH
+# lookup). Only successful resolutions are cached, so ffmpeg installed mid-session
+# is still picked up on the next call.
+_resolved: dict = {}
+
+
 def find_ffmpeg(configured_path: Optional[str] = None) -> Optional[str]:
     """Return a usable ffmpeg path, or None.
 
     Order: an explicitly configured path (if it exists), then whatever is on
-    the system PATH.
+    the system PATH. Successful lookups are memoised to avoid re-scanning PATH
+    on every file the user opens.
     """
     if configured_path and os.path.isfile(configured_path):
         return configured_path
-    return shutil.which("ffmpeg")
+    key = configured_path or ""
+    if key in _resolved:
+        return _resolved[key]
+    found = shutil.which("ffmpeg")
+    if found:
+        _resolved[key] = found
+    return found
 
 
 def decode_to_wav(riff_xwma: bytes, out_wav: str,
