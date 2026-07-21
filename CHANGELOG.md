@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 4.1.0 — 2026-07-21
+
+Decode the game's **stock** audio without any mod, a **Russian** interface, and
+a correction on where the Unity music actually plays. Master Collection stays
+the stable focus; Substance remains work-in-progress.
 
 ### Added — Russian interface language
 The UI is now available in **Russian** (Русский) alongside French, English and
@@ -23,6 +27,11 @@ works whether or not the Better Audio Mod is installed:
   acknowledgements. Confirmed decoding real voice/cutscene files end to end.
 - **Replacing** stock XWMA (re-encoding) is not implemented yet; export works,
   replacement remains PS-ADPCM-only.
+- On a Vortex-modded install the stock originals are `*.sdt.vortex_backup`;
+  the voice-folder scan and the Browse dialog now list those too (verified
+  they decode identically to the Better Audio Mod's audio across 20 files).
+  A checkbox in the SDT tab hides them so you can work on just the mod's
+  PS-ADPCM files.
 
 ### Corrected — the Unity music bundles drive the LAUNCHER, not gameplay
 A second in-game test (replace INFILTRATION, then actually play a mission)
