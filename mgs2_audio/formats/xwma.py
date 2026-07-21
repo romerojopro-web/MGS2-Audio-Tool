@@ -27,6 +27,10 @@ MUX_REGISTER = 0x10          # declares a stream; its sid is u32 at +0x0C
 MUX_END = 0xF0               # end of container
 RECORD_HEADER = 16
 
+# Stream id of the XWMA audio in MC's `.sdt` (XBOX360 HD-remaster audio format)
+# — a fallback; the real id is detected from the data (which stream is AMWX).
+XWMA_STREAM_SID = 0x00040001
+
 AMWX_MAGIC = b"AMWX"
 
 
@@ -103,6 +107,14 @@ def find_amwx_stream(raw: bytes) -> Optional[bytes]:
     for data in demux_streams(raw).values():
         if data[:4] == AMWX_MAGIC:
             return data
+    return None
+
+
+def find_amwx_sid(raw: bytes) -> Optional[int]:
+    """Return the stream id whose de-interleaved data is the AMWX audio."""
+    for sid, data in demux_streams(raw).items():
+        if data[:4] == AMWX_MAGIC:
+            return sid
     return None
 
 
@@ -185,3 +197,156 @@ def sdt_to_riff_xwma(raw: bytes) -> bytes:
     if amwx is None:
         raise ValueError("no AMWX audio stream found in this .sdt")
     return to_riff_xwma(parse_amwx(amwx))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Replacement: standard RIFF xWMA → Konami AMWX → re-mux into the .sdt
+# (adapted from RockeyLol's RifftoKon.py + SDT_buld.py, MIT)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Konami-engine constants written verbatim into the rebuilt header — these
+# fixed values are what makes the game accept the file (per RockeyLol).
+_KONAMI_AVG_BYTES = 24000
+_KONAMI_BLOCK_ALIGN_32 = 0x00102000
+
+
+def riff_to_amwx(riff: bytes, big_endian: bool = True) -> bytes:
+    """Convert a standard RIFF `XWMA` file into a Konami `AMWX` stream.
+
+    The input must be a **game-compatible** xWMA (i.e. WMA encoded the way the
+    game expects — in practice, produced by Microsoft's xWMAEncode; ffmpeg's
+    wmav2 needs codec-private extradata the AMWX cannot carry, so ffmpeg output
+    is NOT game-loadable here).  The WMA packets are re-padded to 16-byte
+    boundaries and wrapped in the Konami header + duplicated WAVEFORMATEX + seek
+    table.
+    """
+    if riff[:4] != b"RIFF" or riff[8:12] != b"XWMA":
+        raise ValueError("not a RIFF xWMA file")
+
+    codec = channels = sample_rate = avg_bps = block_align = 0
+    dpds: List[int] = []
+    audio = b""
+    off = 12
+    while off + 8 <= len(riff):
+        cid = riff[off:off + 4]
+        size = struct.unpack_from("<I", riff, off + 4)[0]
+        body = riff[off + 8:off + 8 + size]
+        if cid == b"fmt ":
+            codec, channels, sample_rate, avg_bps, block_align, _bits = \
+                struct.unpack_from("<HHIIHH", body, 0)
+        elif cid == b"dpds":
+            dpds = list(struct.unpack_from("<%dI" % (size // 4), body, 0))
+        elif cid == b"data":
+            audio = body
+        off += 8 + size + (size & 1)          # chunks are word-aligned
+
+    data_size = len(audio)
+    if not dpds:
+        dpds = [0]
+        bps = sample_rate * channels * 2
+        dpds += list(range(bps, data_size, bps))
+        if not dpds or dpds[-1] != data_size:
+            dpds.append(data_size)
+
+    codec = 0x0162 if channels >= 6 else 0x0161     # WMA Pro (5.1) / WMA v2
+    header = bytearray(b"AMWX" if big_endian else b"XWMA")
+    header += struct.pack("<IIIIII", codec, channels, sample_rate, data_size,
+                          _KONAMI_AVG_BYTES, block_align)
+    header += b"\x00" * 4
+    header += struct.pack("<HHIII", codec, channels, sample_rate,
+                          _KONAMI_AVG_BYTES, _KONAMI_BLOCK_ALIGN_32)
+    header += b"\x00" * 2
+    header += struct.pack("<H", len(dpds))
+    header += b"\x00" * 2
+    for e in dpds:
+        header += struct.pack("<I", e)
+    while len(header) % 0x10 != 0:
+        header.append(0)
+
+    block_size = block_align if block_align >= 0x100 else 0x2000
+    padded = bytearray()
+    o = 0
+    while o < data_size:
+        padded += audio[o:o + block_size]
+        o += block_size
+        while len(padded) % 0x10 != 0:
+            padded.append(0)
+    return bytes(header) + bytes(padded)
+
+
+def xwma_capacity(sdt_raw: bytes) -> int:
+    """Total bytes available for the XWMA stream across the container's chunks.
+
+    A replacement AMWX must not exceed this (the container is rewritten at its
+    exact original size, zero-padding any slack).
+    """
+    sid = find_amwx_sid(sdt_raw) or XWMA_STREAM_SID
+    total, pos, n = 0, 0, len(sdt_raw)
+    while pos + RECORD_HEADER <= n:
+        rec_id = struct.unpack_from("<I", sdt_raw, pos)[0]
+        if rec_id == MUX_END:
+            break
+        if rec_id == MUX_REGISTER:
+            pos += RECORD_HEADER
+        else:
+            size = struct.unpack_from("<I", sdt_raw, pos + 0x04)[0]
+            if size < RECORD_HEADER:
+                break
+            if rec_id == sid:
+                total += size - RECORD_HEADER
+            pos += size
+    return total
+
+
+def replace_amwx_in_sdt(sdt_raw: bytes, new_amwx: bytes) -> bytes:
+    """Rewrite a stock `.sdt` with a new AMWX stream, preserving the container.
+
+    Every non-audio byte (other streams, chunk headers, sizes) is copied
+    verbatim; only the XWMA stream's payload is replaced, chunk by chunk, in
+    order — zero-padded when the new audio is shorter.  The output is byte-for-
+    byte the same size as the input.  Raises ValueError when the new audio is
+    larger than the container can hold (it must be ≤ :func:`xwma_capacity`).
+    """
+    sid = find_amwx_sid(sdt_raw) or XWMA_STREAM_SID
+    chunks = []       # (pos, total_size, data_size)
+    pos, n = 0, len(sdt_raw)
+    while pos + RECORD_HEADER <= n:
+        rec_id = struct.unpack_from("<I", sdt_raw, pos)[0]
+        if rec_id == MUX_END:
+            break
+        if rec_id == MUX_REGISTER:
+            pos += RECORD_HEADER
+        else:
+            total = struct.unpack_from("<I", sdt_raw, pos + 0x04)[0]
+            if total < RECORD_HEADER:
+                break
+            if rec_id == sid:
+                chunks.append((pos, total, total - RECORD_HEADER))
+            pos += total
+
+    capacity = sum(c[2] for c in chunks)
+    if not chunks:
+        raise ValueError("no XWMA stream to replace in this .sdt")
+    if len(new_amwx) > capacity:
+        raise ValueError(
+            f"replacement audio ({len(new_amwx)} bytes) exceeds the file's "
+            f"XWMA capacity ({capacity} bytes) — use a shorter clip or a lower "
+            f"bitrate")
+
+    out = bytearray()
+    cur = 0
+    src = 0
+    for cpos, ctotal, cdata in chunks:
+        out += sdt_raw[cur:cpos]                              # up to this chunk
+        out += sdt_raw[cpos:cpos + RECORD_HEADER]             # original header
+        take = max(0, min(cdata, len(new_amwx) - src))
+        out += new_amwx[src:src + take] + b"\x00" * (cdata - take)
+        src += take
+        cur = cpos + ctotal
+    out += sdt_raw[cur:]                                      # trailing bytes
+    return bytes(out)
+
+
+def build_replacement_sdt(sdt_raw: bytes, riff_xwma: bytes) -> bytes:
+    """Full replace path: game-compatible RIFF xWMA → AMWX → re-muxed `.sdt`."""
+    return replace_amwx_in_sdt(sdt_raw, riff_to_amwx(riff_xwma))

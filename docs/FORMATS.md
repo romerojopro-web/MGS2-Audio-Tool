@@ -664,8 +664,13 @@ is still needed. Excluded from the UI for now.
 - ~~**The non-PS-ADPCM `.sdt` files.**~~ **RESOLVED** — they are Konami XWMA
   (`AMWX`, WMA v2) inside a multiplexed container. De-interleave the audio
   stream, strip the 16-byte packet padding, rewrap as standard RIFF xWMA, and
-  ffmpeg decodes it cleanly. See `formats/xwma.py` (adapted from RockeyLol's
-  MIT converter) and `ffmpeg.py`. Re-encoding (replacement) is still open.
+  ffmpeg decodes it cleanly. **Replacement** is also supported: a WAV encoded
+  by **xWMAEncode** → RIFF xWMA → `AMWX` (`riff_to_amwx`) → re-muxed into the
+  container at its exact original size (`replace_amwx_in_sdt`). ffmpeg cannot
+  encode this — its wmav2 needs codec-private extradata the `AMWX` header
+  can't store, so the game rejects ffmpeg output; xWMAEncode's does not.
+  See `formats/xwma.py` (adapted from RockeyLol's MIT converter), `ffmpeg.py`,
+  and `xwmaencode.py`.
 - **The `.sdx` sample rate for effects.** Confirmed by ear at 22050 Hz, not read
   from the file. It may vary per bank.
 - **Where cutscene music lives.** It appears to be mixed into the dialogue audio

@@ -75,10 +75,12 @@ Master Collection, amber for Substance.
 > **Two `.sdt` audio formats are supported.** The Better Audio Mod ships
 > PS-ADPCM (PS3 HD Collection audio) — decoded in pure Python. The **stock**
 > Steam `.sdt` files use **Konami XWMA** (a multiplexed container with an
-> `AMWX`/WMA v2 stream) — the SDT tab now de-interleaves and decodes those too,
-> via **ffmpeg** (see Requirements). So the tool works whether or not you have
-> the Better Audio Mod installed. Replacing stock XWMA audio (re-encoding) is
-> not wired up yet — export works, replacement is PS-ADPCM-only for now.
+> `AMWX`/WMA v2 stream) — the SDT tab de-interleaves and decodes those too,
+> via **ffmpeg**. So the tool works whether or not you have the Better Audio
+> Mod installed. **Replacing** stock XWMA audio is supported via
+> **xWMAEncode** (your WAV is re-encoded, rebuilt into the Konami container,
+> and re-muxed at the original size). PS-ADPCM replacement stays pure-Python.
+> See Requirements for ffmpeg / xWMAEncode.
 
 ---
 
@@ -88,10 +90,14 @@ Master Collection, amber for Substance.
 - **PyQt6** — `pip install PyQt6` (only needed for the graphical interface)
 - **UnityPy** — `pip install UnityPy` (optional; only needed by the Master
   Collection **Musique · BGM** tab, which reads/rebuilds Unity AssetBundles)
-- **ffmpeg** — optional; only needed to decode **stock** (un-modded) `.sdt`
+- **ffmpeg** — optional; only needed to **decode** stock (un-modded) `.sdt`
   audio, which is Konami XWMA/WMA. Install it (e.g. `winget install ffmpeg`)
   and put it on your PATH, or point the SDT tab at your `ffmpeg.exe`. Not
   needed for Better Audio Mod (PS-ADPCM) files.
+- **xWMAEncode.exe** — optional; only needed to **replace** stock XWMA audio
+  (a small Microsoft DirectX SDK tool, widely mirrored). ffmpeg can't be used
+  for this: its WMA needs codec-private data the Konami container can't store,
+  so the game rejects it. Point the SDT tab at your `xWMAEncode.exe`.
 - **[MGS2MC Better Audio Mod](https://www.nexusmods.com/metalgearsolid2mc)** for
   the `.sdt` dialogue files
 - A legal copy of the game. Use only files from your own installation.

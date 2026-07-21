@@ -306,6 +306,16 @@ TRANSLATIONS = {
         "xwma_locate_ffmpeg": "LOCALISER FFMPEG.EXE…",
         "xwma_pick_ffmpeg": "Sélectionner ffmpeg.exe",
         "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;Tous les fichiers (*)",
+        "xwma_replace_hint": ("Votre WAV sera réencodé en XWMA (via xWMAEncode) "
+                              "et réinjecté dans le fichier du jeu, à taille "
+                              "identique (audio plus court complété de "
+                              "silence ; trop long ou trop lourd = refusé)."),
+        "xwma_need_encoder": ("Le remplacement XWMA nécessite xWMAEncode.exe "
+                              "(outil Microsoft du DirectX SDK, ffmpeg ne "
+                              "convient pas ici). Indiquez-le à l\'étape "
+                              "suivante."),
+        "xwma_pick_encoder": "Sélectionner xWMAEncode.exe",
+        "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;Tous les fichiers (*)",
         "err_wav_read": "WAV illisible :\n{e}",
         "err_generate": "Génération impossible :\n{e}",
         "ok_export_title": "Export réussi",
@@ -609,6 +619,15 @@ TRANSLATIONS = {
         "xwma_locate_ffmpeg": "LOCATE FFMPEG.EXE…",
         "xwma_pick_ffmpeg": "Select ffmpeg.exe",
         "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;All files (*)",
+        "xwma_replace_hint": ("Your WAV will be re-encoded to XWMA (via "
+                              "xWMAEncode) and put back into the game file at "
+                              "the same size (shorter audio is padded with "
+                              "silence; too long or too large is refused)."),
+        "xwma_need_encoder": ("XWMA replacement needs xWMAEncode.exe (a "
+                              "Microsoft DirectX SDK tool; ffmpeg won't work "
+                              "here). Point to it in the next step."),
+        "xwma_pick_encoder": "Select xWMAEncode.exe",
+        "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;All files (*)",
         "err_wav_read": "Unreadable WAV:\n{e}",
         "err_generate": "Cannot generate:\n{e}",
         "ok_export_title": "Export successful",
@@ -913,6 +932,16 @@ TRANSLATIONS = {
         "xwma_locate_ffmpeg": "LOCALIZAR FFMPEG.EXE…",
         "xwma_pick_ffmpeg": "Seleccionar ffmpeg.exe",
         "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;Todos los archivos (*)",
+        "xwma_replace_hint": ("Tu WAV se recodificará a XWMA (con xWMAEncode) "
+                              "y se reinsertará en el archivo del juego con el "
+                              "mismo tamaño (audio más corto se rellena con "
+                              "silencio; demasiado largo o pesado se rechaza)."),
+        "xwma_need_encoder": ("El reemplazo XWMA necesita xWMAEncode.exe "
+                              "(herramienta del DirectX SDK de Microsoft; "
+                              "ffmpeg no sirve aquí). Indícalo en el "
+                              "siguiente paso."),
+        "xwma_pick_encoder": "Seleccionar xWMAEncode.exe",
+        "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;Todos los archivos (*)",
         "err_wav_read": "WAV ilegible:\n{e}",
         "err_generate": "No se puede generar:\n{e}",
         "ok_export_title": "Exportación exitosa",
@@ -1216,6 +1245,16 @@ TRANSLATIONS = {
         "xwma_locate_ffmpeg": "УКАЗАТЬ FFMPEG.EXE…",
         "xwma_pick_ffmpeg": "Выберите ffmpeg.exe",
         "filter_ffmpeg": "ffmpeg (ffmpeg.exe);;Все файлы (*)",
+        "xwma_replace_hint": ("Ваш WAV будет перекодирован в XWMA (через "
+                              "xWMAEncode) и вставлен обратно в файл игры того "
+                              "же размера (более короткий звук дополняется "
+                              "тишиной; слишком длинный или тяжёлый — отклонён)."),
+        "xwma_need_encoder": ("Для замены XWMA нужен xWMAEncode.exe "
+                              "(инструмент из DirectX SDK Microsoft; ffmpeg "
+                              "здесь не подходит). Укажите его на следующем "
+                              "шаге."),
+        "xwma_pick_encoder": "Выберите xWMAEncode.exe",
+        "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;Все файлы (*)",
         "err_wav_read": "Нечитаемый WAV:\n{e}",
         "err_generate": "Не удаётся создать:\n{e}",
         "ok_export_title": "Экспорт выполнен",

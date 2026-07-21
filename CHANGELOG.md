@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Added — replace stock XWMA audio (via xWMAEncode)
+The SDT tab can now **replace** stock (Konami XWMA) `.sdt` audio, not just
+decode it. Pick a WAV; it is re-encoded to XWMA and re-injected into the
+game's multiplexed container **at the exact original size** (shorter audio is
+zero-padded; audio too long or too large to fit is refused with a clear
+message).
+- New `formats/xwma.py` functions `riff_to_amwx`, `replace_amwx_in_sdt`,
+  `build_replacement_sdt`, `xwma_capacity` (adapted from RockeyLol's
+  RifftoKon.py + SDT_buld.py, MIT) — validated by rebuilding real game files
+  byte-for-byte and decoding them back identically.
+- Encoding uses **xWMAEncode.exe** (Microsoft DirectX SDK tool), not ffmpeg:
+  ffmpeg's wmav2 needs codec-private extradata the `AMWX` container has no
+  slot for, so the game can't decode it — proven during development. New
+  optional bridge `mgs2_audio/xwmaencode.py`; the SDT tab prompts for the exe.
+- The container re-mux preserves every other stream and the file's exact size.
+
+**Note:** the RIFF→AMWX→re-mux chain is fully tested against real files; the
+final WAV→game path depends on your xWMAEncode.exe and an in-game check.
+
 ## 4.1.0 — 2026-07-21
 
 Decode the game's **stock** audio without any mod, a **Russian** interface, and

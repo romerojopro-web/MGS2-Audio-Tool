@@ -147,6 +147,44 @@ def test_sdt_to_riff_xwma_end_to_end_synthetic():
     assert riff[:4] == b"RIFF" and riff[8:12] == b"XWMA"
 
 
+def test_riff_to_amwx_round_trips_via_parse():
+    # A RIFF built by to_riff_xwma must convert back to an AMWX that parse_amwx
+    # reads with the same params and data (packets re-padded to 16 bytes).
+    data = bytes(range(0, 96))
+    amwx0 = build_amwx(data, channels=2, rate=48000, block_align=32,
+                       seek=[512, 1024])
+    clip0 = xwma.parse_amwx(amwx0)
+    riff = xwma.to_riff_xwma(clip0)
+    amwx1 = xwma.riff_to_amwx(riff)
+    clip1 = xwma.parse_amwx(amwx1)
+    assert clip1.channels == 2 and clip1.sample_rate == 48000
+    assert clip1.data == data
+    assert clip1.seek_table == [512, 1024]
+
+
+def test_replace_amwx_preserves_container_size():
+    amwx = build_amwx(b"\x11\x22\x33\x44" * 20, block_align=32)
+    sdt = build_muxed_sdt([(2, [b"other-stream-data" * 4]),
+                           (0x40001, [amwx[:40], amwx[40:]])])
+    # a shorter replacement must fit and be zero-padded; size stays identical
+    new_amwx = xwma.riff_to_amwx(xwma.to_riff_xwma(
+        xwma.parse_amwx(build_amwx(b"\xAA\xBB" * 8, block_align=32))))
+    out = xwma.replace_amwx_in_sdt(sdt, new_amwx)
+    assert len(out) == len(sdt)
+    # the other stream is untouched
+    assert xwma.demux_streams(out)[2] == xwma.demux_streams(sdt)[2]
+    # the audio stream now starts with our new AMWX
+    assert xwma.find_amwx_stream(out)[:4] == b"AMWX"
+
+
+def test_replace_amwx_rejects_oversized_audio():
+    amwx = build_amwx(b"\x00" * 32, block_align=32)
+    sdt = build_muxed_sdt([(0x40001, [amwx])])
+    huge = b"\x00" * (len(amwx) + xwma.xwma_capacity(sdt) + 1000)
+    with pytest.raises(ValueError, match="exceeds"):
+        xwma.replace_amwx_in_sdt(sdt, huge)
+
+
 def test_sdt_to_pcm_refuses_xwma():
     # The PS-ADPCM decode path must reject an XWMA file loudly rather than
     # silently returning an empty/silent result (it has no PS-ADPCM blocks).
@@ -185,3 +223,24 @@ def test_real_vox_decodes_full_length(_realdata, tmp_path):
         assert w.getnchannels() == clip.channels
     # within a frame of the seek-table duration = fully decoded, not truncated
     assert dur == pytest.approx(clip.duration_seconds, abs=0.1)
+
+
+def test_real_replacement_round_trips(_realdata, tmp_path):
+    # Rebuilding a real file's own audio (via our game-compatible RIFF) and
+    # re-muxing it must yield a byte-identical-size .sdt that decodes the same.
+    p = os.path.join(MC_INSTALL, "us", "vox", "vc000101.sdt.vortex_backup")
+    if not os.path.isfile(p):
+        pytest.skip("test vox file not present")
+    raw = open(p, "rb").read()
+    riff = xwma.sdt_to_riff_xwma(raw)
+    new_sdt = xwma.build_replacement_sdt(raw, riff)
+    assert len(new_sdt) == len(raw)          # container size preserved exactly
+
+    def decode(sdt_bytes, name):
+        out = str(tmp_path / name)
+        ffmpeg_bridge.decode_to_wav(xwma.sdt_to_riff_xwma(sdt_bytes), out)
+        with wave.open(out, "rb") as w:
+            return w.getnframes() / w.getframerate()
+
+    assert decode(new_sdt, "new.wav") == pytest.approx(decode(raw, "old.wav"),
+                                                       abs=0.1)

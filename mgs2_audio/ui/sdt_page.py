@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .. import ffmpeg as ffmpeg_bridge
+from .. import xwmaencode as xwmaencode_bridge
 from ..formats import sdt as core
 from ..formats import xwma as xwma_fmt
 from ..library import db as lib
@@ -501,8 +502,7 @@ class SDTPage(PlaybackMixin, QWidget):
         self.btn_play.setEnabled(True)
         self.slider.setEnabled(True)
         self.btn_export.setEnabled(True)
-        # Replacing stock XWMA (re-encode) isn't wired up yet — export only.
-        self.btn_pick_wav.setEnabled(not self.sdt.is_xwma)
+        self.btn_pick_wav.setEnabled(True)
 
         self.win.status.showMessage(self._t(
             "status_loaded", name=os.path.basename(path),
@@ -821,6 +821,59 @@ class SDTPage(PlaybackMixin, QWidget):
         if self.sdt_path:
             self._load_sdt_path(self.sdt_path)   # retry now that ffmpeg is set
 
+    def _generate_xwma_sdt(self):
+        """Replace a stock XWMA file: WAV → xWMAEncode → AMWX → re-muxed .sdt."""
+        exe = self.win.cfg.get("xwmaencode_path", "")
+        if not xwmaencode_bridge.available(exe):
+            QMessageBox.information(self, self._t("err_title"),
+                                    self._t("xwma_need_encoder"))
+            path, _ = QFileDialog.getOpenFileName(
+                self, self._t("xwma_pick_encoder"), os.path.expanduser("~"),
+                self._t("filter_xwmaencode"))
+            if not path:
+                return
+            self.win.cfg["xwmaencode_path"] = path
+            save_config(self.win.cfg)
+            exe = path
+
+        original_name = os.path.basename(self.sdt_path)
+        start_dir = self.dir_save or os.path.expanduser("~")
+        out_path, _ = QFileDialog.getSaveFileName(
+            self, self._t("dlg_save_sdt"),
+            os.path.join(start_dir, original_name), self._t("filter_sdt"))
+        if not out_path:
+            return
+
+        self.btn_generate.setEnabled(False)
+        self.win.status.showMessage(self._t("status_encoding"))
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        QApplication.processEvents()
+        try:
+            riff = xwmaencode_bridge.encode_to_xwma(self.new_wav_path, exe)
+            new_raw = xwma_fmt.build_replacement_sdt(self.sdt.raw, riff)
+            with open(out_path, "wb") as f:
+                f.write(new_raw)
+        except Exception as e:
+            QApplication.restoreOverrideCursor()
+            self.btn_generate.setEnabled(True)
+            QMessageBox.critical(self, self._t("err_title"),
+                                 self._t("err_generate", e=e))
+            self.win.status.showMessage(self._t("status_gen_failed"))
+            return
+        QApplication.restoreOverrideCursor()
+        self.btn_generate.setEnabled(True)
+        self.dir_save = os.path.dirname(out_path)
+        self.win.cfg["dir_save"] = self.dir_save
+        save_config(self.win.cfg)
+
+        self.lbl_result.setText(
+            f"{self._t('result_ok')} : {os.path.basename(out_path)}\n"
+            f"{self._t('result_detail', size=f'{len(new_raw):,}')}")
+        self.win.status.showMessage(self._t("status_done",
+                                            name=os.path.basename(out_path)))
+        QMessageBox.information(self, self._t("ok_dub_title"),
+                                self._t("ok_dub_body", path=out_path))
+
     def _prepare_preview(self):
         # Release and delete the previous temporary file
         old = self.preview_wav
@@ -907,22 +960,32 @@ class SDTPage(PlaybackMixin, QWidget):
             self, self._t("dlg_pick_wav"), start_dir, self._t("filter_wav"))
         if not path:
             return
-        try:
-            samples, rate = core.load_wav_mono(path, self.sdt.sample_rate)
-        except Exception as e:
-            QMessageBox.critical(self, self._t("err_title"),
-                                 self._t("err_wav_read", e=e))
-            return
 
-        self.new_wav_path = path
-        self.new_wav_samples = samples
-        self.new_wav_rate = rate
+        if self.sdt.is_xwma:
+            # XWMA replacement re-encodes the WAV as-is (via xWMAEncode at
+            # generate time); no PS-ADPCM mono conversion.
+            self.new_wav_path = path
+            self.new_wav_samples = None
+        else:
+            try:
+                samples, rate = core.load_wav_mono(path, self.sdt.sample_rate)
+            except Exception as e:
+                QMessageBox.critical(self, self._t("err_title"),
+                                     self._t("err_wav_read", e=e))
+                return
+            self.new_wav_path = path
+            self.new_wav_samples = samples
+            self.new_wav_rate = rate
+
         self.dir_dub = os.path.dirname(path)
         self.win.cfg["dir_dub"] = self.dir_dub
         save_config(self.win.cfg)
 
         self.lbl_wav.setText(os.path.basename(path))
-        self._show_wav_info()
+        if self.sdt.is_xwma:
+            self.lbl_wav_info.setText(self._t("xwma_replace_hint"))
+        else:
+            self._show_wav_info()
         self.btn_generate.setEnabled(True)
         self.win.status.showMessage(self._t(
             "status_dub_ready", name=os.path.basename(path)))
@@ -959,6 +1022,9 @@ class SDTPage(PlaybackMixin, QWidget):
 
     def generate_sdt(self):
         if not self.sdt or not self.new_wav_path:
+            return
+        if self.sdt.is_xwma:
+            self._generate_xwma_sdt()
             return
 
         # SAME name as the original (for the game), in the remembered output folder
