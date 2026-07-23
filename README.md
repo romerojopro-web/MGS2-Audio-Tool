@@ -94,10 +94,13 @@ Master Collection, amber for Substance.
   audio, which is Konami XWMA/WMA. Install it (e.g. `winget install ffmpeg`)
   and put it on your PATH, or point the SDT tab at your `ffmpeg.exe`. Not
   needed for Better Audio Mod (PS-ADPCM) files.
-- **xWMAEncode.exe** — optional; only needed to **replace** stock XWMA audio
-  (a small Microsoft DirectX SDK tool, widely mirrored). ffmpeg can't be used
-  for this: its WMA needs codec-private data the Konami container can't store,
-  so the game rejects it. Point the SDT tab at your `xWMAEncode.exe`.
+- **xWMAEncode.exe** — optional; only needed to **replace** stock XWMA audio.
+  ffmpeg can't be used for this: its WMA needs codec-private data the Konami
+  container can't store, so the game rejects it. Point the SDT tab at your
+  `xWMAEncode.exe` (the path is remembered). It is a small Microsoft tool that
+  **cannot be redistributed** with this project (it is not on the DirectX SDK's
+  redistributable list), so you supply your own — see *Getting xWMAEncode.exe*
+  below.
 - **[MGS2MC Better Audio Mod](https://www.nexusmods.com/metalgearsolid2mc)** for
   the `.sdt` dialogue files
 - A legal copy of the game. Use only files from your own installation.
@@ -107,6 +110,23 @@ with **no third-party Python packages** — the command line works without PyQt6
 Two features reach outside that core when you use them: the BGM tab needs the
 `UnityPy` package, and decoding stock XWMA audio shells out to the `ffmpeg`
 binary. Both are optional; everything else is stdlib-only.
+
+### Getting xWMAEncode.exe
+
+Only needed if you want to **replace** stock (Konami XWMA) dialogue. It ships in
+Microsoft's **DirectX SDK (June 2010)** but is not redistributable, so grab it
+yourself — you do **not** need to install the whole SDK:
+
+1. Download `DXSDK_Jun10.exe` from Microsoft's download center.
+2. **If the installer fails with error `S1023`** (common on modern Windows,
+   because a newer *Visual C++ 2010 Redistributable* is already installed),
+   don't fight it — just **open `DXSDK_Jun10.exe` with [7-Zip]** (right-click →
+   *7-Zip → Open archive*) and extract the single file
+   `DXSDK\Utilities\bin\x86\xWMAEncode.exe`. No installation required.
+3. Put `xWMAEncode.exe` anywhere you like and point the SDT tab at it the first
+   time you replace an XWMA file; the tool remembers the path afterwards.
+
+[7-Zip]: https://www.7-zip.org/
 
 ## Install and run
 
@@ -211,6 +231,13 @@ python -m mgs2_audio.cli sdx replace-all "C:/Games/.../MGS2" <key> mine.wav
 - **Length is fixed.** Longer audio is trimmed, shorter is padded with silence.
   The output keeps the original's exact byte size, which the game requires.
 - On a stereo `.sdt`, your mono recording is placed on both channels.
+- **Replacing stock XWMA dialogue:** your WAV is automatically conformed to the
+  original clip's channel count and sample rate before encoding — a stereo WAV
+  put where the game expects mono is rejected in-game (even though a lenient
+  player would preview it fine), so the tool matches the original for you. If
+  the re-encoded audio can't fit the original's byte capacity the replacement is
+  refused with a clear message; shorten the recording or it drops to a lower
+  bitrate automatically.
 - **Back up before your first `replace-all`.** `.bak` files are written
   automatically, but a copy of `stage/` costs nothing.
 
