@@ -131,9 +131,10 @@ def test_to_riff_xwma_structure():
     assert riff[:4] == b"RIFF"
     assert riff[8:12] == b"XWMA"
     assert b"fmt " in riff and b"dpds" in riff and b"data" in riff
-    # fmt chunk is exactly 16 bytes of data (no cbSize) — what ffmpeg expects
+    # fmt chunk is a full 18-byte WAVEFORMATEX (cbSize=0) — ffmpeg needs the
+    # standard layout to decode reliably across block_align values
     i = riff.index(b"fmt ")
-    assert struct.unpack_from("<I", riff, i + 4)[0] == 16
+    assert struct.unpack_from("<I", riff, i + 4)[0] == 18
     # data chunk holds the recovered WMA bytes
     j = riff.index(b"data")
     size = struct.unpack_from("<I", riff, j + 4)[0]

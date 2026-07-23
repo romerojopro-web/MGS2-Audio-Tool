@@ -315,6 +315,9 @@ TRANSLATIONS = {
                               "convient pas ici). Indiquez-le à l\'étape "
                               "suivante."),
         "xwma_pick_encoder": "Sélectionner xWMAEncode.exe",
+        "xwma_encoded_at": "Réencodé en XWMA à {kbps} kbps",
+        "xwma_too_long": ("Audio trop long/lourd pour ce fichier même au débit "
+                          "le plus bas. Utilisez un clip plus court."),
         "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;Tous les fichiers (*)",
         "err_wav_read": "WAV illisible :\n{e}",
         "err_generate": "Génération impossible :\n{e}",
@@ -627,6 +630,9 @@ TRANSLATIONS = {
                               "Microsoft DirectX SDK tool; ffmpeg won't work "
                               "here). Point to it in the next step."),
         "xwma_pick_encoder": "Select xWMAEncode.exe",
+        "xwma_encoded_at": "Re-encoded to XWMA at {kbps} kbps",
+        "xwma_too_long": ("Audio too long/large for this file even at the "
+                          "lowest bitrate. Use a shorter clip."),
         "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;All files (*)",
         "err_wav_read": "Unreadable WAV:\n{e}",
         "err_generate": "Cannot generate:\n{e}",
@@ -941,6 +947,9 @@ TRANSLATIONS = {
                               "ffmpeg no sirve aquí). Indícalo en el "
                               "siguiente paso."),
         "xwma_pick_encoder": "Seleccionar xWMAEncode.exe",
+        "xwma_encoded_at": "Recodificado a XWMA a {kbps} kbps",
+        "xwma_too_long": ("Audio demasiado largo/pesado para este archivo "
+                          "incluso al bitrate más bajo. Usa un clip más corto."),
         "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;Todos los archivos (*)",
         "err_wav_read": "WAV ilegible:\n{e}",
         "err_generate": "No se puede generar:\n{e}",
@@ -1254,6 +1263,10 @@ TRANSLATIONS = {
                               "здесь не подходит). Укажите его на следующем "
                               "шаге."),
         "xwma_pick_encoder": "Выберите xWMAEncode.exe",
+        "xwma_encoded_at": "Перекодировано в XWMA на {kbps} кбит/с",
+        "xwma_too_long": ("Звук слишком длинный/тяжёлый для этого файла даже "
+                          "на минимальном битрейте. Используйте более короткий "
+                          "фрагмент."),
         "filter_xwmaencode": "xWMAEncode (xWMAEncode.exe);;Все файлы (*)",
         "err_wav_read": "Нечитаемый WAV:\n{e}",
         "err_generate": "Не удаётся создать:\n{e}",

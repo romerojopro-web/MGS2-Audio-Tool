@@ -821,6 +821,26 @@ class SDTPage(PlaybackMixin, QWidget):
         if self.sdt_path:
             self._load_sdt_path(self.sdt_path)   # retry now that ffmpeg is set
 
+    def _encode_xwma_fitting(self, exe):
+        """Encode the WAV at the highest xWMAEncode bitrate that fits the file.
+
+        The replacement must not exceed the container's XWMA capacity, so try
+        the supported bitrates high→low and keep the first whose rebuilt AMWX
+        fits. Returns (re-muxed .sdt bytes, bitrate). Raises when even the
+        lowest bitrate is too large (the clip is simply too long).
+        """
+        capacity = xwma_fmt.xwma_capacity(self.sdt.raw)
+        for br in xwmaencode_bridge.BITRATES:
+            try:
+                riff = xwmaencode_bridge.encode_to_xwma(
+                    self.new_wav_path, exe, bitrate=br)
+            except Exception:
+                continue                 # bitrate not valid for this WAV
+            amwx = xwma_fmt.riff_to_amwx(riff)
+            if len(amwx) <= capacity:
+                return xwma_fmt.replace_amwx_in_sdt(self.sdt.raw, amwx), br
+        raise ValueError(self._t("xwma_too_long"))
+
     def _generate_xwma_sdt(self):
         """Replace a stock XWMA file: WAV → xWMAEncode → AMWX → re-muxed .sdt."""
         exe = self.win.cfg.get("xwmaencode_path", "")
@@ -849,8 +869,7 @@ class SDTPage(PlaybackMixin, QWidget):
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         QApplication.processEvents()
         try:
-            riff = xwmaencode_bridge.encode_to_xwma(self.new_wav_path, exe)
-            new_raw = xwma_fmt.build_replacement_sdt(self.sdt.raw, riff)
+            new_raw, bitrate = self._encode_xwma_fitting(exe)
             with open(out_path, "wb") as f:
                 f.write(new_raw)
         except Exception as e:
@@ -868,6 +887,7 @@ class SDTPage(PlaybackMixin, QWidget):
 
         self.lbl_result.setText(
             f"{self._t('result_ok')} : {os.path.basename(out_path)}\n"
+            f"{self._t('xwma_encoded_at', kbps=bitrate // 1000)}\n"
             f"{self._t('result_detail', size=f'{len(new_raw):,}')}")
         self.win.status.showMessage(self._t("status_done",
                                             name=os.path.basename(out_path)))

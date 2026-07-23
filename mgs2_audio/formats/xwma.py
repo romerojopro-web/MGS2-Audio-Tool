@@ -179,8 +179,11 @@ def to_riff_xwma(clip: XwmaClip) -> bytes:
         if seek[-1] != len(clip.data):
             seek.append(len(clip.data))
 
-    fmt = struct.pack("<HHIIHH", clip.codec, clip.channels, clip.sample_rate,
-                      clip.avg_bytes, clip.block_align, 16)   # 16 bytes, no cbSize
+    # A full 18-byte WAVEFORMATEX (cbSize=0). A truncated 16-byte fmt happens
+    # to decode for some block_align values but not others (e.g. 1487) — ffmpeg
+    # needs the standard layout to synthesise the WMA config reliably.
+    fmt = struct.pack("<HHIIHHH", clip.codec, clip.channels, clip.sample_rate,
+                      clip.avg_bytes, clip.block_align, 16, 0)
     dpds = b"".join(struct.pack("<I", e) for e in seek)
 
     def chunk(cid: bytes, payload: bytes) -> bytes:
@@ -203,12 +206,6 @@ def sdt_to_riff_xwma(raw: bytes) -> bytes:
 # Replacement: standard RIFF xWMA → Konami AMWX → re-mux into the .sdt
 # (adapted from RockeyLol's RifftoKon.py + SDT_buld.py, MIT)
 # ─────────────────────────────────────────────────────────────────────────────
-
-# Konami-engine constants written verbatim into the rebuilt header — these
-# fixed values are what makes the game accept the file (per RockeyLol).
-_KONAMI_AVG_BYTES = 24000
-_KONAMI_BLOCK_ALIGN_32 = 0x00102000
-
 
 def riff_to_amwx(riff: bytes, big_endian: bool = True) -> bytes:
     """Convert a standard RIFF `XWMA` file into a Konami `AMWX` stream.
@@ -248,14 +245,18 @@ def riff_to_amwx(riff: bytes, big_endian: bool = True) -> bytes:
         if not dpds or dpds[-1] != data_size:
             dpds.append(data_size)
 
+    # Rebuild the header to mirror a real Konami AMWX exactly (so parse_amwx —
+    # and the game — read it back the same): Konami fields, then a standard
+    # duplicated WAVEFORMATEX, using the stream's REAL avg-bytes/block-align
+    # (RockeyLol hardcoded these, which breaks ffmpeg's packet timing).
     codec = 0x0162 if channels >= 6 else 0x0161     # WMA Pro (5.1) / WMA v2
     header = bytearray(b"AMWX" if big_endian else b"XWMA")
     header += struct.pack("<IIIIII", codec, channels, sample_rate, data_size,
-                          _KONAMI_AVG_BYTES, block_align)
-    header += b"\x00" * 4
-    header += struct.pack("<HHIII", codec, channels, sample_rate,
-                          _KONAMI_AVG_BYTES, _KONAMI_BLOCK_ALIGN_32)
-    header += b"\x00" * 2
+                          avg_bps, block_align)                 # 0x04-0x1B
+    header += b"\x00" * 4                                       # 0x1C
+    header += struct.pack("<HHIIHH", codec, channels, sample_rate,
+                          avg_bps, block_align, 16)             # 0x20 WAVEFORMATEX
+    header += b"\x00" * 2                                       # 0x30 cbSize
     header += struct.pack("<H", len(dpds))
     header += b"\x00" * 2
     for e in dpds:

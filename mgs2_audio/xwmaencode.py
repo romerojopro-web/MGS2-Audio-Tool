@@ -42,11 +42,18 @@ def available(configured_path: Optional[str] = None) -> bool:
     return find_xwmaencode(configured_path) is not None
 
 
-def encode_to_xwma(wav_path: str, exe_path: Optional[str] = None) -> bytes:
+# The only bitrates xWMAEncode accepts (bits/s), high → low. Which apply
+# depends on the sample rate and channel count; unsupported ones just error out.
+BITRATES = (192000, 160000, 96000, 64000, 48000, 32000, 20000)
+
+
+def encode_to_xwma(wav_path: str, exe_path: Optional[str] = None,
+                   bitrate: Optional[int] = None) -> bytes:
     """Encode a WAV file to standard RIFF xWMA bytes using xWMAEncode.
 
-    Raises XwmaEncodeMissing when the tool can't be found, or RuntimeError with
-    the tool's message when encoding fails.
+    `bitrate` (bits/s) must be one of :data:`BITRATES` when given, and valid for
+    the WAV's sample rate/channels or xWMAEncode errors.  Raises XwmaEncodeMissing
+    when the tool can't be found, or RuntimeError with its message on failure.
     """
     exe = find_xwmaencode(exe_path)
     if not exe:
@@ -55,8 +62,11 @@ def encode_to_xwma(wav_path: str, exe_path: Optional[str] = None) -> bytes:
     fd, out = tempfile.mkstemp(suffix=".xwma")
     os.close(fd)
     try:
-        proc = subprocess.run([exe, wav_path, out],
-                              capture_output=True, text=True)
+        cmd = [exe]
+        if bitrate:
+            cmd += ["-b", str(bitrate)]
+        cmd += [wav_path, out]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0 or not os.path.exists(out) \
                 or os.path.getsize(out) == 0:
             tail = ((proc.stderr or proc.stdout or "").strip().splitlines()
