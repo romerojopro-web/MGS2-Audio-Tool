@@ -5,9 +5,12 @@ Comparaison systématique de `mgs2-audio-tool` avec le driver de référence
 séquenceur → moteur SPU. Mesuré sur les 6 banques `pk00000x.sdx` (1536 cues,
 7730 notes, 786 entrées d'instrument).
 
-**Verdict : fidèle à raven sur tout ce que ces banques utilisent, à une exception
-audible près — la courbe de pan (`pant[]`).** Les fonctionnalités non implémentées
-ne sont jamais employées par ces banques (impact nul, chiffres à l'appui).
+**Verdict : fidèle à raven sur tout ce que ces banques utilisent.** Les trois
+approximations audibles historiques (courbe de pan, portamento, vibrato) ont
+depuis été corrigées et sont désormais **verrouillées par des tests de
+non-régression** (`tests/test_sequence.py`, section « raven fidelity is LOCKED »).
+Les fonctionnalités non implémentées ne sont jamais employées par ces banques
+(impact nul, chiffres à l'appui).
 
 ---
 
@@ -32,10 +35,14 @@ ne sont jamais employées par ces banques (impact nul, chiffres à l'appui).
 
 ---
 
-## 2. Approximations (audibles) ⚠️
+## 2. Approximations audibles — CORRIGÉES ✅
 
-### 2.1 Courbe de pan — la seule qui compte vraiment
-raven mappe pan→volume L/R via une **table** `pant[41]`, pas une loi `sqrt` :
+Les trois points ci-dessous étaient des approximations à l'époque du premier
+audit. Ils sont **désormais implémentés fidèlement** (tables/algos raven réels)
+et **verrouillés par tests**. Historique conservé pour la traçabilité.
+
+### 2.1 Courbe de pan — RÉSOLU
+raven mappe pan→volume L/R via la **table** `pant[41]`, pas une loi `sqrt` :
 
 ```
 vol_r = vol · pant[pan]        vol_l = vol · pant[40−pan]
@@ -43,19 +50,22 @@ pant = [0,2,4,7,10,13,16,20,24,28,32,36,40,45,50,55,60,65,70,75,
         80,84,88,92,96,100,104,107,110,112,114,116,118,120,122,123,124,125,126,127,127]
 ```
 
-Au centre (pan 20) : `pant[20]/127 = 0.63` de chaque côté. Notre `sqrt(0.5) = 0.707`.
-La table est plus creusée au centre et sa pente diffère → image stéréo et niveau
-central légèrement faux sur **chaque note pannée**. **Correction propre : remplacer
-`sqrt` par la table.** (Correctif recommandé n°1.)
+Au centre (pan 20) : `pant[20]/127 = 0.63` de chaque côté (et **non** `sqrt(0.5) =
+0.707`). **`render._PANT` implémente exactement cette table** (`render.py`
+lignes ~45 et ~975). Verrouillé par `test_pan_table_matches_raven_exactly`,
+`test_pan_centre_is_not_constant_power`, `test_centre_pan_is_balanced`.
 
-### 2.2 Portamento — linéaire vs exponentiel
-Notre glissando note-à-note est une rampe **linéaire** dont la durée dérive de la
-vitesse. raven (`por_compute`) fait une **approche exponentielle** : chaque tick,
-`swpd += (cible−swpd)·b2/256`. À corriger pour matcher la courbe (prochain réglage).
+### 2.2 Portamento — RÉSOLU (exponentiel)
+Le glissando note-à-note suit maintenant l'**approche géométrique/exponentielle**
+de raven (`por_compute`) : `ratio = ratio_to · (ratio_from/ratio_to)^remaining`
+avec `remaining = (1−decay)^(i/spt)` (`render.py` lignes ~636). Verrouillé par
+`test_portamento_glides_instead_of_jumping`.
 
-### 2.3 Vibrato — LFO approximé
-`vib_set`/`vib_change` sont branchés, mais la forme/l'échelle exacte du LFO de raven
-n'a pas été vérifiée au détail. À revoir au raffinement.
+### 2.3 Vibrato — RÉSOLU
+Le LFO utilise la vraie table `VIBX_TBL[32]` de raven (`sd_sub1.c`), phase sur
+64 pas avec moitié négative, modulation en demi-tons (`render._VIBX_TBL`,
+`render.py` lignes ~120 et ~641). Verrouillé par
+`test_vibrato_table_matches_raven_exactly`.
 
 ---
 
@@ -104,13 +114,20 @@ Constats et corrections apportées :
 
 Le détecteur de répertoire (`WAVE_W`), lui, généralise correctement sur les 10 fichiers.
 
-## 6. Feuille de route proposée
+## 6. Feuille de route
 
-1. **Courbe de pan `pant[]`** (§2.1) — correctif de fidélité, ~5 lignes, impact sur
-   chaque note pannée. *Le plus rentable.*
-2. **Portamento exponentiel** (§2.2) — matcher `por_compute`.
-3. **Raffinement** — vibrato (§2.3), et vérifs fines (reverb, offsets de boucle L3).
-4. **Optimisation** — le rendu est lent (Python pur, échantillon par échantillon).
+Fidélité — **fait ✅** :
+1. ~~Courbe de pan `pant[]`~~ (§2.1) — implémentée + verrouillée par tests.
+2. ~~Portamento exponentiel~~ (§2.2) — implémenté (`por_compute`) + verrouillé.
+3. ~~Vibrato LFO~~ (§2.3) — table `VIBX_TBL` réelle + verrouillé.
+
+Reste ouvert :
+4. **Vérifs fines par l'oreille** — reverb, offsets de boucle L3, échelle exacte
+   du vibrato sur du vrai matériel (juge de paix = comparaison au jeu, hors repo).
+5. **Adressage SPU** (§5) — les banques SE de certains stages (`000/001/002/006`
+   de `tales`) référencent les samples en espace SPU (≥0x150000), pas en offset
+   fichier ; conversion à écrire pour les rendre audibles. Non-bloquant pour MGS2.
+6. **Optimisation** — le rendu est lent (Python pur, échantillon par échantillon).
    Pistes : vectoriser `_play`/l'ADSR (numpy), précalculer les samples décodés par
    instrument, réduire les boucles chaudes. Objectif : écouter une partition sans
    faire chauffer le CPU. 🥵
