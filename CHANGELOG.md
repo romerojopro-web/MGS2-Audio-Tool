@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 4.2.0 — 2026-07-23
 
 ### Added — replace stock XWMA audio (via xWMAEncode)
 The SDT tab can now **replace** stock (Konami XWMA) `.sdt` audio, not just
@@ -17,9 +17,22 @@ message).
   slot for, so the game can't decode it — proven during development. New
   optional bridge `mgs2_audio/xwmaencode.py`; the SDT tab prompts for the exe.
 - The container re-mux preserves every other stream and the file's exact size.
+- The WAV is first conformed (via ffmpeg) to the original clip's channel count
+  and sample rate: a stereo WAV dropped where the game expects mono is rejected
+  in-game even though a lenient player would preview it fine.
+- A stock original opened as `*.sdt.vortex_backup` is saved back under its real
+  `*.sdt` name, so the file the game loads is named correctly.
 
-**Note:** the RIFF→AMWX→re-mux chain is fully tested against real files; the
-final WAV→game path depends on your xWMAEncode.exe and an in-game check.
+**Confirmed in-game:** a replaced voice line was re-encoded, re-injected, and
+played back correctly in the running game — the full WAV→game path works, not
+just the offline round-trip.
+
+### Fixed — upgraders keep their tagging work
+Loading and saving the SDT tag database on this version is now guaranteed
+additive: the new `*.sdt.vortex_backup` entries are an independent key, and a
+folder rescan only ever refreshes cache fields, so a user's hand-typed
+done/tag/speaker/notes from a previous version are never overwritten. Pinned
+by regression tests.
 
 ## 4.1.0 — 2026-07-21
 
