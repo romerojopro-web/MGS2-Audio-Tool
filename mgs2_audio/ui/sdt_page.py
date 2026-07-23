@@ -830,15 +830,28 @@ class SDTPage(PlaybackMixin, QWidget):
         lowest bitrate is too large (the clip is simply too long).
         """
         capacity = xwma_fmt.xwma_capacity(self.sdt.raw)
-        for br in xwmaencode_bridge.BITRATES:
+        # Match the original clip's channel count and sample rate, or the game
+        # rejects the file (e.g. a stereo WAV where it expects mono).
+        fd, conformed = tempfile.mkstemp(suffix=".wav")
+        os.close(fd)
+        try:
+            ffmpeg_bridge.conform_wav(
+                self.new_wav_path, conformed, self.sdt.channels,
+                self.sdt.sample_rate, ffmpeg_path=self._ffmpeg_path())
+            for br in xwmaencode_bridge.BITRATES:
+                try:
+                    riff = xwmaencode_bridge.encode_to_xwma(
+                        conformed, exe, bitrate=br)
+                except Exception:
+                    continue              # bitrate not valid for this WAV
+                amwx = xwma_fmt.riff_to_amwx(riff)
+                if len(amwx) <= capacity:
+                    return xwma_fmt.replace_amwx_in_sdt(self.sdt.raw, amwx), br
+        finally:
             try:
-                riff = xwmaencode_bridge.encode_to_xwma(
-                    self.new_wav_path, exe, bitrate=br)
-            except Exception:
-                continue                 # bitrate not valid for this WAV
-            amwx = xwma_fmt.riff_to_amwx(riff)
-            if len(amwx) <= capacity:
-                return xwma_fmt.replace_amwx_in_sdt(self.sdt.raw, amwx), br
+                os.unlink(conformed)
+            except OSError:
+                pass
         raise ValueError(self._t("xwma_too_long"))
 
     def _generate_xwma_sdt(self):

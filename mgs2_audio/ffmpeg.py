@@ -86,3 +86,24 @@ def decode_to_wav(riff_xwma: bytes, out_wav: str,
 def available(configured_path: Optional[str] = None) -> bool:
     """Whether ffmpeg can be found right now."""
     return find_ffmpeg(configured_path) is not None
+
+
+def conform_wav(in_wav: str, out_wav: str, channels: int, sample_rate: int,
+                ffmpeg_path: Optional[str] = None) -> None:
+    """Rewrite a WAV to a given channel count and sample rate (16-bit PCM).
+
+    Replacement audio must match the original clip's layout — a stereo WAV put
+    where the game expects mono (or a different rate) is rejected by the game
+    even when it decodes fine in a lenient player.
+    """
+    exe = find_ffmpeg(ffmpeg_path)
+    if not exe:
+        raise FfmpegMissing()
+    proc = subprocess.run(
+        [exe, "-y", "-loglevel", "error", "-i", in_wav,
+         "-ac", str(channels), "-ar", str(sample_rate),
+         "-c:a", "pcm_s16le", out_wav],
+        capture_output=True, text=True)
+    if proc.returncode != 0 or not os.path.exists(out_wav):
+        tail = (proc.stderr or "").strip().splitlines()
+        raise RuntimeError(f"ffmpeg failed: {tail[-1] if tail else proc.returncode}")
