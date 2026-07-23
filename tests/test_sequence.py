@@ -334,3 +334,89 @@ def test_sweep_scoops_pitch_into_the_note(tmp_path):
     l1, _ = render.render_cue(b_plain, b_plain.cues[0], seconds=3)
     l2, _ = render.render_cue(b_swept, b_swept.cues[0], seconds=3)
     assert l1 and l2 and l1 != l2       # the scoop changes the sound
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# raven fidelity is LOCKED — these guard the synth's core tuning tables and
+# curves against silent drift. They are the keystone: the whole point of the
+# sequencer is to reproduce Kazuki Muraoka's PS2 driver faithfully, so the exact
+# raven constants (sd_ioset.c / sd_sub1.c) must never change by accident. See
+# docs/AUDIT_SDX.md §2.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# raven sd_ioset.c pant[41] — the pan→volume law. NOT constant-power.
+_RAVEN_PANT = [
+    0,   2,   4,   7,   10,  13,  16,  20,  24,  28,  32,  36,  40,  45,
+    50,  55,  60,  65,  70,  75,  80,  84,  88,  92,  96,  100, 104, 107,
+    110, 112, 114, 116, 118, 120, 122, 123, 124, 125, 126, 127, 127,
+]
+
+# raven sd_sub1.c VIBX_TBL[32] — the vibrato LFO quarter/half waveform.
+_RAVEN_VIBX = [
+    0,   32,  56,  80,  104, 128, 144, 160,
+    176, 192, 208, 224, 232, 240, 240, 248,
+    255, 248, 244, 240, 232, 224, 208, 192,
+    176, 160, 144, 128, 104, 80,  56,  32,
+]
+
+
+def test_pan_table_matches_raven_exactly():
+    """The pan curve is raven's pant[], byte for byte — not sqrt, not linear."""
+    assert render._PANT == _RAVEN_PANT
+    assert len(render._PANT) == 41
+
+
+def test_pan_centre_is_not_constant_power():
+    """raven's centre (pan 20) is pant[20]/127 = 0.63, deliberately NOT the
+    sqrt(0.5)=0.707 of a constant-power law (docs/AUDIT_SDX.md §2.1)."""
+    import math
+    centre = render._PANT[20] / 127.0
+    assert abs(centre - 0.63) < 0.005
+    assert abs(centre - math.sqrt(0.5)) > 0.07     # provably not constant-power
+
+
+def test_pan_table_is_bounded_and_monotonic():
+    assert render._PANT[0] == 0                    # hard side fully silenced
+    assert render._PANT[40] == 127                 # near side fully open
+    assert render._PANT == sorted(render._PANT)    # never dips as pan sweeps
+
+
+def test_centre_pan_is_balanced(tmp_path):
+    """pan 20 (centre) must put equal energy on both channels — the audible
+    consequence of pant[20] == pant[40-20]."""
+    centre = [event(0, 0, 1, seq.OP_PROGRAM),
+              event(0, 0, 0, seq.OP_PAN_SET),      # b1=0 → panf = 20 (centre)
+              note_event(60)]
+    bank = seq.parse_sequence(build_bank(tmp_path, tracks=[centre]))
+    l, r = render.render_cue(bank, bank.cues[0], seconds=3)
+    el = sum(abs(v) for v in l)
+    er = sum(abs(v) for v in r)
+    assert max(el, er) > 0                          # the note actually sounded
+    assert abs(el - er) <= 0.02 * max(el, er)       # ...equally on both sides
+
+
+def test_vibrato_table_matches_raven_exactly():
+    """The vibrato LFO shape is raven's VIBX_TBL, byte for byte."""
+    assert render._VIBX_TBL == _RAVEN_VIBX
+    assert len(render._VIBX_TBL) == 32
+    assert render._VIBX_TBL[0] == 0                 # starts at the zero crossing
+    assert max(render._VIBX_TBL) == 255             # peak amplitude
+    assert render._VIBX_TBL.index(255) == 16        # peak at quarter phase
+
+
+def test_portamento_glides_instead_of_jumping(tmp_path):
+    """0xE6 por_set (b2 = speed > 0): the note slides from the previous note's
+    pitch (geometrically, raven por_compute) instead of starting on-pitch.
+    Guards the glide from being silently disabled or flattened to a jump."""
+    plain = [event(0, 0, 1, seq.OP_PROGRAM),
+             note_event(48, length=30),
+             note_event(72, length=90)]
+    glided = [event(0, 0, 1, seq.OP_PROGRAM),
+              note_event(48, length=30),
+              event(0, 0, 40, seq.OP_POR_SET),      # enable portamento, speed 40
+              note_event(72, length=90)]
+    b1 = seq.parse_sequence(build_bank(tmp_path / "a", tracks=[plain]))
+    b2 = seq.parse_sequence(build_bank(tmp_path / "b", tracks=[glided]))
+    l1, _ = render.render_cue(b1, b1.cues[0], seconds=4)
+    l2, _ = render.render_cue(b2, b2.cues[0], seconds=4)
+    assert l1 and l2 and l1 != l2       # the glide changes the second note's path
