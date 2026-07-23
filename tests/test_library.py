@@ -185,3 +185,64 @@ def test_counts_done_and_todo():
 def test_corrupt_database_is_replaced_not_raised(tmp_path):
     (tmp_path / db.LIBRARY_FILENAME).write_text("{ this is not json")
     assert db.load_library(str(tmp_path))["entries"] == {}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Upgrade safety — a user who already tagged files on an older version must
+# never lose that work when the new version loads and adds to their database.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_upgrade_preserves_existing_manual_work(tmp_path):
+    """Loading + saving on the new version must not clobber older entries.
+
+    The new version adds `.sdt.vortex_backup` entries alongside the `.sdt`
+    ones. That extra key must be additive: a moddeur's hand-typed done/tag/
+    speaker/notes on the old keys have to survive untouched.
+    """
+    import json
+    folder = str(tmp_path)
+    # A database written by a previous version, with real user work in it.
+    (tmp_path / db.LIBRARY_FILENAME).write_text(json.dumps({
+        "version": db.LIBRARY_VERSION,
+        "entries": {
+            "vc000101.sdt": {"done": True, "tag": "Snake",
+                             "speaker": "Snake", "notes": "important line"},
+            "vc000202.sdt": {"done": True, "tag": "Otacon",
+                             "speaker": "Otacon", "notes": ""},
+        },
+    }), encoding="utf-8")
+
+    # New version: load, add a stock-original entry, save.
+    data = db.load_library(folder)
+    db.set_entry(data, "vc000101.sdt.vortex_backup", done=False, tag="stock")
+    assert db.save_library(folder, data)
+
+    final = db.load_library(folder)
+    old1 = db.get_entry(final, "vc000101.sdt")
+    old2 = db.get_entry(final, "vc000202.sdt")
+    new = db.get_entry(final, "vc000101.sdt.vortex_backup")
+    assert {k: old1[k] for k in db.MANUAL_FIELDS} == {
+        "done": True, "tag": "Snake",
+        "speaker": "Snake", "notes": "important line"}
+    assert old2["tag"] == "Otacon" and old2["done"] is True
+    assert new["tag"] == "stock"  # additive, independent key
+
+
+def test_scan_cache_never_overwrites_manual_fields(tmp_path):
+    """Auto-scanning file metadata must leave hand-typed tags intact.
+
+    `cache_metadata` runs on every folder scan; it may only touch the cache
+    fields (channels/duration/size/blocks/…), never the user's done/tag/notes.
+    """
+    data = db.load_library(str(tmp_path))
+    db.set_entry(data, "vc000101.sdt", done=True, tag="Snake",
+                 speaker="Snake", notes="keep me")
+    # Simulate a scan writing fresh cache fields onto the same key.
+    db.set_entry(data, "vc000101.sdt", channels=1, sample_rate=44100,
+                 duration=16.1, size=101040, blocks=0)
+
+    entry = db.get_entry(data, "vc000101.sdt")
+    assert entry["done"] is True
+    assert entry["tag"] == "Snake"
+    assert entry["speaker"] == "Snake"
+    assert entry["notes"] == "keep me"

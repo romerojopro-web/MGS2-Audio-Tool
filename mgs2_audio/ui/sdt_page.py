@@ -798,6 +798,15 @@ class SDTPage(PlaybackMixin, QWidget):
     def _ffmpeg_path(self):
         return self.win.cfg.get("ffmpeg_path", "")
 
+    def _game_basename(self):
+        """The game's real filename for the open file: a stock original opened
+        as ``*.sdt.vortex_backup`` maps back to ``*.sdt`` for output naming."""
+        name = os.path.basename(self.sdt_path)
+        suffix = ".vortex_backup"
+        if name.lower().endswith(suffix):
+            name = name[:-len(suffix)]
+        return name
+
     def _decode_xwma_to_wav(self, out_path):
         """Convert the AMWX stream to RIFF xWMA, decode via ffmpeg.
 
@@ -869,7 +878,7 @@ class SDTPage(PlaybackMixin, QWidget):
             save_config(self.win.cfg)
             exe = path
 
-        original_name = os.path.basename(self.sdt_path)
+        original_name = self._game_basename()
         start_dir = self.dir_save or os.path.expanduser("~")
         out_path, _ = QFileDialog.getSaveFileName(
             self, self._t("dlg_save_sdt"),
@@ -959,7 +968,7 @@ class SDTPage(PlaybackMixin, QWidget):
     def export_wav(self):
         if not self.sdt:
             return
-        default_name = os.path.splitext(os.path.basename(self.sdt_path))[0] + ".wav"
+        default_name = os.path.splitext(self._game_basename())[0] + ".wav"
         start_dir = self.dir_export or self.dir_open or os.path.expanduser("~")
         path, _ = QFileDialog.getSaveFileName(
             self, self._t("dlg_export_wav"),
@@ -1061,7 +1070,7 @@ class SDTPage(PlaybackMixin, QWidget):
             return
 
         # SAME name as the original (for the game), in the remembered output folder
-        original_name = os.path.basename(self.sdt_path)
+        original_name = self._game_basename()
         start_dir = self.dir_save or os.path.expanduser("~")
         save_title = self._t("dlg_save_sdt")
         save_filter = self._t("filter_sdt")
