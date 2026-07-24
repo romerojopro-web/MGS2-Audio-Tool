@@ -259,7 +259,9 @@ python -m mgs2_audio.cli sdx replace-all "C:/Games/.../MGS2" <key> mine.wav
 run.py                 launch the GUI
 mgs2_audio/
     codec/             PS-ADPCM, MS-ADPCM and WAV. Knows nothing about MGS2.
-    formats/           sdt.py, sdx.py, sequence.py, bgm.py — the game's file formats.
+    formats/           sdt.py, sdx.py, sequence.py, bgm.py, xwma.py (stock Konami
+                       XWMA), seo2.py (BP_SE.DAT global sounds), mcbgm.py (MC Unity
+                       music bundles) — the game's file formats.
                        detect.py does structural auto-detection.
     library/           the tagging databases.
     render.py          a small software SPU: plays a sequencer cue.

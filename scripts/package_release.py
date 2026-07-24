@@ -36,6 +36,10 @@ PACKED_FILES = [
     "pytest.ini",
 ]
 
+# Never ship per-release page copy: it duplicates the CHANGELOG and pins a stale
+# version number inside every future zip. History stays in CHANGELOG.md.
+EXCLUDE_PREFIXES = ("RELEASE_NOTES",)
+
 
 def project_root() -> str:
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -58,6 +62,8 @@ def collect(root: str):
         for dirpath, dirnames, filenames in os.walk(os.path.join(root, d)):
             dirnames[:] = [n for n in dirnames if n != "__pycache__"]
             for name in sorted(filenames):
+                if name.startswith(EXCLUDE_PREFIXES):
+                    continue
                 if name.endswith(exts):
                     full = os.path.join(dirpath, name)
                     yield os.path.relpath(full, root).replace(os.sep, "/")
