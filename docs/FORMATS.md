@@ -300,6 +300,34 @@ shows, and it is not the game's own list.
 > sample boundaries, which is what a false signal looks like. Only the
 > signature-filtered monotonic run above is trustworthy.
 
+#### What the `+4` field is *not* (measured, so nobody repeats it)
+
+Filtering strictly (`byte[2] == 0x01`, trailing `FF × 8`, strictly increasing)
+gives **134 clean entries** in `w00a`. Scoring every combination of unit
+(2/4/8/16/32/64 bytes) against every plausible base (`0x1000`, the directory's
+end, `0x800`, `0`), by how many addresses land exactly on a **sample start** (a
+frame following one with the end flag):
+
+- **no combination stands out** — the best is ~5 %, i.e. noise. Compare the
+  directory-length problem, where the right answer scored ~100 % against <25 %
+  for every neighbour. A real answer looks like the latter.
+- so the field is frame-aligned and increasing, and with `unit=8, base=0x1000`
+  it does stay inside the audio (as §3 first reported), **but it does not point
+  at the starts of the samples our end-flag partition finds**.
+
+Counting the same bank's end-flag segments at various minimum sizes gives 361
+(no minimum), 147 (≥32 B), 131 (≥64 B), 126 (≥128 B and above — what the tool
+reports). The table's 134 sits among these without matching any threshold
+exactly, so the table *may* be the game's sound list at a finer granularity than
+our partition, but that is **not established**.
+
+**Open.** To crack it, the useful next moves are: decode what distinguishes the
+record kinds (`10`/`30`/`50` in byte 0, and byte 3 varying `00`,`04`…`07`),
+check whether the entries using the `FF × 8` slots carry the second and third
+addresses §3 mentions, and test whether the value is an SPU upload address
+rather than a file offset — SE banks already keep SPU addresses in their `0x800`
+table, so the same space may be in use here.
+
 ### The tail
 
 From roughly `0x110000` the data is not audio. It reads as a sequence of small
