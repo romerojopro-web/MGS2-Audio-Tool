@@ -21,10 +21,14 @@ The format notes were written from six banks and generalised too far:
   entries do not resolve); in **music banks** (~80) it is the sequencer's
   instrument directory. The record signature is identical, so they can only be
   told apart by whether the offsets land inside the audio region.
-- **The shared instrument bank is smaller than it looked.** Programs 139–142
-  seemed to be missing, but they were being lost to the directory bug below;
-  read correctly they are in the file. Only the high range (program **249** and
-  neighbours, 6539 refs) is genuinely outside the per-stage directory.
+- **Nothing much is missing from the instrument banks after all.** Two false
+  alarms, both caused by the directory bug below: programs 139–142 looked
+  missing (they were simply never read), and programs appeared to reach 249
+  (harvested from *phantom cues* — a misread directory lets the cue-table scan
+  latch onto noise). Re-measured with the parser fixed, the highest program
+  actually referenced is **132**, banks holding 150 instruments are entirely
+  self-contained, and only the ~129-entry banks still reach outside, to
+  **129–132** — the four common instruments long documented.
 
 ### Fixed — the instrument directory was truncated, shifting every sample
 The directory-end test required bytes `+7`, `+13` and `+14` to hold `0x7F`,

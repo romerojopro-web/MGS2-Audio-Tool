@@ -545,17 +545,23 @@ per-stage instrument directory**. These reference **instruments shared across
 all stages**. In the original game they came from `wv00007f.wvx`, a common
 sample bank loaded by the "init stage" of the PS2 sound library.
 
-**Careful — most "missing" programs were a parser bug, not a missing bank.** A
-sweep of 600 banks first suggested programs 139–142 came from the shared bank
-too. They do not: the directory was being **truncated** at the first custom
-envelope (§4.2), so entries 135–149 were never read. With the directory parsed
-correctly, `a01a/pk000011.sdx` holds **150** instruments and programs 139–142
-resolve inside it.
+**Careful — "missing" programs are usually a parser bug, not a missing bank.**
+Two false alarms were raised here before the directory parsing was fixed (§4.2):
 
-What remains genuinely outside the directory is the high range — program
-**249** (6539 references) and its neighbours. Those are the real shared-bank
-instruments. Establish the directory length first before concluding that any
-program is missing.
+- *"Programs 139–142 are missing."* No: the directory was **truncated** at the
+  first custom envelope, so entries 135–149 were never read. Read correctly,
+  `a01a/pk000011.sdx` holds **150** instruments and 139–142 resolve inside it.
+- *"Programs reach 249."* No: that came from **phantom cues**. When a bank's
+  directory and audio start are misread, the cue-table scan can latch onto
+  noise, and the "program" bytes harvested from it are meaningless. Re-measured
+  with the directory fixed, the **highest program actually referenced is 132**.
+
+With the parser corrected, banks holding **150** instruments reference **no**
+out-of-directory program at all — they are self-contained. Only the smaller
+(~129-entry) banks still reach past their own directory, and only to
+**129–132** — which is exactly the four common instruments this section
+originally described. Establish the directory length before concluding anything
+is missing.
 
 The Master Collection does not ship these samples in a separate file. The
 renderer stubs them with silence rather than dropping the events — the
