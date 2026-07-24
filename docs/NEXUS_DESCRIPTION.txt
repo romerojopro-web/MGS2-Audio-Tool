@@ -41,6 +41,15 @@ click your WAV.
 and drop it straight in. Works with the game as it comes; the Better Audio Mod
 is [i]not[/i] required (but is still supported if you use it).
 
+[*][b]What the guards say[/b] — hold a soldier up and he begs for his life;
+tranquillise him and he snores; spot you and he shouts, calls it in, hunts for
+you. All of it is replaceable with your own voice. This one is [b]tested in
+game[/b]: a guard's "don't kill me" was swapped for a real recording and he says
+it when you hold him up. One catch the tool handles for you — the same guard
+lines are copied into every area's files, so changing one area only works until
+you walk into the next. The tool finds every copy and changes them all, so your
+voice follows the guards through the whole game.
+
 [*][b]The game's iconic sounds[/b] — picking up an item, selecting a weapon, the
 interface blips, the alert alarm. These 106 sounds sit in a place nothing could
 reach before now.
