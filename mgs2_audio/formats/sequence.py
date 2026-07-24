@@ -276,6 +276,7 @@ class SequenceBank:
     sequence_end: int
     instruments: List[Instrument] = field(default_factory=list)
     cues: List[Cue] = field(default_factory=list)
+    is_music: bool = False   # False = an SE bank (its 0x800 table holds SPU addresses)
 
     def track(self, addr: int, limit: int = 4096) -> List[Event]:
         """The events of one track, stopping at (and excluding) its end marker."""
@@ -393,14 +394,42 @@ def _lead_in_fraction(raw: bytes, records: int) -> float:
     return silent / total if total else 0.0
 
 
-def _audio_start(raw: bytes, count: int) -> int:
-    """Where the audio begins, counting the directory's terminator record."""
+def _record_count(raw: bytes) -> int:
+    """How many records carry the directory signature, from `0x800`."""
+    count = 1
+    off = DIRECTORY_START + RECORD_SIZE
+    while _is_directory_record(raw, off):
+        count += 1
+        off += RECORD_SIZE
+    return count
+
+
+def _resolve_directory(raw: bytes):
+    """(instrument count, where the audio starts, whether this is a music bank).
+
+    The lead-in measure settles all three at once. A **music bank** addresses
+    its samples by file offset, so counting the terminator record lines every
+    sample up on its silent lead-in frame. An **SE bank** keeps SPU addresses in
+    the same table, so no length aligns anything and the measure simply fails —
+    which is exactly what tells the two apart. Measured over the game's stage
+    banks the split is total: 68 of 68 music banks qualify, 0 of 532 SE banks.
+    """
+    count = _record_count(raw)
     plain = DIRECTORY_START + count * RECORD_SIZE
-    with_terminator = plain + RECORD_SIZE
     aligned = _lead_in_fraction(raw, count + 1)
     if aligned >= _LEAD_IN_MIN and aligned > _lead_in_fraction(raw, count):
-        return with_terminator
-    return plain
+        return count, plain + RECORD_SIZE, True
+    return count, plain, False
+
+
+def is_music_bank(raw: bytes) -> bool:
+    """True when this `.sdx` carries playable musical material.
+
+    Both kinds of bank share the extension and the `0x800` table's shape, so
+    they can only be told apart by whether that table's offsets actually
+    resolve to samples — see :func:`_resolve_directory`.
+    """
+    return _resolve_directory(raw)[2]
 
 
 def has_sequence(raw: bytes) -> bool:
@@ -544,14 +573,9 @@ def parse_sequence(path: str) -> SequenceBank:
         raise ValueError(f"{path}: no instrument directory — not a sequencer bank")
 
     # The directory runs until its fixed fields stop matching; the audio follows.
-    count = 1
-    off = DIRECTORY_START + RECORD_SIZE
-    while _is_directory_record(raw, off):
-        count += 1
-        off += RECORD_SIZE
     # `count` is the number of instruments; the audio starts after the
-    # directory, which may close with a terminator record (see _audio_start).
-    audio_start = _audio_start(raw, count)
+    # directory, which may close with a terminator record.
+    count, audio_start, music = _resolve_directory(raw)
 
     padding = _find_padding(raw, audio_start)
     if padding is None:
@@ -565,7 +589,8 @@ def parse_sequence(path: str) -> SequenceBank:
     if table < 0:
         bank = SequenceBank(path=path, raw=raw, audio_start=audio_start,
                             audio_end=padding, table_start=-1,
-                            sequence_start=len(raw), sequence_end=len(raw))
+                            sequence_start=len(raw), sequence_end=len(raw),
+                            is_music=music)
         _parse_instruments(raw, bank, count, audio_start, padding)
         return bank
 
@@ -574,7 +599,8 @@ def parse_sequence(path: str) -> SequenceBank:
 
     bank = SequenceBank(path=path, raw=raw, audio_start=audio_start,
                         audio_end=padding, table_start=table,
-                        sequence_start=sequence, sequence_end=seq_end)
+                        sequence_start=sequence, sequence_end=seq_end,
+                        is_music=music)
 
     _parse_instruments(raw, bank, count, audio_start, padding)
 

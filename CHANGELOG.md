@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### Added — open a stage in the sequencer tab, and see which banks hold music
+A stage folder carries several `.sdx`, and until now finding the musical ones
+meant opening them one at a time. A new **"Open a stage…"** button lists a
+folder's banks, each labelled with what it is and how much it holds, musical
+ones first:
+
+```
+pk000011.sdx · music   · 256 pieces · 150 instruments
+pk000000.sdx · effects ·   0 pieces ·  99 instruments
+```
+
+Opening a single `.sdx` still works exactly as before — this is a shortcut, not
+a new requirement. **A music bank carries its own instruments**, so nothing in
+the render depends on the rest of the folder. New `sequence.is_music_bank()`
+does the classification.
+
+### Removed — the sequencer's "tune the instruments" checkbox
+Instrument tuning is not a preference: `sample_note`/`sample_tune` and raven's
+`freq_tbl` are what put the notes at the right pitch, so turning it off only
+produced a knowingly wrong render. The switch is gone from the tab; it remains
+in the command line (`--no-tune`) where it is useful as a diagnostic.
+
 ### Fixed — the sequencer tab no longer contradicts what the tool knows
 Two of its labels had been overtaken by the format work:
 - The hint claimed the cues are "mostly raw SPU sound effects, not the game's

@@ -417,6 +417,36 @@ def test_directory_terminator_record_is_counted(tmp_path):
     assert all(i.size > 0 for i in bank.instruments)        # samples still resolve
 
 
+def test_music_and_se_banks_are_told_apart(tmp_path):
+    """Both kinds share the extension and the 0x800 table's shape.
+
+    What separates them is whether that table's offsets resolve to samples: a
+    music bank addresses them by file offset, an SE bank keeps SPU addresses
+    there, so nothing lines up on its lead-in frames.
+    """
+    music = build_bank(tmp_path / "music", instruments=3)
+    raw = bytearray(open(music, "rb").read())
+    dir_end = seq.DIRECTORY_START + 3 * seq.RECORD_SIZE
+    raw[dir_end:dir_end] = bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x10,
+                                  0x0D, 0x70, 0x00, 0x00, 0x00, 0x00,
+                                  0x00, 0x00, 0x00, 0x00])
+    with open(music, "wb") as f:
+        f.write(bytes(raw))
+    assert seq.is_music_bank(bytes(raw))
+    assert seq.parse_sequence(music).is_music
+
+    # Offsets that point far outside the audio (as SPU addresses do) resolve
+    # to nothing, so the bank cannot be taken for a musical one.
+    se = build_bank(tmp_path / "se", instruments=3)
+    raw = bytearray(open(se, "rb").read())
+    for i in range(3):
+        rec = seq.DIRECTORY_START + i * seq.RECORD_SIZE
+        raw[rec:rec + 4] = struct.pack("<I", 0x150000 + i * 0x1000)
+    with open(se, "wb") as f:
+        f.write(bytes(raw))
+    assert not seq.is_music_bank(bytes(raw))
+
+
 def test_terminator_is_not_invented_when_it_would_misalign(tmp_path):
     """The extra slot is only taken when it demonstrably improves alignment.
 

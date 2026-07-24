@@ -15,6 +15,7 @@ import tempfile
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtWidgets import (
     QApplication, QCheckBox, QComboBox, QFileDialog, QFrame, QHBoxLayout,
+    QInputDialog,
     QLabel, QListWidgetItem, QMessageBox, QProgressDialog, QPushButton,
     QSlider, QSplitter, QVBoxLayout, QWidget,
 )
@@ -40,7 +41,7 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
         self.bank_path = ""
         self.cue = None
         self.preview_wav = ""
-        self._cache = {}          # (cue index, stereo, tune) -> wav path
+        self._cache = {}          # (cue index, stereo) -> wav path
 
         self._init_playback()
         self._init_tagging(lib.SEQ_LIBRARY_FILENAME)
@@ -72,6 +73,13 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
         self.btn_open = QPushButton(); self.btn_open.setObjectName("small")
         self.btn_open.clicked.connect(self.open_bank)
         lay.addWidget(self.btn_open)
+
+        # Opening a stage is a convenience, not a requirement: a music bank
+        # carries its own instruments. It just saves hunting for which of a
+        # stage's .sdx files are musical.
+        self.btn_open_stage = QPushButton(); self.btn_open_stage.setObjectName("small")
+        self.btn_open_stage.clicked.connect(self.open_stage)
+        lay.addWidget(self.btn_open_stage)
 
         self.lbl_bank = QLabel(); self.lbl_bank.setObjectName("dim")
         self.lbl_bank.setWordWrap(True)
@@ -151,9 +159,6 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
         self.chk_stereo = QCheckBox(); self.chk_stereo.setChecked(True)
         self.chk_stereo.stateChanged.connect(self._options_changed)
         c.addWidget(self.chk_stereo)
-        self.chk_tune = QCheckBox(); self.chk_tune.setChecked(True)
-        self.chk_tune.stateChanged.connect(self._options_changed)
-        c.addWidget(self.chk_tune)
         root.addWidget(card)
 
         root.addStretch()
@@ -171,6 +176,7 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
     def retranslate(self):
         self.lbl_list_title.setText(self._t("seq_list_title"))
         self.btn_open.setText(self._t("seq_browse"))
+        self.btn_open_stage.setText(self._t("seq_open_stage"))
         if not self.bank:
             self.lbl_bank.setText(self._t("seq_no_file"))
             self.lbl_info.setText(self._t("seq_select_hint"))
@@ -184,7 +190,6 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
         self.btn_export_all.setText(self._t("seq_export_all"))
         self.lbl_step4.setText(self._t("seq_options_title"))
         self.chk_stereo.setText(self._t("seq_stereo"))
-        self.chk_tune.setText(self._t("seq_tune"))
         self._retranslate_tag_fields()
         self._refresh_count()
 
@@ -194,8 +199,52 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
         start = self.win.cfg.get("dir_sdx", "") or os.path.expanduser("~")
         path, _ = QFileDialog.getOpenFileName(
             self, self._t("dlg_open_seq"), start, self._t("filter_sdx"))
-        if not path:
+        if path:
+            self._load_bank(path)
+
+    def open_stage(self):
+        """Pick a bank from a stage folder, musical ones first.
+
+        Purely a shortcut: a music bank holds its own instruments, so nothing
+        here depends on the rest of the folder. It only spares the user from
+        opening `.sdx` files one by one to find which carry music.
+        """
+        start = self.win.cfg.get("dir_sdx", "") or os.path.expanduser("~")
+        folder = QFileDialog.getExistingDirectory(
+            self, self._t("seq_open_stage"), start)
+        if not folder:
             return
+
+        entries = []
+        for name in sorted(os.listdir(folder)):
+            if not name.lower().endswith(".sdx"):
+                continue
+            path = os.path.join(folder, name)
+            try:
+                bank = seq.parse_sequence(path)
+            except Exception:
+                continue
+            entries.append((bank.is_music, len(bank.cues), len(bank.instruments),
+                            name, path))
+        if not entries:
+            QMessageBox.information(self, self._t("err_title"),
+                                    self._t("seq_no_banks"))
+            return
+
+        entries.sort(key=lambda e: (not e[0], e[3]))     # music banks first
+        labels = [
+            self._t("seq_bank_row", name=name,
+                    kind=self._t("seq_kind_music" if music else "seq_kind_se"),
+                    cues=cues, instruments=instruments)
+            for music, cues, instruments, name, _ in entries
+        ]
+        choice, ok = QInputDialog.getItem(
+            self, self._t("seq_open_stage"), self._t("seq_pick_bank"),
+            labels, 0, False)
+        if ok and choice in labels:
+            self._load_bank(entries[labels.index(choice)][4])
+
+    def _load_bank(self, path):
         try:
             bank = seq.parse_sequence(path)
         except ValueError:
@@ -328,8 +377,7 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
     def _render_current(self):
         """Synthesise the selected piece, or reuse it if already done."""
         stereo = self.chk_stereo.isChecked()
-        tune = self.chk_tune.isChecked()
-        key = (_CACHE_VERSION, self.cue.index, stereo, tune)
+        key = (_CACHE_VERSION, self.cue.index, stereo)
 
         path = self._cache.get(key)
         if path is None or not os.path.exists(path):
@@ -338,7 +386,7 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
             QApplication.processEvents()
             try:
                 left, right = synth.render_cue(self.bank, self.cue,
-                                               stereo=stereo, tune=tune)
+                                               stereo=stereo)
             except Exception as e:
                 QApplication.restoreOverrideCursor()
                 QMessageBox.critical(self, self._t("err_title"),
@@ -406,7 +454,6 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
 
         cues = self._visible_cues()
         stereo = self.chk_stereo.isChecked()
-        tune = self.chk_tune.isChecked()
         base = os.path.splitext(os.path.basename(self.bank_path))[0]
 
         dlg = QProgressDialog(self._t("seq_exporting", n=0, total=len(cues)),
@@ -422,7 +469,7 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
             dlg.setLabelText(self._t("seq_exporting", n=n, total=len(cues)))
             QApplication.processEvents()
             try:
-                left, right = synth.render_cue(self.bank, cue, stereo=stereo, tune=tune)
+                left, right = synth.render_cue(self.bank, cue, stereo=stereo)
             except Exception:
                 continue
             if not left:
