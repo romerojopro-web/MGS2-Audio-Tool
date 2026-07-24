@@ -10,6 +10,13 @@
 *.gcx
 *.cnf
 *.bak
+
+# Game executables and any unprotected image of them — NEVER in the repo.
+# The reverse-engineering notes in docs/ are interoperability research on your
+# own legally-owned copy; the binary itself must not be committed.
+*.exe
+*.unpacked
+*unpacked*.exe
 tests/mgs2_substance_2003/
 scripts/sdx_mgs2_MC/
 

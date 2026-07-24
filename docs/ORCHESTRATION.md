@@ -48,9 +48,12 @@ pas les ambiances) et comment est-elle déclenchée ? **Non résolue.**
   one-shots** (`BP_SE.DAT` fournit les sons UI/objets/alarme globaux).
 
 **PERCÉE (2026-07-24/25) — le désassemblage confirme le driver raven dans l'EXE.**
-Le moteur in-game descend du systeme son PS2 (raven), modele public.
 
-Analyse en Python (**tooling + tooling**, pas besoin de Java). Résultat :
+
+
+sur sa propre copie légale (Directive UE 2009/24 art. 6, CPI L122-6-1) ; aucun
+binaire ni donnée de jeu n'est inclus dans le repo. Analyse en Python
+(**tooling + tooling**). Résultat :
 
 - **Le driver son PS2 de raven EST compilé dans l'EXE**, et la musique in-game
   tourne dessus. Les **codes son 32 bits** de raven sont des immédiats littéraux
