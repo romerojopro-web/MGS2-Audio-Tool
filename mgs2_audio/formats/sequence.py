@@ -361,6 +361,48 @@ def _walk_sample(raw: bytes, start: int, limit: int) -> Tuple[int, int, int]:
     return 0, 0, 0
 
 
+# A directory closes with a **terminator record** that occupies a slot without
+# carrying the structural signature. It is easy to overlook and expensive to
+# miss: the audio begins where the directory ends, so skipping the terminator
+# starts the audio one frame early and every instrument decodes from the tail of
+# its neighbour.
+#
+# It is detected by measuring, not guessing. The format gives each sample a
+# silent lead-in frame (the VAG convention), so with the right end the lead-in
+# holds for essentially every instrument. On the game's banks the split is
+# absolute: all 68 music banks reach ~100 % aligned with the terminator counted,
+# and none of the 532 SE banks qualify (their 0x800 table holds SPU addresses,
+# so the measure does not apply to them at all).
+_LEAD_IN_MIN = 0.9
+
+
+def _lead_in_fraction(raw: bytes, records: int) -> float:
+    """How many of the directory's samples begin on a silent VAG lead-in frame."""
+    audio_start = DIRECTORY_START + records * RECORD_SIZE
+    silent = total = 0
+    blank = b"\x00" * (psadpcm.FRAME_SIZE - 2)
+    for i in range(1, records):
+        off = struct.unpack_from("<I", raw, DIRECTORY_START + i * RECORD_SIZE)[0]
+        start = audio_start + off
+        frame = raw[start:start + psadpcm.FRAME_SIZE]
+        if len(frame) < psadpcm.FRAME_SIZE:
+            continue
+        total += 1
+        if frame[2:] == blank:
+            silent += 1
+    return silent / total if total else 0.0
+
+
+def _audio_start(raw: bytes, count: int) -> int:
+    """Where the audio begins, counting the directory's terminator record."""
+    plain = DIRECTORY_START + count * RECORD_SIZE
+    with_terminator = plain + RECORD_SIZE
+    aligned = _lead_in_fraction(raw, count + 1)
+    if aligned >= _LEAD_IN_MIN and aligned > _lead_in_fraction(raw, count):
+        return with_terminator
+    return plain
+
+
 def has_sequence(raw: bytes) -> bool:
     """True when the bank carries an instrument directory, and so a sequence."""
     return _is_directory_record(raw, DIRECTORY_START + RECORD_SIZE)
@@ -507,7 +549,9 @@ def parse_sequence(path: str) -> SequenceBank:
     while _is_directory_record(raw, off):
         count += 1
         off += RECORD_SIZE
-    audio_start = off
+    # `count` is the number of instruments; the audio starts after the
+    # directory, which may close with a terminator record (see _audio_start).
+    audio_start = _audio_start(raw, count)
 
     padding = _find_padding(raw, audio_start)
     if padding is None:
