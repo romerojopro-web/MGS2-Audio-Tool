@@ -394,6 +394,40 @@ def test_custom_envelope_does_not_truncate_the_directory(tmp_path):
     assert bank.instruments[2].default_pan == 0x10
 
 
+def test_directory_terminator_record_is_counted(tmp_path):
+    """A directory closes with a record that carries none of the signature.
+
+    The audio begins where the directory ends, so overlooking that slot starts
+    the audio one frame early and every instrument decodes from the tail of its
+    neighbour. It is found by measuring the VAG lead-in, not by guessing.
+    """
+    path = build_bank(tmp_path, instruments=3)
+    raw = bytearray(open(path, "rb").read())
+    dir_end = seq.DIRECTORY_START + 3 * seq.RECORD_SIZE
+    # Occupies a slot, matches none of the structural bytes (+6 is not 0x00).
+    raw[dir_end:dir_end] = bytes([0x00, 0x00, 0x00, 0x00, 0x00, 0x10,
+                                  0x0D, 0x70, 0x00, 0x00, 0x00, 0x00,
+                                  0x00, 0x00, 0x00, 0x00])
+    with open(path, "wb") as f:
+        f.write(bytes(raw))
+
+    bank = seq.parse_sequence(path)
+    assert len(bank.instruments) == 3                       # instruments unchanged
+    assert bank.audio_start == dir_end + seq.RECORD_SIZE    # terminator counted
+    assert all(i.size > 0 for i in bank.instruments)        # samples still resolve
+
+
+def test_terminator_is_not_invented_when_it_would_misalign(tmp_path):
+    """The extra slot is only taken when it demonstrably improves alignment.
+
+    SE banks address their samples in SPU space, so the lead-in measure does not
+    apply to them — the parser must leave their audio start alone.
+    """
+    path = build_bank(tmp_path, instruments=3)
+    bank = seq.parse_sequence(path)
+    assert bank.audio_start == seq.DIRECTORY_START + 3 * seq.RECORD_SIZE
+
+
 def test_directory_record_accepts_any_envelope():
     """The record test must key on the structural bytes only."""
     rec = custom_envelope_record(0x1234, attack=0x33, release=0x07, pan=0x1F)

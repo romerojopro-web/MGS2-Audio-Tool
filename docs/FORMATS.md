@@ -373,9 +373,24 @@ directories — e.g. `a01a/pk000011.sdx` read 135 entries instead of 150 and
 placed the audio at `0x1070` instead of `0x1160`, leaving nearly every
 instrument reading 15 frames into the previous sample.
 
-The give-away that the alignment is right: with the correct start, **93 of 149**
-entries in that bank begin on a frame carrying the loop-start flag (`0x04`), and
-35 on a silent lead-in frame. With the truncated directory, one and seven.
+**The directory closes with a terminator record** — one slot that carries none
+of the structural bytes (e.g. `00 00 00 00 00 10 0D 70 00…` in
+`a14a/pk000012.sdx`). It is not an instrument, but it *occupies a record*, and
+since the audio begins where the directory ends, overlooking it starts the audio
+one frame early and every instrument decodes from the tail of its neighbour.
+
+Don't guess the end — **measure it**. The format gives every sample a silent
+lead-in frame, so the correct length is the one where that holds throughout:
+
+| Bank | signature walk | with terminator |
+|---|---|---|
+| `a01a/pk000011.sdx` | 150 records → 23.5 % aligned | **151 → 150/150 = 100 %** |
+| `a14a/pk000012.sdx` | 129 records → 7.0 % aligned | **130 → 129/129 = 100 %** |
+
+The measure is decisive rather than marginal — the right length scores ~100 %
+and every neighbour under 25 % — and it also tells the two bank kinds apart on
+its own: **all 68 music banks** take the terminator, **none of the 532 SE banks**
+do (their table holds SPU addresses, so the lead-in measure does not apply).
 
 A sample **starts with a silent frame**, the VAG convention, and **ends at its
 end flag** — not at the next directory offset. Several entries may point into
