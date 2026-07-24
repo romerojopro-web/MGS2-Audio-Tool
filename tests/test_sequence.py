@@ -44,6 +44,17 @@ def looping_sample(frames=6):
     return bytes(data)
 
 
+def custom_envelope_record(offset, attack=0x60, release=0x14, pan=0x10):
+    """A directory entry whose envelope/pan are NOT the common defaults.
+
+    Bytes +7 (attack), +13 (release) and +14 (pan) vary per instrument; only
+    +3/+6/+8/+9/+10/+11/+12/+15 are structural.
+    """
+    return (struct.pack("<I", offset) + bytes([0, 0])
+            + bytes([0x00, attack]) + b"\x00\x00\x00\x0f"
+            + bytes([0x00, release, pan, 0x00]))
+
+
 def event(b0, b1, b2, opcode):
     return bytes([b0, b1, b2, opcode])
 
@@ -358,6 +369,38 @@ _RAVEN_VIBX = [
     255, 248, 244, 240, 232, 224, 208, 192,
     176, 160, 144, 128, 104, 80,  56,  32,
 ]
+
+
+def test_custom_envelope_does_not_truncate_the_directory(tmp_path):
+    """Bytes +7/+13/+14 are attack/release/pan — not format constants.
+
+    Requiring their common defaults (0x7F / 0x19 / 0x0A) ended the directory at
+    the first instrument with a custom envelope: every later instrument was
+    lost, and because the audio starts where the directory ends, every sample
+    offset shifted with it. On the real game that misread 23 of 68 music banks.
+    """
+    path = build_bank(tmp_path, instruments=4)
+    raw = bytearray(open(path, "rb").read())
+    rec = seq.DIRECTORY_START + 2 * seq.RECORD_SIZE     # entry 2 gets a custom envelope
+    raw[rec + 7] = 0x60                                 # attack rate
+    raw[rec + 13] = 0x14                                # release rate
+    raw[rec + 14] = 0x10                                # pan
+    with open(path, "wb") as f:
+        f.write(bytes(raw))
+
+    bank = seq.parse_sequence(path)
+    assert len(bank.instruments) == 4                   # not cut short at entry 2
+    assert bank.instruments[2].adsr[0] == 0x60          # and its values are read
+    assert bank.instruments[2].default_pan == 0x10
+
+
+def test_directory_record_accepts_any_envelope():
+    """The record test must key on the structural bytes only."""
+    rec = custom_envelope_record(0x1234, attack=0x33, release=0x07, pan=0x1F)
+    assert seq._is_directory_record(rec, 0)
+    # ...and still reject something that isn't a record at all
+    assert not seq._is_directory_record(b"\xff" * seq.RECORD_SIZE, 0)
+    assert not seq._is_directory_record(bytes(seq.RECORD_SIZE), 0)  # all zero: sl != 0x0F
 
 
 def test_pan_table_matches_raven_exactly():

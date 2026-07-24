@@ -21,11 +21,27 @@ The format notes were written from six banks and generalised too far:
   entries do not resolve); in **music banks** (~80) it is the sequencer's
   instrument directory. The record signature is identical, so they can only be
   told apart by whether the offsets land inside the audio region.
-- **The shared instrument bank is far bigger than "programs 129–132".** The
-  out-of-directory programs actually referenced reach **249** (program 139:
-  6987 refs, program 249: 6539), and **392 of 600** banks use at least one.
-  They render as silence — locating that bank is the main blocker to
-  reproducing the game's music faithfully.
+- **The shared instrument bank is smaller than it looked.** Programs 139–142
+  seemed to be missing, but they were being lost to the directory bug below;
+  read correctly they are in the file. Only the high range (program **249** and
+  neighbours, 6539 refs) is genuinely outside the per-stage directory.
+
+### Fixed — the instrument directory was truncated, shifting every sample
+The directory-end test required bytes `+7`, `+13` and `+14` to hold `0x7F`,
+`0x19` and `0x0A`. Those are not format constants — they are the instrument's
+**attack rate, release rate and pan**, and merely the values most instruments
+use (147, 145 and 146 of one bank's 149 entries). So the directory ended at the
+first instrument with a custom envelope, dropping every entry after it — **and
+because the audio begins where the directory ends, every sample offset shifted
+with it**.
+
+Measured on the game: **23 of 68 music banks** were misread. `a01a/pk000011.sdx`
+gave 135 instruments instead of **150**, with the audio at `0x1070` instead of
+`0x1160`, so nearly every instrument was decoded 15 frames into the previous
+sample. The end test now keys only on the eight genuinely invariant bytes.
+Confirmation that the alignment is now right: 93 of 149 entries in that bank
+begin on a loop-start frame, against 1 before. No bank regressed (checked
+against 60 random banks and all 68 music banks).
 
 ## 4.2.0 — 2026-07-23
 

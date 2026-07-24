@@ -341,19 +341,41 @@ Assuming a fixed offset makes every sample land mid-frame and decode to noise.
 
 ### 4.2 The instrument directory
 
-Sixteen bytes per entry, starting at `0x800`. The directory ends when the fixed
-fields stop matching — 129 entries in the menu banks, 135 in others.
+Sixteen bytes per entry, starting at `0x800`. The directory ends where the
+records stop matching — typically 129–150 entries.
 
-| Offset | Type | Meaning |
-|--------|------|---------|
-| `+0`  | u32 | sample offset, relative to the start of the audio |
-| `+4`  | u16 | base rate in Hz — the rate the sample plays at untransposed |
-| `+6`  | u8  | `0x00` |
-| `+7`  | u8  | `0x7F` |
-| `+8`  | u32 | `0x0F000000` (constant) |
-| `+12` | 4B  | `00 19 0A 00` (constant) |
+| Offset | Type | Meaning | Constant? |
+|--------|------|---------|-----------|
+| `+0`  | u32 | sample offset, relative to the start of the audio | `+3` = `0x00` |
+| `+4`  | u16 | base rate in Hz — the rate the sample plays at untransposed | no |
+| `+6`  | u8  | `a_mode` (envelope attack mode) | **`0x00`** |
+| `+7`  | u8  | **attack rate** | **no** — usually `0x7F` |
+| `+8`  | u8  | decay rate | **`0x00`** |
+| `+9`  | u8  | `s_mode` | **`0x00`** |
+| `+10` | u8  | sustain rate | **`0x00`** |
+| `+11` | u8  | sustain level | **`0x0F`** |
+| `+12` | u8  | `r_mode` | **`0x00`** |
+| `+13` | u8  | **release rate** | **no** — usually `0x19` |
+| `+14` | u8  | **default pan** | **no** — usually `0x0A` |
+| `+15` | u8  | — | **`0x00`** |
 
-The two constants are what make the directory findable.
+**Only the eight bytes marked constant may be used to find the directory's
+end.** `+7`, `+13` and `+14` are the entry's attack, release and pan: they hold
+the common defaults for *most* instruments but not all. Measured on one bank's
+149 entries, `+7` is `0x7F` for 147, `+13` is `0x19` for 145, `+14` is `0x0A`
+for 146.
+
+Treating those defaults as format constants is a trap that costs far more than
+the entries it drops: the directory ends at the first instrument with a custom
+envelope, **and the audio starts where the directory ends**, so every sample
+offset shifts too. On the game's music banks that misread **23 of 68**
+directories — e.g. `a01a/pk000011.sdx` read 135 entries instead of 150 and
+placed the audio at `0x1070` instead of `0x1160`, leaving nearly every
+instrument reading 15 frames into the previous sample.
+
+The give-away that the alignment is right: with the correct start, **93 of 149**
+entries in that bank begin on a frame carrying the loop-start flag (`0x04`), and
+35 on a silent lead-in frame. With the truncated directory, one and seven.
 
 A sample **starts with a silent frame**, the VAG convention, and **ends at its
 end flag** — not at the next directory offset. Several entries may point into
@@ -523,13 +545,17 @@ per-stage instrument directory**. These reference **instruments shared across
 all stages**. In the original game they came from `wv00007f.wvx`, a common
 sample bank loaded by the "init stage" of the PS2 sound library.
 
-This was first documented as "programs 129–132". A sweep of all **600** stage
-banks shows it is **much larger than four instruments**: with directories of
-128–135 entries, the out-of-directory programs actually referenced include
-**139, 140, 141, 142 and 249**, among others — program 139 alone appears 6987
-times, program 249 6539 times. **392 of 600 banks** reference at least one
-program outside their own directory. So the shared bank spans roughly
-**129 .. 249**, not 129–132. What program `249` is specifically is still open.
+**Careful — most "missing" programs were a parser bug, not a missing bank.** A
+sweep of 600 banks first suggested programs 139–142 came from the shared bank
+too. They do not: the directory was being **truncated** at the first custom
+envelope (§4.2), so entries 135–149 were never read. With the directory parsed
+correctly, `a01a/pk000011.sdx` holds **150** instruments and programs 139–142
+resolve inside it.
+
+What remains genuinely outside the directory is the high range — program
+**249** (6539 references) and its neighbours. Those are the real shared-bank
+instruments. Establish the directory length first before concluding that any
+program is missing.
 
 The Master Collection does not ship these samples in a separate file. The
 renderer stubs them with silence rather than dropping the events — the

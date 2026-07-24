@@ -131,9 +131,11 @@ Reste ouvert :
    (partition par end-flag, cf. `sdx.py`), mais **les cues de ces banques ne
    peuvent pas être rendues** faute de résoudre leurs instruments. Écrire la
    conversion adresse SPU → offset fichier débloquerait ce pan entier.
-6. **Banc d'instruments partagé** — programmes hors-répertoire (≈129..249, pas
-   seulement 129–132) référencés par **392/600** banques, rendus **muets**.
-   C'est le principal bloqueur de fidélité musicale (cf. `FORMATS.md` §4.6).
+6. **Banc d'instruments partagé** — attention : la plupart des programmes crus
+   « manquants » (139–142) venaient en fait de la **troncature du répertoire**,
+   corrigée depuis (cf. `FORMATS.md` §4.2). Il ne reste vraiment hors répertoire
+   que la plage haute — programme **249** (6539 refs) et voisins. C'est ce
+   qu'il reste à localiser (cf. `FORMATS.md` §4.6).
 7. **Optimisation** — le rendu est lent (Python pur, échantillon par échantillon).
    Pistes : vectoriser `_play`/l'ADSR (numpy), précalculer les samples décodés par
    instrument, réduire les boucles chaudes. Objectif : écouter une partition sans

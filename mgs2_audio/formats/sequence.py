@@ -306,11 +306,31 @@ class SequenceBank:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _is_directory_record(raw: bytes, off: int) -> bool:
-    """The directory's fixed fields, used to find where it stops."""
+    """The directory's genuinely fixed fields, used to find where it stops.
+
+    Only these eight bytes are invariant across a real directory. An earlier
+    version also demanded `+7 == 0x7F` and `+13/+14 == 0x19/0x0A`, but those are
+    the entry's **attack rate, release rate and pan** — merely the values most
+    instruments happen to use. Measured over one bank's 149 entries: `+7` is
+    0x7F for 147 of them, `+13` is 0x19 for 145, `+14` is 0x0A for 146.
+
+    Treating those defaults as constants ended the directory at the first
+    instrument with a custom envelope, which lost every entry after it *and* —
+    because the audio begins where the directory ends — shifted every sample
+    offset by the missing entries. On the game's music banks that misread 23 of
+    68 directories and left almost every instrument reading 15 frames into the
+    previous sample.
+    """
     if off + RECORD_SIZE > len(raw):
         return False
-    return (raw[off + 6] == 0x00 and raw[off + 7] == 0x7F
-            and raw[off + 12:off + 16] == b"\x00\x19\x0a\x00")
+    return (raw[off + 3] == 0x00         # high byte of the sample offset
+            and raw[off + 6] == 0x00     # a_mode
+            and raw[off + 8] == 0x00     # dr
+            and raw[off + 9] == 0x00     # s_mode
+            and raw[off + 10] == 0x00    # sr
+            and raw[off + 11] == 0x0F    # sl
+            and raw[off + 12] == 0x00    # r_mode
+            and raw[off + 15] == 0x00)
 
 
 def _find_padding(raw: bytes, audio_start: int) -> Optional[int]:
