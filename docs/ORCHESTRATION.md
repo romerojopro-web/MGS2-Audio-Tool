@@ -153,8 +153,50 @@ groupent aux **index bas** du bank — `w00a` #6..#15, `r_tnk0` #12..#15,
 d'un bank comme nappes d'ambiance, aucune donnée d'ordonnancement ne serait
 nécessaire, ce qui expliquerait qu'on n'en trouve pas.
 
-**État : la couche d'ordonnancement reste à décoder.** Pistes restantes, par
-ordre de rendement :
+### Investigation du 24/07 (fin) : conteneurs, boucles, et une correction
+
+**1. Il n'existe aucun autre conteneur comme `BP_SE.DAT`.** Balayage complet de
+l'installation : **un seul `.DAT`** (celui-là) et **un seul** fichier commençant
+par `SEO2`. La piste « il y a peut-être une autre archive globale » est close.
+
+Le plus gros inconnu restant est ailleurs : les **`.xxs`** — 201 fichiers,
+**8 Go**, dont `Misc/staffroll_360_eng.xxs` (485 Mo) et les cinq
+`MGS2_snaketale_*.xxs` (~64 Mo). Leurs premiers octets sont **tous différents et
+sans structure apparente** → chiffrés ou compressés. Très probablement de la
+vidéo, mais non vérifié.
+
+**2. L'ambiance mêle nappes bouclées et one-shots.** Le flag de boucle
+(`FLAG_LOOP`) est rare et donc discriminant : **7 à 15 samples par banque** sur
+126–148, groupés vers les index bas (médiane 13–33). Mais sur les six samples
+d'ambiance de `w00a` identifiés à l'oreille, **deux seulement bouclent**
+(#13, #15) ; les quatre autres (#6, #10, #11, #12) sont des one-shots. C'est
+cohérent avec ce qu'on entend : une nappe de pluie qui boucle, plus du tonnerre
+et des chutes d'eau déclenchés ponctuellement. Conséquence : trouver les nappes
+ne suffit pas, **il faut toujours le déclencheur des one-shots**.
+
+**3. Correction — `gbs` désigne le soldat, pas l'ambiance.** L'analyse du 13/07
+décrivait les `gbs_stage_*.sar` comme des « plannings de sons d'ambiance »
+(fenêtres ON/OFF). Cette lecture est douteuse : ProcMon montre `gbs.sar` chargé
+**au milieu des assets du garde** (`gbs.var`, `gbs_eye0.cv2`, `gbs_shadow.cv2`,
+`gbs_hand_def.cv2`), et le dossier contient des variantes comme `gbs_sensor.sar`
+ou `gbs_a00a_photo.sar`. Les fenêtres ON/OFF sont plus vraisemblablement des
+**plannings de patrouille**. À noter aussi une structure en deux familles :
+`gbs_stage_<stage>.sar` (~16–18 Ko, 16 stages) et `gbs_<stage>.sar` (96–400 o) ;
+`gbs.sar` (17 Ko) est de la même classe que les premiers et sert de table par
+défaut aux stages sans fichier dédié — c'est bien lui que `w00a` charge.
+
+**État : la couche d'ordonnancement reste à décoder.** Après cette session, les
+voies bon marché sont épuisées : le fichier de musique n'existe pas, l'EXE ne
+contient pas de séquences, le GCL n'a pas d'objet audio, aucun conteneur ne
+cache la musique, et chercher des références par valeur ne discrimine pas.
+
+**La seule voie qui donnerait une réponse certaine est le désassemblage** de la
+routine audio de l'EXE (Ghidra/IDA), en partant des chaînes déjà localisées :
+`%s/stage/%s/pk%06x.sdx` (0x0072ECC0) et
+`*** ERROR: SoundData(voi):mtrack=%x` (0x0072ED00). C'est un chantier à part
+entière, pas une déduction sur binaire.
+
+Pistes restantes plus légères :
 - **Vérifier l'hypothèse « index bas = ambiance »** sur beaucoup de stages, à
   l'oreille — bon marché et réfutable ;
 - **`.hzx`** (données de scène, 240–480 Ko par stage, diffèrent entre zones à
