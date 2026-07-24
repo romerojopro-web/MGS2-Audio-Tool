@@ -25,7 +25,6 @@ from PyQt6.QtWidgets import (
     QSlider, QSplitter, QVBoxLayout, QWidget,
 )
 
-from ..codec.wav import save_wav
 from ..formats import seo2
 from ..library import db as lib
 from .config import save_config
@@ -228,6 +227,8 @@ class GsaPage(PlaybackMixin, TaggingMixin, QWidget):
             self._t("gsa_status_loaded", n=len(archive.sounds)))
 
     def _fill_list(self):
+        if not self.archive:
+            return
         self.list_sounds.blockSignals(True)
         self.list_sounds.clear()
         for s in self.archive.sounds:
@@ -447,8 +448,15 @@ class GsaPage(PlaybackMixin, TaggingMixin, QWidget):
             if QApplication.overrideCursor() is not None:
                 QApplication.restoreOverrideCursor()
 
-        # Re-read so the tab reflects what is now on disk.
-        self.archive = seo2.parse_seo2(self.archive_path)
+        # Re-read so the tab reflects what is now on disk, and re-bind the
+        # selection to the reloaded archive — keeping the old object would leave
+        # us decoding through a stale handle.
+        try:
+            self.archive = seo2.parse_seo2(self.archive_path)
+        except Exception as e:
+            QMessageBox.critical(self, self._t("err_title"), self._t("err_read", e=e))
+            return
+        self.sound = self._sound_by_index(self.sound.index)
         self.lbl_result.setText(self._t("gsa_installed", path=self.archive_path))
         self.new_wav_path = ""
         self.lbl_wav.setText("")

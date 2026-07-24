@@ -172,9 +172,6 @@ TRANSLATIONS = {
         "dlg_open_seq": "Ouvrir une banque SDX",
         "dlg_export_all": "Choisir le dossier d\'export",
         "seq_status_loaded": "Chargé : {name} · {n} morceaux",
-        "dlg_save_script": "Sauvegarder le script",
-        "dlg_open_script": "Ouvrir un script",
-        "filter_script": "Script JSON (*.json);;Tous les fichiers (*)",
         "filter_dat": "Archives MGS2 (*.dat);;Tous les fichiers (*)",
         "vox_browse": "PARCOURIR\u2026",
         "vox_open_title": "1 \u00b7 OUVRIR UN FICHIER VOX.DAT",
@@ -222,7 +219,6 @@ TRANSLATIONS = {
         "sdx_no_file": "Aucune banque chargée",
         "sdx_list_title": "SONS DE LA BANQUE",
         "sdx_info_samples": "Sons",
-        "sdx_info_region": "Zone audio",
         "sdx_count": "{n} sons · {bytes} octets d'audio",
         "sdx_select_hint": "Sélectionnez un son dans la liste",
         "sdx_listen_title": "2 · ÉCOUTER LE SON",
@@ -263,12 +259,10 @@ TRANSLATIONS = {
         "lib_notes": "Notes / réplique",
         "lib_save_entry": "ENREGISTRER LA FICHE",
         "lib_saved": "Fiche enregistrée : {name}",
-        "lib_select_hint": "Sélectionnez un fichier dans la liste",
         "dlg_pick_voice": "Choisir le dossier de voix",
         "dlg_pick_db": "Choisir le dossier de la base d'étiquetage",
 
         "step1_title": "1 · OUVRIR UN FICHIER SDT",
-        "step1_title_vox": "1 · OUVRIR UN FICHIER VOX.DAT",
         "browse": "PARCOURIR…",
         "no_file": "Aucun fichier chargé",
 
@@ -301,10 +295,8 @@ TRANSLATIONS = {
         "wav_will_pad": "sera complétée par du silence",
         "wav_source": "Source",
         "wav_converted": "converti en",
-        "wav_mono": "mono",
 
         "step4_title": "4 · GÉNÉRER LE SDT MODIFIÉ",
-        "step4_title_vox": "4 · GÉNÉRER LE VOX.DAT MODIFIÉ",
         "generate": "REMPLACER L'AUDIO ET SAUVEGARDER…",
         "result_ok": "✓ Fichier généré",
         "result_detail": ("Même taille que l'original ({size} octets) — "
@@ -314,7 +306,6 @@ TRANSLATIONS = {
         "dlg_export_wav": "Exporter en WAV",
         "dlg_pick_wav": "Choisir votre doublage WAV",
         "dlg_save_sdt": "Sauvegarder le SDT modifié",
-        "dlg_save_vox": "Sauvegarder le vox.dat modifié",
         "filter_sdt": "Fichiers SDT (*.sdt *.sdt.vortex_backup);;Tous les fichiers (*)",
         "filter_wav": "Fichiers WAV (*.wav);;Tous les fichiers (*)",
 
@@ -328,6 +319,7 @@ TRANSLATIONS = {
 
         "err_title": "Erreur",
         "err_read": "Lecture impossible :\n{e}",
+        "err_write": "Écriture impossible :\n{e}",
         "warn_no_audio": "Ce fichier ne contient pas d'audio à éditer (0 bloc).",
         "warn_unsupported": "Codec non pris en charge (pas du PS-ADPCM) — ce fichier ne peut pas être édité.",
         "xwma_need_ffmpeg": ("Audio d\'origine Konami XWMA (WMA). Le décodage "
@@ -520,9 +512,6 @@ TRANSLATIONS = {
         "dlg_open_seq": "Open an SDX bank",
         "dlg_export_all": "Choose the export folder",
         "seq_status_loaded": "Loaded: {name} · {n} pieces",
-        "dlg_save_script": "Save script",
-        "dlg_open_script": "Open a script",
-        "filter_script": "JSON script (*.json);;All files (*)",
         "filter_dat": "MGS2 archives (*.dat);;All files (*)",
         "vox_browse": "BROWSE\u2026",
         "vox_open_title": "1 \u00b7 OPEN A VOX.DAT FILE",
@@ -570,7 +559,6 @@ TRANSLATIONS = {
         "sdx_no_file": "No bank loaded",
         "sdx_list_title": "SOUNDS IN THE BANK",
         "sdx_info_samples": "Sounds",
-        "sdx_info_region": "Audio region",
         "sdx_count": "{n} sounds · {bytes} bytes of audio",
         "sdx_select_hint": "Select a sound from the list",
         "sdx_listen_title": "2 · LISTEN TO THE SOUND",
@@ -611,12 +599,10 @@ TRANSLATIONS = {
         "lib_notes": "Notes / line",
         "lib_save_entry": "SAVE ENTRY",
         "lib_saved": "Entry saved: {name}",
-        "lib_select_hint": "Select a file from the list",
         "dlg_pick_voice": "Choose the voice folder",
         "dlg_pick_db": "Choose the tagging database folder",
 
         "step1_title": "1 · OPEN AN SDT FILE",
-        "step1_title_vox": "1 · OPEN A VOX.DAT FILE",
         "browse": "BROWSE…",
         "no_file": "No file loaded",
 
@@ -649,10 +635,8 @@ TRANSLATIONS = {
         "wav_will_pad": "will be padded with silence",
         "wav_source": "Source",
         "wav_converted": "converted to",
-        "wav_mono": "mono",
 
         "step4_title": "4 · GENERATE THE MODIFIED SDT",
-        "step4_title_vox": "4 · GENERATE THE MODIFIED VOX.DAT",
         "generate": "REPLACE AUDIO AND SAVE…",
         "result_ok": "✓ File generated",
         "result_detail": ("Same size as the original ({size} bytes) — "
@@ -662,7 +646,6 @@ TRANSLATIONS = {
         "dlg_export_wav": "Export to WAV",
         "dlg_pick_wav": "Choose your dub WAV",
         "dlg_save_sdt": "Save the modified SDT",
-        "dlg_save_vox": "Save the modified vox.dat",
         "filter_sdt": "SDT files (*.sdt *.sdt.vortex_backup);;All files (*)",
         "filter_wav": "WAV files (*.wav);;All files (*)",
 
@@ -676,6 +659,7 @@ TRANSLATIONS = {
 
         "err_title": "Error",
         "err_read": "Cannot read file:\n{e}",
+        "err_write": "Cannot write file:\n{e}",
         "warn_no_audio": "This file has no audio to edit (0 blocks).",
         "warn_unsupported": "Unsupported codec (not PS-ADPCM) — this file can't be edited.",
         "xwma_need_ffmpeg": ("Stock Konami XWMA (WMA) audio. Decoding needs "
@@ -867,9 +851,6 @@ TRANSLATIONS = {
         "dlg_open_seq": "Abrir un banco SDX",
         "dlg_export_all": "Elegir la carpeta de exportación",
         "seq_status_loaded": "Cargado: {name} · {n} piezas",
-        "dlg_save_script": "Guardar script",
-        "dlg_open_script": "Abrir un script",
-        "filter_script": "Script JSON (*.json);;Todos los archivos (*)",
         "filter_dat": "Archivos MGS2 (*.dat);;Todos los archivos (*)",
         "vox_browse": "EXAMINAR\u2026",
         "vox_open_title": "1 \u00b7 ABRIR UN ARCHIVO VOX.DAT",
@@ -917,7 +898,6 @@ TRANSLATIONS = {
         "sdx_no_file": "Ningún banco cargado",
         "sdx_list_title": "SONIDOS DEL BANCO",
         "sdx_info_samples": "Sonidos",
-        "sdx_info_region": "Zona de audio",
         "sdx_count": "{n} sonidos · {bytes} bytes de audio",
         "sdx_select_hint": "Selecciona un sonido de la lista",
         "sdx_listen_title": "2 · ESCUCHAR EL SONIDO",
@@ -958,12 +938,10 @@ TRANSLATIONS = {
         "lib_notes": "Notas / línea",
         "lib_save_entry": "GUARDAR FICHA",
         "lib_saved": "Ficha guardada: {name}",
-        "lib_select_hint": "Selecciona un archivo de la lista",
         "dlg_pick_voice": "Elegir la carpeta de voces",
         "dlg_pick_db": "Elegir la carpeta de la base de etiquetado",
 
         "step1_title": "1 · ABRIR UN ARCHIVO SDT",
-        "step1_title_vox": "1 · ABRIR UN ARCHIVO VOX.DAT",
         "browse": "EXAMINAR…",
         "no_file": "Ningún archivo cargado",
 
@@ -996,10 +974,8 @@ TRANSLATIONS = {
         "wav_will_pad": "se completará con silencio",
         "wav_source": "Fuente",
         "wav_converted": "convertido a",
-        "wav_mono": "mono",
 
         "step4_title": "4 · GENERAR EL SDT MODIFICADO",
-        "step4_title_vox": "4 · GENERAR EL VOX.DAT MODIFICADO",
         "generate": "REEMPLAZAR AUDIO Y GUARDAR…",
         "result_ok": "✓ Archivo generado",
         "result_detail": ("Mismo tamaño que el original ({size} bytes) — "
@@ -1009,7 +985,6 @@ TRANSLATIONS = {
         "dlg_export_wav": "Exportar a WAV",
         "dlg_pick_wav": "Elegir tu WAV de doblaje",
         "dlg_save_sdt": "Guardar el SDT modificado",
-        "dlg_save_vox": "Guardar el vox.dat modificado",
         "filter_sdt": "Archivos SDT (*.sdt *.sdt.vortex_backup);;Todos los archivos (*)",
         "filter_wav": "Archivos WAV (*.wav);;Todos los archivos (*)",
 
@@ -1023,6 +998,7 @@ TRANSLATIONS = {
 
         "err_title": "Error",
         "err_read": "No se puede leer el archivo:\n{e}",
+        "err_write": "No se puede escribir el archivo:\n{e}",
         "warn_no_audio": "Este archivo no tiene audio para editar (0 bloques).",
         "warn_unsupported": "Códec no compatible (no es PS-ADPCM) — este archivo no se puede editar.",
         "xwma_need_ffmpeg": ("Audio original Konami XWMA (WMA). La "
@@ -1215,9 +1191,6 @@ TRANSLATIONS = {
         "dlg_open_seq": "Открыть банк SDX",
         "dlg_export_all": "Выберите папку экспорта",
         "seq_status_loaded": "Загружено: {name} · фрагментов: {n}",
-        "dlg_save_script": "Сохранить скрипт",
-        "dlg_open_script": "Открыть скрипт",
-        "filter_script": "JSON-скрипт (*.json);;Все файлы (*)",
         "filter_dat": "Архивы MGS2 (*.dat);;Все файлы (*)",
         "vox_browse": "ОБЗОР…",
         "vox_open_title": "1 · ОТКРЫТЬ ФАЙЛ VOX.DAT",
@@ -1265,7 +1238,6 @@ TRANSLATIONS = {
         "sdx_no_file": "Банк не загружен",
         "sdx_list_title": "ЗВУКИ В БАНКЕ",
         "sdx_info_samples": "Звуки",
-        "sdx_info_region": "Аудиообласть",
         "sdx_count": "{n} звуков · {bytes} байт звука",
         "sdx_select_hint": "Выберите звук из списка",
         "sdx_listen_title": "2 · ПРОСЛУШАТЬ ЗВУК",
@@ -1306,12 +1278,10 @@ TRANSLATIONS = {
         "lib_notes": "Заметки / реплика",
         "lib_save_entry": "СОХРАНИТЬ ЗАПИСЬ",
         "lib_saved": "Запись сохранена: {name}",
-        "lib_select_hint": "Выберите файл из списка",
         "dlg_pick_voice": "Выберите папку голосов",
         "dlg_pick_db": "Выберите папку базы данных меток",
 
         "step1_title": "1 · ОТКРЫТЬ ФАЙЛ SDT",
-        "step1_title_vox": "1 · ОТКРЫТЬ ФАЙЛ VOX.DAT",
         "browse": "ОБЗОР…",
         "no_file": "Файл не загружен",
 
@@ -1344,10 +1314,8 @@ TRANSLATIONS = {
         "wav_will_pad": "будет дополнено тишиной",
         "wav_source": "Источник",
         "wav_converted": "конвертировано в",
-        "wav_mono": "моно",
 
         "step4_title": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ SDT",
-        "step4_title_vox": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ VOX.DAT",
         "generate": "ЗАМЕНИТЬ ЗВУК И СОХРАНИТЬ…",
         "result_ok": "✓ Файл создан",
         "result_detail": ("Тот же размер, что и оригинал ({size} байт) — "
@@ -1357,7 +1325,6 @@ TRANSLATIONS = {
         "dlg_export_wav": "Экспорт в WAV",
         "dlg_pick_wav": "Выберите WAV с озвучкой",
         "dlg_save_sdt": "Сохранить изменённый SDT",
-        "dlg_save_vox": "Сохранить изменённый vox.dat",
         "filter_sdt": "Файлы SDT (*.sdt *.sdt.vortex_backup);;Все файлы (*)",
         "filter_wav": "Файлы WAV (*.wav);;Все файлы (*)",
 
@@ -1371,6 +1338,7 @@ TRANSLATIONS = {
 
         "err_title": "Ошибка",
         "err_read": "Не удаётся прочитать файл:\n{e}",
+        "err_write": "Не удаётся записать файл:\n{e}",
         "warn_no_audio": "В этом файле нет звука для редактирования (0 блоков).",
         "warn_unsupported": "Неподдерживаемый кодек (не PS-ADPCM) — этот файл нельзя редактировать.",
         "xwma_need_ffmpeg": ("Оригинальный звук Konami XWMA (WMA). Для "

@@ -240,6 +240,8 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
             "sdx_status_loaded", name=os.path.basename(path), n=len(self.bank.samples)))
 
     def _fill_list(self):
+        if not self.bank:
+            return
         self.list_samples.blockSignals(True)
         self.list_samples.clear()
         for s in self.bank.samples:
