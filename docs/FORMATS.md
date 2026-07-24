@@ -269,6 +269,37 @@ pointed inside the audio region, in increasing order.
 This table is why a replacement must keep the sample's exact byte size. Changing
 a sample's length would invalidate every address that follows it.
 
+**Only SE banks carry this table** (measured 2026-07-24). The space between the
+audio padding and the end of the file differs sharply by bank kind:
+
+| Bank | space after the audio | contents |
+|------|----------------------|----------|
+| `w00a/pk000000.sdx` (SE) | **85,760 bytes** | ~5,200 non-empty 16-byte records; a clean monotonic run of **221 entries** at `0x101800` |
+| `r_tnk0/pk000000.sdx` (cues) | 2,048 bytes | 100 % `0xFE` filler |
+| `tales/pk000005.sdx` (cues) | 2,048 bytes | 100 % `0xFE` filler |
+
+So the two kinds of `.sdx` are complementary right through: a **cue bank** ends
+with a cue table and sequences, an **SE bank** ends with this sound-definition
+table instead. The monotonic run is unmistakable —
+
+```
+0x101800  50 01 01 00 | 00 00 00 00 | ff ff ff ff ff ff ff ff   addr = 0
+0x101810  50 01 01 00 | 20 00 00 00 | ff × 8                    addr = 32
+0x101820  50 01 01 00 | 44 00 00 00 | ff × 8                    addr = 68
+```
+
+— with the fourth byte varying (`00`, `04`…`07`) and first bytes `10`/`30`/`50`,
+i.e. several record kinds. **The tool does not read this table at all**: `sdx.py`
+partitions the audio by end-flag instead. That heuristic is what the SDX tab
+shows, and it is not the game's own list.
+
+> **Caution, learned the hard way.** Reading the `+4` u32 of *every* record in
+> the region and calling the results addresses is meaningless — most records are
+> not address records, and doing so "found" hundreds of phantom samples. Testing
+> four candidate base offsets scattered them all at a flat ~16 % hit rate on real
+> sample boundaries, which is what a false signal looks like. Only the
+> signature-filtered monotonic run above is trustworthy.
+
 ### The tail
 
 From roughly `0x110000` the data is not audio. It reads as a sequence of small
