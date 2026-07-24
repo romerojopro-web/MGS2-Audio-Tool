@@ -80,11 +80,55 @@ Résultats de la session d'analyse sur les pistes ouvertes ci-dessus :
    — vérifié sur les banques haut-numérotées des stages (pk000011/12/14/15,
    256 cues) : maximum **3 pistes par cue**, partout.
 
-**État : la localisation des données de musique in-game reste ouverte.**
-Pistes restantes, par ordre de rendement :
-- **Process Monitor pendant une partie** (filtre `METAL GEAR SOLID2.exe`,
-  `ReadFile`, déclencher une alerte) — le test décisif, dira exactement quel
-  fichier sert la musique ;
+### Investigation du 24/07 : Process Monitor pendant une vraie partie ✅
+
+Le test décisif listé ci-dessous a été fait : capture ProcMon d'une session
+réelle sur le Tanker (chargement d'une sauvegarde, traversée du pont, un garde
+repère Snake → appel radio → **alerte** → game over). 29 k événements, dont
+18 k pour `METAL GEAR SOLID2.exe`.
+
+**Résultat n°1 — au déclenchement de l'alerte, le jeu ne lit AUCUN fichier de
+musique.** Les seules lectures à cet instant sont deux voix : `us/vox/_bp/
+vc041007.sdt` (l'appel radio du garde) et `vc04000a.sdt` (la réponse) — les deux
+confirmées à l'oreille. **L'audio d'alerte est donc déjà en mémoire**, chargé
+avec le stage. Chercher un fichier lu au moment du déclenchement est une
+impasse : la question n'est pas « quel fichier », mais « quelle couche décide ».
+
+**Résultat n°2 — ce que le jeu charge par stage.** Un seul `.sdx` est lu :
+`us/stage/<stage>/pk000000.sdx` (même nom, contenu différent selon le dossier).
+Sur cette session, deux stages se sont succédé :
+
+| Fichier | Taille | Rôle observé |
+|---------|--------|--------------|
+| `us/stage/r_tnk0/pk000000.sdx` | 1,3 Mo | banque à **cues** (150 instr., 256 cues) |
+| `us/stage/w00a/pk000000.sdx` | 1,1 Mo | **réservoir de samples** (0 cue) |
+| `assets/gcx/<lang>/_bp/scenerio_stage_<stage>.gcx` | 180 / 66 Ko | script du stage |
+| `assets/hzx/us/w00a.hzx` | 484 Ko | données de scène |
+| `assets/lt2/us/w00a.lt2` | 4,5 Ko | — |
+| `assets/sar/us/gbs.sar` | 17 Ko | chargé **avec les assets du garde** |
+
+Deux enseignements qui corrigent des suppositions antérieures :
+- **`gbs` = le modèle du soldat**, pas un planning d'ambiance : `gbs.sar` arrive
+  entouré de `gbs.var`, `gbs_eye0.cv2`, `gbs_shadow.cv2`, `gbs_hand_def.cv2`.
+  Aucun `gbs_stage_*.sar` n'a été chargé de la partie.
+- Le partage des rôles entre les deux `pk000000.sdx` est net : l'un porte les
+  **cues**, l'autre les **samples** de la zone (voix des soldats, pluie, eau,
+  tonnerre — confirmé à l'oreille).
+
+**Résultat n°3 — la cible se déplace vers la couche « quand ».** À l'écoute, le
+Tanker n'a **pas de BGM** mais une **ambiance** (pluie, bateau) jusqu'à
+l'alerte, qui déclenche alors sa musique. Les samples d'ambiance sont bien dans
+le `.sdx`, mais **aucune cue du séquenceur ne les joue tels quels** (les
+candidats « ambiance » rendus depuis `r_tnk0` se sont révélés être des FX
+complexes). Une couche supérieure les ordonne donc. Suspects, tous
+ProcMon-confirmés au chargement : **`scenerio_stage_*.gcx`** (magic `LCGB`,
+contient le texte du stage *et* du script), **`.hzx`**, **`.lt2`**.
+
+**État : la couche d'ordonnancement reste à décoder.** Pistes restantes, par
+ordre de rendement :
+- **Décoder le bytecode `.gcx`** — le conteneur commence par `LCGB` +
+  `0x3D92883D`, suivi d'une table d'entiers (offsets/ids) de forme variable
+  selon le fichier ; le corps mêle script et textes localisés ;
 - une **seconde table/directory dans les `pk*.sdx`** hors de la zone que
   notre parseur lit (le `mdx` fusionné dans la banque ?) ;
 - les scripts **`.gcx`** (94 Mo, `assets/gcx/`) — le système de script
