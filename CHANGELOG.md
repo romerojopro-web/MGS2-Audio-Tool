@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 4.4.0 — 2026-07-24
+
+A whole category of the game's audio becomes reachable for the first time. The
+sounds everyone recognises — picking up an item, the interface, the alert alarm
+— turned out not to live in any `.sdx` at all, but in a container the game loads
+once at startup and keeps in memory. A Process Monitor capture *including the
+launch* is what finally exposed it.
 
 ### Added — Global Sound Archive tab: the game's iconic sounds, at last reachable
 `Misc/<lang>/BP_SE.DAT` holds the sounds the game keeps resident for the whole
