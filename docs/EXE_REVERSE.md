@@ -142,6 +142,17 @@ separate file. If true, we already have the bytes; we just need the song-table
 layout (which cue/track offsets a "song" strings together). Confirm by seeing
 whether the pointer written into `voice[+0]` lands inside a loaded `.sdx` image.
 
+**Ruled out (2026-07-25):** the BGM is **not embedded in the exe as raw event
+streams**. Scanning `.rdata` and `.data` with raven's event grammar (4-byte
+events, opcode last, tempo/program present, pitches in register) yields only tiny
+noise-level blobs (≤47 "events", no tempo/program density) — no song-sized
+sequence data. Combined with the earlier `.text` scan (also nothing), the music
+bytes are not sitting in the exe in the sequencer's own format. So either they
+live in the loaded `.sdx` (the strong hypothesis above), or they are stored
+compressed / in a transformed layout that this grammar can't see. The
+`0x14006F680` routine copies a `.rdata` template (`0x140947230`) into the audio
+state — a config/default block, not song data.
+
 Once `sng_data` and its loader are known, the whole chain is closed and the
 tool's existing sequencer/synth can render a real in-game song — likely a new
 **Orchestration** tab (up to 13 simultaneous tracks + the transition sound
