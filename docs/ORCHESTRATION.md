@@ -124,11 +124,45 @@ complexes). Une couche supérieure les ordonne donc. Suspects, tous
 ProcMon-confirmés au chargement : **`scenerio_stage_*.gcx`** (magic `LCGB`,
 contient le texte du stage *et* du script), **`.hzx`**, **`.lt2`**.
 
+### Investigation du 24/07 (suite) : le GCL n'a pas d'objet audio
+
+Deux résultats négatifs, mesurés, qui **écartent des pistes** plutôt que d'en
+ouvrir — l'intérêt étant de ne pas y revenir :
+
+1. **Le vocabulaire GCL est entièrement visuel/physique.** L'EXE rapporte ses
+   erreurs de script sous la forme `There is no -voice option found in GCL :
+   NewFortune`, ce qui fuite à la fois les objets et leurs options. Récolte
+   complète : **78** identifiants en `New*` — `NewPutBreakObject`,
+   `NewFortWallLight`, `NewPutGlassObject`, `NewFallingFloor`, `NewDropShadow`,
+   `NewForkliftRearWheel`, `NewPutElevator`… et **aucun objet audio**. Options
+   vues : `-c`, `-h`, `-light`, `-model`, `-proc`, `-voice`. Le GCL place donc
+   des objets de décor ; rien n'indique qu'il ordonne les ambiances. À
+   déprioriser tant qu'un objet sonore n'apparaît pas.
+2. **Chercher les samples d'ambiance par leur valeur ne discrimine pas.** Les
+   samples d'ambiance de `w00a` sont identifiés à l'oreille (les longs qui lui
+   sont propres : #6, #10, #11, #12, #13, #15 — pluie, eau, orage). Les
+   chercher dans `w00a.hzx`, `w00a.lt2`, `scenerio_stage_w00a.gcx` et la queue
+   du `.sdx`, sous toutes les formes plausibles (offset, offset/8, offset/16,
+   index, taille), donne des dizaines de correspondances… **et le groupe de
+   contrôle (FX courts) en donne autant**. Les petits entiers sont partout dans
+   du binaire : sans contrôle, on aurait « trouvé » n'importe quoi.
+
+**Observation à creuser (hypothèse, non établie) :** les samples longs se
+groupent aux **index bas** du bank — `w00a` #6..#15, `r_tnk0` #12..#15,
+`w01b`/`w01f` #5. Si le moteur bouclait par convention les premiers samples
+d'un bank comme nappes d'ambiance, aucune donnée d'ordonnancement ne serait
+nécessaire, ce qui expliquerait qu'on n'en trouve pas.
+
 **État : la couche d'ordonnancement reste à décoder.** Pistes restantes, par
 ordre de rendement :
+- **Vérifier l'hypothèse « index bas = ambiance »** sur beaucoup de stages, à
+  l'oreille — bon marché et réfutable ;
+- **`.hzx`** (données de scène, 240–480 Ko par stage, diffèrent entre zones à
+  ambiance différente) ;
 - **Décoder le bytecode `.gcx`** — le conteneur commence par `LCGB` +
   `0x3D92883D`, suivi d'une table d'entiers (offsets/ids) de forme variable
-  selon le fichier ; le corps mêle script et textes localisés ;
+  selon le fichier ; le corps mêle script et textes localisés. Déprioritaire au
+  vu du point 1 ;
 - une **seconde table/directory dans les `pk*.sdx`** hors de la zone que
   notre parseur lit (le `mdx` fusionné dans la banque ?) ;
 - les scripts **`.gcx`** (94 Mo, `assets/gcx/`) — le système de script
