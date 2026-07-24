@@ -159,7 +159,7 @@ vrais noms** : `ARMS DEPOT`, `BATTLE`, `COUNTDOWN TO DISASTER`, `INFILTRATION`,
 par `m_PathID`. Catalogue fermé et complet pour cette scène (`ScenarioApp`).
 
 **Portée réelle (corrigée)** : ces bundles sont **la musique du launcher** —
-le remplacement est l'onglet « Musique · BGM » du mode MC (`formats/mcbgm.py`
+le remplacement est l'onglet « BGM · Launcher » du mode MC (`formats/mcbgm.py`
 + `ui/mcbgm_page.py`). Le remplacement réécrit le sous-fichier `.resource` du
 CAB interne du bundle et met à jour les métadonnées de l'`AudioClip` —
 round-trip vérifié par test (`tests/test_mcbgm.py`).

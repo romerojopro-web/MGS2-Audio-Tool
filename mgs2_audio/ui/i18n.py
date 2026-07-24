@@ -25,7 +25,7 @@ TRANSLATIONS = {
 
         "lib_title": "BIBLIOTHÈQUE",
         "tab_sdt": "SDT · DIALOGUES",
-        "tab_mcbgm": "MUSIQUE · BGM",
+        "tab_mcbgm": "BGM · LAUNCHER",
         "tab_sdx": "SDX · BRUITAGES",
         "tab_seq": "SÉQUENCEUR · CUES SDX",
         "tab_bgm": "MUSIQUE · BGM",
@@ -63,7 +63,7 @@ TRANSLATIONS = {
                      "pièces musicales ; une banque d\'effets porte surtout des SE "
                      "bruts du SPU. Une reverb logicielle est appliquée, mais le "
                      "preset exact du jeu n\'est pas stocké dans le fichier. "
-                     "À noter : l\'onglet Musique · BGM ne concerne que la musique "
+                     "À noter : l\'onglet BGM · Launcher ne concerne que la musique "
                      "du launcher, pas celle jouée en mission."),
         "bgm_list_title": "ENTRÉES DU FICHIER BGM",
         "bgm_browse": "PARCOURIR…",
@@ -349,7 +349,7 @@ TRANSLATIONS = {
 
         "lib_title": "LIBRARY",
         "tab_sdt": "SDT · DIALOGUE",
-        "tab_mcbgm": "MUSIC · BGM",
+        "tab_mcbgm": "BGM · LAUNCHER",
         "tab_sdx": "SDX · SOUND FX",
         "tab_seq": "SEQUENCER · SDX CUES",
         "tab_bgm": "MUSIC · BGM",
@@ -387,7 +387,7 @@ TRANSLATIONS = {
                      "pieces, while an effects bank carries mostly raw SPU sound "
                      "effects. A software reverb is applied, but the game's exact "
                      "per-sound preset isn't stored in the file. Note: the "
-                     "Musique · BGM tab only covers the launcher's music, not what "
+                     "BGM · Launcher tab only covers the launcher's music, not what "
                      "plays during a mission."),
         "bgm_list_title": "BGM ARCHIVE ENTRIES",
         "bgm_browse": "BROWSE…",
@@ -671,7 +671,7 @@ TRANSLATIONS = {
 
         "lib_title": "BIBLIOTECA",
         "tab_sdt": "SDT · DIÁLOGOS",
-        "tab_mcbgm": "MÚSICA · BGM",
+        "tab_mcbgm": "BGM · LAUNCHER",
         "tab_sdx": "SDX · EFECTOS",
         "tab_seq": "SECUENCIADOR · CUES SDX",
         "tab_bgm": "MÚSICA · BGM",
@@ -709,7 +709,7 @@ TRANSLATIONS = {
                      "musicales reales, mientras que un banco de efectos contiene "
                      "sobre todo SE brutos del SPU. Se aplica una reverb por "
                      "software, pero el preset exacto del juego no se guarda en el "
-                     "archivo. Nota: la pestaña Música · BGM solo cubre la música "
+                     "archivo. Nota: la pestaña BGM · Launcher solo cubre la música "
                      "del launcher, no la que suena durante una misión."),
         "bgm_list_title": "ENTRADAS DEL ARCHIVO BGM",
         "bgm_browse": "EXAMINAR…",
@@ -994,7 +994,7 @@ TRANSLATIONS = {
 
         "lib_title": "БИБЛИОТЕКА",
         "tab_sdt": "SDT · ДИАЛОГИ",
-        "tab_mcbgm": "МУЗЫКА · BGM",
+        "tab_mcbgm": "BGM · ЛАУНЧЕР",
         "tab_sdx": "SDX · ЗВУКИ",
         "tab_seq": "СЕКВЕНСОР · SDX-КЬЮ",
         "tab_bgm": "МУЗЫКА · BGM",
@@ -1032,7 +1032,7 @@ TRANSLATIONS = {
                      "музыкальные пьесы, а банк эффектов — в основном сырые "
                      "звуковые эффекты SPU. Применяется программная реверберация, "
                      "но точный игровой пресет в файле не хранится. Примечание: "
-                     "вкладка Музыка · BGM относится только к музыке лаунчера, "
+                     "вкладка BGM · Лаунчер относится только к музыке лаунчера, "
                      "а не к той, что звучит на миссии."),
         "bgm_list_title": "ЗАПИСИ АРХИВА BGM",
         "bgm_browse": "ОБЗОР…",

@@ -14,8 +14,8 @@ Master Collection, amber for Substance.
 
 - **MGS2 Master Collection — stable.** Every MC tab works on real game data:
   dialogue browsing/export/replacement (SDT), sound-bank scan and replacement
-  (SDX), the cue sequencer, and **launcher** music replacement (Musique ·
-  BGM) — confirmed working (the launcher plays the replaced audio), including
+  (SDX), the cue sequencer, and **launcher** music replacement (BGM ·
+  Launcher) — confirmed working (the launcher plays the replaced audio), including
   the Unity FSB5/Addressables-CRC handling that makes replaced bundles load.
 - **In-game music replacement is under active research** — the Unity bundles
   turned out to drive only the launcher's music; the gameplay music follows
@@ -33,7 +33,7 @@ Master Collection, amber for Substance.
 ### Master Collection tabs
 
 - **SDT · Dialogues** — character voice lines (replaceable, for custom dubs).
-- **Musique · BGM** — the launcher's music: the 6 scenario tracks (ARMS
+- **BGM · Launcher** — the launcher's music: the 6 scenario tracks (ARMS
   DEPOT, BATTLE, INFILTRATION…) plus the main-menu and credits themes,
   stored as Unity AssetBundles. Listen, export to WAV, and **replace a track
   with your own WAV** — the tool rebuilds a valid `.bundle` and shows each
@@ -69,7 +69,7 @@ Master Collection, amber for Substance.
 > extracted directly. See `docs/AUDIT_SDX.md`, `docs/ORCHESTRATION.md`, `docs/AUDIT.md`.
 >
 > Reading works everywhere. **Replacing** works for Master Collection music
-> (the Musique · BGM tab, via Unity bundles) and for dialogue — not yet for
+> (the BGM · Launcher tab, via Unity bundles) and for dialogue — not yet for
 > Substance's streamed `bgm.dat` music.
 
 > **Two `.sdt` audio formats are supported.** The Better Audio Mod ships
@@ -89,7 +89,7 @@ Master Collection, amber for Substance.
 - **Python 3.10+**
 - **PyQt6** — `pip install PyQt6` (only needed for the graphical interface)
 - **UnityPy** — `pip install UnityPy` (optional; only needed by the Master
-  Collection **Musique · BGM** tab, which reads/rebuilds Unity AssetBundles)
+  Collection **BGM · Launcher** tab, which reads/rebuilds Unity AssetBundles)
 - **ffmpeg** — optional; only needed to **decode** stock (un-modded) `.sdt`
   audio, which is Konami XWMA/WMA. Install it (e.g. `winget install ffmpeg`)
   and put it on your PATH, or point the SDT tab at your `ffmpeg.exe`. Not

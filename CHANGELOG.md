@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed — the Master Collection music tab is now "BGM · Launcher"
+It was called "Musique · BGM", the same name as Substance's tab, while doing
+something quite different: those Unity bundles drive the **launcher's** music,
+not what plays during a mission (established in 4.1.0). Two identically-named
+tabs, one of which quietly meant "launcher only", was a good way to send people
+looking for in-game music in the wrong place. Substance's tab keeps its name —
+its `bgm.dat` really is the game's streamed music.
+
 ### Added — open a stage in the sequencer tab, and see which banks hold music
 A stage folder carries several `.sdx`, and until now finding the musical ones
 meant opening them one at a time. A new **"Open a stage…"** button lists a
