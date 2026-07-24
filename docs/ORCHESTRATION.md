@@ -4,6 +4,58 @@
 > (`mgs2_audio/core/`, `games/`) permet d'ajouter d'autres jeux avec leurs
 > propres formats — chaque jeu est un plugin indépendant.
 
+> **Comment lire ce document.** Ce qui suit la présente synthèse est un
+> **journal de recherche daté** : chaque section rend compte d'une session, et
+> une section récente **périme les conclusions et les « prochaines étapes » des
+> sections plus anciennes**. En cas de doute, la synthèse ci-dessous fait foi.
+
+## État actuel de la recherche (synthèse, à jour au 2026-07-24)
+
+**Question ouverte :** où vit la musique jouée *en mission* (pas le launcher,
+pas les ambiances) et comment est-elle déclenchée ? **Non résolue.**
+
+**Éliminé (mesuré, pas supposé) :**
+
+- **Les bundles Unity ne pilotent que le launcher** (menu, crédits, lecteur de
+  l'app), pas le gameplay. Confirmé par un second test in-game.
+- **Aucun fichier `mdx` autonome sur PC.** L'EXE ne construit qu'un seul motif
+  de nom de fichier audio : `%s/stage/%s/pk%06x.sdx`. La chaîne
+  `host0:./sound/mdx1/` est du **code dev PS2 mort** (`host0:` = filesystem de
+  dev PS2), pas un chemin réel.
+- **Aucune séquence compilée dans l'EXE** (scan avec la grammaire du séquenceur :
+  1450 correspondances de forme, 0 musicalement plausible).
+- **`gbs` = le modèle 3D du soldat**, pas un ordonnanceur d'ambiance : `gbs.sar`
+  est chargé avec `gbs.var`/`gbs_eye0.cv2`/`gbs_shadow.cv2`, et **aucun
+  `gbs_stage_*.sar` n'est chargé** pendant une vraie partie (ProcMon). ⚠️ Ceci
+  contredit la section « CORRECTION MAJEURE » ci-dessous, écrite avant ce test.
+- **Aucun autre conteneur** comme `BP_SE.DAT` : un seul `.DAT`, un seul `SEO2`
+  dans toute l'installation.
+- **Le GCL (`.gcx`) n'a aucun objet audio** : 78 objets `New*`, tous du décor.
+- **Chercher les samples par valeur ne discrimine pas** (le groupe de contrôle
+  de FX courts donne autant de correspondances que les samples d'ambiance).
+
+**Établi et réutilisable (source raven) :**
+
+- Architecture raven : `mdx` = données MUSIQUE, `wvx` = WAVE (**nos `.sdx`**),
+  `efx` = SE.
+- Le jeu déclenche la musique par des **codes son 32 bits** ; `0x01FFFF10` =
+  **Evasion/ALERTE**. Système dynamique infiltration → alerte → évasion.
+- Le format `sng_data` (jusqu'à 13 pistes, mêmes opcodes que nos cues) est
+  **spécifié plus bas** — c'est le décodeur à appliquer *quand* on localisera
+  les données, quelle que soit leur enveloppe.
+- L'audio en mission est **chargé résident avec le stage** (rien n'est lu au
+  déclenchement de l'alerte) ; les ambiances mêlent **nappes bouclées +
+  one-shots** (`BP_SE.DAT` fournit les sons UI/objets/alarme globaux).
+
+**La seule voie restante vers une réponse certaine :** **désassembler la routine
+audio de l'EXE** (Ghidra/IDA), en partant des chaînes localisées
+`%s/stage/%s/pk%06x.sdx` (`0x0072ECC0`) et
+`*** ERROR: SoundData(voi):mtrack=%x` (`0x0072ED00`). Les données de musique
+sont soit embarquées dans un format non encore cracké, soit générées par code —
+le désassemblage tranche. **Objectif long terme, pas la prochaine étape.**
+
+---
+
 ## ⚠️ CORRECTION MAJEURE (2026-07-13, soir) — les bundles Unity = LAUNCHER seulement
 
 Un test in-game généralisé trop vite avait fait conclure « musique du jeu
@@ -390,15 +442,21 @@ Une **song = jusqu'à 13 pistes simultanées**, chacune un flux d'événements d
 format que nos cues. Dès qu'on a un `mdx`, notre séquenceur+moteur sait déjà tout
 jouer — il suffit de brancher ce décodeur d'en-tête devant.
 
-## Prochaine étape concrète
+## ~~Prochaine étape concrète~~ — hypothèse testée et écartée (voir la synthèse en tête)
 
-Chercher le/les fichier(s) **`mdx`** :
-- **petits** (≤ 16 Ko), à côté des `pk*.sdx` wave dans les dossiers de stage/son ;
+> **Mise à jour 2026-07-24.** La piste ci-dessous — « chercher un petit fichier
+> `mdx` autonome (≤ 16 Ko) à côté des `pk*.sdx` » — **a été testée et écartée** :
+> il n'existe aucun fichier `mdx` autonome sur PC (l'EXE ne construit que
+> `pk%06x.sdx`, et `host0:./sound/mdx1/` est du code PS2 mort). Le format
+> `sng_data` décrit au-dessus **reste valide** comme décodeur à appliquer une
+> fois les données localisées — mais ces données ne sont pas un fichier séparé.
+> La voie réaliste est le **désassemblage de l'EXE** (voir la synthèse en tête).
+
+L'hypothèse d'origine, conservée pour mémoire — ce que serait un `mdx` s'il
+existait comme fichier :
+- **petit** (≤ 16 Ko), à côté des `pk*.sdx` wave dans les dossiers de stage/son ;
 - peut-être un préfixe/dossier différent (bgm, music, sng…), pas forcément `.sdx` ;
 - premier octet = petit nombre (n_songs, 1..8), suivi d'une table de pointeurs.
-
-Si tu en trouves un dans `us/stage/tales/` (ou ailleurs), envoie-le : on branche le
-décodeur ci-dessus et on écoute une **vraie musique orchestrée** pour la première fois.
 
 Candidats jamais explorés pour le moment (dump Substance réel disponible depuis peu) :
 `tests/mgs2_substance_2003/cache.dar`, `cache.qar`, `scenerio.gcx`, `data.cnf`.
