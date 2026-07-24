@@ -1,6 +1,16 @@
 # Changelog
 
-## Unreleased
+## 4.3.0 — 2026-07-24
+
+This release is the fruit of a deep audit of the `.sdx` format against a real
+600-bank install, driven by careful listening. The sequencer's foundations were
+found to be subtly wrong — a truncated instrument directory that shifted every
+sample — and are now correct and locked by tests. Along the way the tool learned
+to tell the game's two kinds of `.sdx` apart, the sequencer tab was cleaned of
+claims the format work had outdated, and a false pitch "bug" was caught by an
+A/B ear test *before* it could regress anything. No in-game BGM was found in the
+cues (that still needs the never-located `mdx` orchestration), but the keystone
+synth is now trustworthy.
 
 ### Changed — the Master Collection music tab is now "BGM · Launcher"
 It was called "Musique · BGM", the same name as Substance's tab, while doing
@@ -87,6 +97,17 @@ sample. The end test now keys only on the eight genuinely invariant bytes.
 Confirmation that the alignment is now right: 93 of 149 entries in that bank
 begin on a loop-start frame, against 1 before. No bank regressed (checked
 against 60 random banks and all 68 music banks).
+
+### Fixed — the directory's terminator record was skipped too
+The signature walk stopped one record short: a directory closes with a
+terminator that carries none of the structural bytes but still occupies a slot,
+and — the audio starting where the directory ends — skipping it left the audio
+one frame early. Rather than guess, the parser measures: each sample opens on a
+silent VAG lead-in frame, so the right length is the one where that holds
+throughout. The signal is decisive (the correct end scores ~100 %, every
+neighbour under 25 %) and, as a bonus, separates the two bank kinds on its own —
+all 68 music banks take the terminator, none of the 532 SE banks do. On
+`a01a/pk000011.sdx` the audio settles at `0x1170` with all 150 samples aligned.
 
 ## 4.2.0 — 2026-07-23
 
