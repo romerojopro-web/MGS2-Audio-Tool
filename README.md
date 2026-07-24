@@ -14,9 +14,11 @@ Master Collection, amber for Substance.
 
 - **MGS2 Master Collection — stable.** Every MC tab works on real game data:
   dialogue browsing/export/replacement (SDT), sound-bank scan and replacement
-  (SDX), the cue sequencer, and **launcher** music replacement (BGM ·
-  Launcher) — confirmed working (the launcher plays the replaced audio), including
-  the Unity FSB5/Addressables-CRC handling that makes replaced bundles load.
+  (SDX), the **Global Sound Archive** (the game's iconic UI/item/alarm sounds,
+  decoded from `BP_SE.DAT` — see below), the cue sequencer, and **launcher**
+  music replacement (BGM · Launcher) — confirmed working (the launcher plays the
+  replaced audio), including the Unity FSB5/Addressables-CRC handling that makes
+  replaced bundles load.
 - **In-game music replacement is under active research** — the Unity bundles
   turned out to drive only the launcher's music; the gameplay music follows
   the original PS2 engine model (`gbs_stage_*.sar` files are the prime
@@ -44,6 +46,14 @@ Master Collection, amber for Substance.
 - **SDX · Sound banks** — the stage sample banks (footsteps, doors, weapons…).
   Full scan mode: index every bank in the game, group identical sounds, edit
   one and rewrite all copies at once.
+- **Global Sound Archive** — the game's **iconic global sounds**: item selection
+  and pickup, using an item, interface blips, the alert-phase alarm. They live
+  in `Misc/<lang>/BP_SE.DAT`, which the game loads **once at startup** and keeps
+  resident — so they appear in **no `.sdx`**, and nothing could reach them until
+  now. Point the tab at your game folder and it lists all **106** sounds to
+  listen to, export (one or all), or **replace with your own WAV**. Replacements
+  keep each sound's exact size, and the archive is backed up to `.bak` before
+  the first write.
 - **Séquenceur · Cues SDX** — the raven-accurate synth that renders the SE cue
   sequences hidden in the `.sdx` banks. **These are raw sound effects, not the
   game's full orchestrated music** — real orchestration needs a separate `mdx`
@@ -303,6 +313,7 @@ while iterating on one area. Cheaper on the CPU, and faster to read.
 | `bgm.dat` / `movie.dat` / `demo.dat`       | `pytest tests/test_bgm.py`   |
 | MC music bundles (`formats/mcbgm.py`)      | `pytest tests/test_mcbgm.py` |
 | Stock XWMA `.sdt` (`formats/xwma.py`)       | `pytest tests/test_xwma.py`  |
+| `BP_SE.DAT` global sounds (`formats/seo2.py`) | `pytest tests/test_seo2.py` |
 | The sequencer / `render.py` (SPU, reverb)  | `pytest tests/test_sequence.py` |
 | Tagging databases (`library/db.py`)        | `pytest tests/test_library.py` |
 | The app shell (`ui/app.py`, `db_folder`)   | `pytest tests/test_app.py`   |
