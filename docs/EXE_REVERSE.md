@@ -109,11 +109,28 @@ value that gets written into `voice[+0]` when a song starts — and **who writes
 it**, i.e. where the music bytes come from (embedded in the exe? generated? a file
 we have been misreading?).
 
-Two ways in:
-1. **Who writes `voice[+0]`** (`mov [0x14177EB00 + i*0x120], <track addr>`) — the
-   track-starter binds a track's event stream to a voice.
-2. **Who reads the current-code global `0x141540854`** each frame — the consumer
-   that reacts to "play song N" and kicks off the tracks.
+Two ways in, and the readers are now located:
+
+- **Reads of the current-code global `0x141540854`** (found via a generalised
+  RIP-relative scan): in **`sub_14006F610`** (a small wrapper, `jmp
+  sub_14006F8D0`) and around **`0x14006F670`** — the per-frame consumer that
+  reacts to "play song N". Start here.
+- **References to the voice-table base `0x14177EB00`**: in the dispatcher
+  `sub_14006225B` (known) and in **`sub_1400643E0`** — a large function that is
+  almost certainly the **per-frame voice/sequence tick** (reads each voice's
+  `+0` cursor, advances it through the event stream). That is the driver's own
+  sequencer running; trace what sets a voice's `+0` and you have the song data.
+
+### Strong hypothesis to test next
+
+The exe builds **only one** audio filename pattern — `pk%06x.sdx` — and loads
+nothing else per stage (ProcMon confirmed). The voices read event streams in the
+**same opcode format as the `.sdx` cues**. So the 13-track song data very likely
+lives **inside the loaded `.sdx`** (in the sequence region past the cue table,
+`fsize-0x5800`), and `sng_data` is a pointer *into* a loaded `.sdx` — not a
+separate file. If true, we already have the bytes; we just need the song-table
+layout (which cue/track offsets a "song" strings together). Confirm by seeing
+whether the pointer written into `voice[+0]` lands inside a loaded `.sdx` image.
 
 Once `sng_data` and its loader are known, the whole chain is closed and the
 tool's existing sequencer/synth can render a real in-game song — likely a new
