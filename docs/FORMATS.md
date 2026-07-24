@@ -201,14 +201,42 @@ sound effects: footsteps, doors, weapons, ambience. **22050 Hz, mono.**
 ### Structure
 
 ```
-0x0000 .. 0x1000   header (mostly zero; a handful of u32 fields at the start)
-0x1000 .. <pad>    audio: PS-ADPCM samples laid end to end
-<pad>              0xFF padding, frame-aligned, marks the end of the audio
+0x0000 .. 0x0800   header (mostly zero; a handful of u32 fields at the start)
+0x0800 .. <audio>  16-byte-record table (see "Two kinds of bank" below)
+<audio> .. <pad>   audio: PS-ADPCM samples laid end to end
+<pad>              frame-aligned padding — 0xFF or 0xFE — ends the audio
 <table>            the bank table
 <tail>             sequence / sound-program data
 ```
 
-Audio always begins at **`0x1000`**.
+**Audio does not reliably begin at `0x1000`.** Measured over the **600** stage
+banks of a real install, the audio starts where the `0x800` table ends, which
+ranges **`0x9E0` .. `0x1070`** (72–135 records). Only **12 of 600** banks land
+exactly on `0x1000` (the 128-record case). The sample partition below re-syncs
+on the end-flag, so using `0x1000` as a nominal start is harmless in practice —
+but the fixed offset itself is not a fact about the format.
+
+**The padding byte is 0xFF *or* 0xFE.** All ~80 music/sequencer banks use
+`0xFE`. A parser that only recognises `0xFF` runs straight past the end of the
+audio on those banks and carves phantom "samples" out of the cue table and
+sequence that follow (which then pollute the cross-bank scan).
+
+### Two kinds of bank
+
+The same `.sdx` container is used for two different things, and they must be
+told apart — the `0x800` table means something different in each:
+
+| | **SE banks** (~520) | **Music banks** (~80) |
+|---|---|---|
+| `0x800` table | **SPU voice table** — addresses in SPU space (≥`0x150000`), *not* file offsets | the sequencer's **instrument directory** (§4.2), file offsets |
+| Padding | `0xFF` | `0xFE` |
+| Cue table | usually absent (0 cues) | 256 cues |
+| Read with | `sdx.py` (end-flag partition) | `sequence.py` (directory + cues) |
+
+Telling them apart: in a music bank essentially **100 %** of the `0x800`
+records' offsets land inside the audio region; in an SE bank barely **1 %** do
+(the rest are SPU addresses). The `0x800` record signature is identical in both,
+so the directory-detection heuristic alone cannot distinguish them.
 
 ### Samples
 
@@ -488,19 +516,28 @@ buffers. After all tracks are mixed, the accumulated signal is processed through
 `SPU_Reverb.process()` and mixed back into the output at the dry/wet ratio
 set by the preset's vLOUT/vROUT volumes.
 
-### 4.6 Programs 129–132 (common instruments)
+### 4.6 The shared instrument bank (programs beyond the directory)
 
-All banks contain program-change events with `b2` = 129, 130, 131, or 132.
-These reference **instruments shared across all stages**, not entries in the
-per-stage instrument directory. In the original game these came from
-`wv00007f.wvx` (a common sample bank loaded by the "init stage" of the PS2
-sound library).
+Banks contain program-change events whose `b2` points **past the end of the
+per-stage instrument directory**. These reference **instruments shared across
+all stages**. In the original game they came from `wv00007f.wvx`, a common
+sample bank loaded by the "init stage" of the PS2 sound library.
+
+This was first documented as "programs 129–132". A sweep of all **600** stage
+banks shows it is **much larger than four instruments**: with directories of
+128–135 entries, the out-of-directory programs actually referenced include
+**139, 140, 141, 142 and 249**, among others — program 139 alone appears 6987
+times, program 249 6539 times. **392 of 600 banks** reference at least one
+program outside their own directory. So the shared bank spans roughly
+**129 .. 249**, not 129–132. What program `249` is specifically is still open.
 
 The Master Collection does not ship these samples in a separate file. The
 renderer stubs them with silence rather than dropping the events — the
 sequencer still processes all note-on/off and envelope opcodes correctly, but
-the instrument sounds are absent. If the common bank is ever located, the
-stub can be replaced by loading the samples into `voice_tbl[129..132]`.
+those instruments are simply **absent from every render**. Locating this shared
+bank is the single biggest blocker to reproducing the game's music faithfully;
+if it is found, the stub can be replaced by loading the samples into
+`voice_tbl[129..]`.
 
 ### 4.7 A note on method
 

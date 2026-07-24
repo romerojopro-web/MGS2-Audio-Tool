@@ -33,6 +33,35 @@ def test_audio_region_stops_at_padding(bank):
     assert b.raw[b.data_end:b.data_end + 16] == b"\xff" * 16
 
 
+def test_music_bank_0xfe_padding_is_recognised(tmp_path):
+    """Music/sequencer banks close their audio with 0xFE, not 0xFF.
+
+    Measured across the game's 600 stage banks: every music bank pads with
+    0xFE. Recognising only 0xFF made this parser miss the end of the audio and
+    carve bogus "samples" out of the cue table and sequence that follow it —
+    which then polluted the cross-bank scan. The tail below is shaped so those
+    phantom samples would appear if the padding were ever missed again.
+    """
+    raw = bytearray(sdx.DATA_START)
+    for pcm in (tone(2000, 300), tone(1500, 440)):
+        data = bytearray(psadpcm.encode_psadpcm(pcm))
+        data[-psadpcm.FRAME_SIZE + 1] = psadpcm.FLAG_END
+        raw += data
+    audio_end = len(raw)
+    raw += b"\xfe" * 0x100                       # the music-bank padding
+    tail = bytearray(0x400)                      # stand-in cue table + sequence
+    for i in range(0, len(tail), psadpcm.FRAME_SIZE):
+        tail[i + 1] = psadpcm.FLAG_END           # would look like sample ends
+    raw += tail
+    path = tmp_path / "pk000011.sdx"
+    path.write_bytes(bytes(raw))
+
+    b = sdx.parse_sdx(str(path))
+    assert b.data_end == audio_end               # stopped at the 0xFE padding
+    assert len(b.samples) == 2                   # and carved no phantom samples
+    assert all(s.offset + s.size <= audio_end for s in b.samples)
+
+
 def test_each_sample_ends_on_a_flagged_frame(bank):
     b = sdx.parse_sdx(bank)
     for s in b.samples:

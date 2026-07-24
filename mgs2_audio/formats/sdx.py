@@ -7,12 +7,18 @@ footsteps, doors, weapons, ambience.
 
 Layout
 ------
-    0x0000 .. 0x1000   small header
-    0x1000 .. <pad>    audio: PS-ADPCM samples laid end to end, 22050 Hz mono
-    <pad>  .. <table>  0xFF padding
+    0x0000 .. 0x0800   small header
+    0x0800 .. <audio>  a 16-byte-record table (SE banks: SPU voice addresses;
+                       music banks: the sequencer's instrument directory)
+    <audio> .. <pad>   audio: PS-ADPCM samples laid end to end, 22050 Hz mono
+    <pad>  .. <table>  frame-aligned padding: 0xFF (SE) or 0xFE (music banks)
     <table>            bank table: 16-byte records pointing at the samples
                        (addresses counted in 8-byte units)
     <tail>             sequence / sound-program data
+
+Audio nominally begins at 0x1000, but that is only exact when the 0x800 table
+holds 128 records; measured over 600 stage banks it ranges 0x9E0..0x1070. The
+partition below re-syncs on the end-flag, so the nominal start stays safe.
 
 A sample runs up to and including the first frame whose flag has the end bit set.
 
@@ -58,6 +64,11 @@ FLAG_END = 0x01
 FLAG_LOOP = 0x02
 FLAG_LOOP_START = 0x04
 
+# The frame-aligned padding that closes the audio region. SE banks use 0xFF,
+# music/sequencer banks use 0xFE — both occur across the game's stage banks.
+PADDING_FF = b"\xff" * FRAME_SIZE
+PADDING_FE = b"\xfe" * FRAME_SIZE
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Representation
@@ -102,15 +113,20 @@ class SDXFile:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _find_audio_end(raw: bytes) -> int:
-    """First 0xFF padding frame after the audio, i.e. where the samples stop.
+    """First padding frame after the audio, i.e. where the samples stop.
 
-    The scan is frame-aligned: a run of 0xFF can start in the middle of a frame
-    (as ordinary audio data), and only a whole padding frame marks the end.
+    Banks pad with **0xFF or 0xFE** — measured across 600 stage banks, the ~80
+    music/sequencer banks all use 0xFE. Recognising only 0xFF made this scan run
+    off the end of the audio on those banks and carve "samples" out of the cue
+    table and the sequence that follow it.
+
+    The scan is frame-aligned: a run of either byte can occur mid-frame as
+    ordinary audio data, and only a whole padding frame marks the end.
     """
-    padding = b"\xff" * FRAME_SIZE
     limit = len(raw) - FRAME_SIZE + 1
     for off in range(DATA_START, limit, FRAME_SIZE):
-        if raw[off:off + FRAME_SIZE] == padding:
+        frame = raw[off:off + FRAME_SIZE]
+        if frame == PADDING_FF or frame == PADDING_FE:
             return off
     return DATA_START + ((len(raw) - DATA_START) // FRAME_SIZE) * FRAME_SIZE
 

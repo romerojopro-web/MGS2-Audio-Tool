@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+### Fixed — the SDX parser no longer invents samples in music banks
+Stage banks close their audio with frame-aligned padding, and the parser only
+recognised `0xFF`. A sweep of all **600** stage banks of a real install showed
+the ~80 **music/sequencer** banks pad with **`0xFE`** instead — so on those the
+scan ran past the end of the audio and carved phantom "samples" out of the cue
+table and sequence behind it (~32 KB per bank), which then polluted the
+cross-bank scan and grouping. Both padding bytes are now accepted; verified on
+the real banks (audio now ends at the padding, SE banks unchanged).
+
+### Documented — the SDX format, measured over 600 real banks
+The format notes were written from six banks and generalised too far:
+- **Audio does not reliably start at `0x1000`.** It starts where the `0x800`
+  table ends: `0x9E0`–`0x1070` in practice, and only **12 of 600** banks land on
+  `0x1000` exactly.
+- **There are two kinds of `.sdx`.** In **SE banks** (~520) the `0x800` table is
+  an **SPU voice table** (addresses in SPU space, not file offsets — ~98 of 99
+  entries do not resolve); in **music banks** (~80) it is the sequencer's
+  instrument directory. The record signature is identical, so they can only be
+  told apart by whether the offsets land inside the audio region.
+- **The shared instrument bank is far bigger than "programs 129–132".** The
+  out-of-directory programs actually referenced reach **249** (program 139:
+  6987 refs, program 249: 6539), and **392 of 600** banks use at least one.
+  They render as silence — locating that bank is the main blocker to
+  reproducing the game's music faithfully.
+
 ## 4.2.0 — 2026-07-23
 
 ### Added — replace stock XWMA audio (via xWMAEncode)

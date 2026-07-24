@@ -124,10 +124,17 @@ Fidélité — **fait ✅** :
 Reste ouvert :
 4. **Vérifs fines par l'oreille** — reverb, offsets de boucle L3, échelle exacte
    du vibrato sur du vrai matériel (juge de paix = comparaison au jeu, hors repo).
-5. **Adressage SPU** (§5) — les banques SE de certains stages (`000/001/002/006`
-   de `tales`) référencent les samples en espace SPU (≥0x150000), pas en offset
-   fichier ; conversion à écrire pour les rendre audibles. Non-bloquant pour MGS2.
-6. **Optimisation** — le rendu est lent (Python pur, échantillon par échantillon).
+5. **Adressage SPU** (§5) — **bien plus large qu'estimé.** Le balayage des **600**
+   banques de stage montre que ~**520** d'entre elles (toutes les banques SE) ont
+   une table `0x800` en **espace SPU** (≥0x150000), pas en offsets fichier : ~98
+   entrées sur 99 ne se résolvent pas. Les samples SE eux-mêmes restent lisibles
+   (partition par end-flag, cf. `sdx.py`), mais **les cues de ces banques ne
+   peuvent pas être rendues** faute de résoudre leurs instruments. Écrire la
+   conversion adresse SPU → offset fichier débloquerait ce pan entier.
+6. **Banc d'instruments partagé** — programmes hors-répertoire (≈129..249, pas
+   seulement 129–132) référencés par **392/600** banques, rendus **muets**.
+   C'est le principal bloqueur de fidélité musicale (cf. `FORMATS.md` §4.6).
+7. **Optimisation** — le rendu est lent (Python pur, échantillon par échantillon).
    Pistes : vectoriser `_play`/l'ADSR (numpy), précalculer les samples décodés par
    instrument, réduire les boucles chaudes. Objectif : écouter une partition sans
    faire chauffer le CPU. 🥵
