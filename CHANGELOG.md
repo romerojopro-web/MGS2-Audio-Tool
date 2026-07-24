@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased
+
+### Added — Global Sound Archive tab: the game's iconic sounds, at last reachable
+`Misc/<lang>/BP_SE.DAT` holds the sounds the game keeps resident for the whole
+session — item selection and pickup, using an item, interface blips, the
+alert-phase alarm. They are in **no `.sdx`**, which is why players recognise
+them instantly but nothing could ever reach them.
+
+Point the new tab at the game folder; it finds the archive and lists all **106**
+sounds, ready to listen to, export (one or all), or replace with your own WAV.
+A replacement keeps the sound's exact byte size, so every offset stays valid,
+and the archive is backed up to `.bak` the first time it is written.
+
+The container format (`SEO2`) is decoded in the new `formats/seo2.py`:
+
+```
+0x00  "SEO2", u32 = 1, u32 count
+0x0C  count records of 0x60:  id, channels (1|2), data offset, length PER CHANNEL
+```
+
+Payload is PS-ADPCM at 44100 Hz with no end flags — the table gives the length.
+The layout is not guessed: `offset + length*channels` equals the next entry's
+offset right across the table (105/105 on the real file), and playback was
+confirmed by ear at the right pitch.
+
+**How it was found:** a Process Monitor capture *including the game's launch*.
+The archive is read once at startup and never again, so an earlier capture that
+began at the save load could not see it — and that residency is exactly why no
+file is read when the alert alarm fires.
+
 ## 4.3.0 — 2026-07-24
 
 This release is the fruit of a deep audit of the `.sdx` format against a real

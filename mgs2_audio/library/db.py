@@ -40,6 +40,7 @@ BGM_LIBRARY_FILENAME = "mgs2_bgm_library.json"
 DEMOS_LIBRARY_FILENAME = "mgs2_demos_library.json"
 SEQ_LIBRARY_FILENAME = "mgs2_seq_library.json"
 MCBGM_LIBRARY_FILENAME = "mgs2_mc_bgm_library.json"
+GSA_LIBRARY_FILENAME = "mgs2_gsa_library.json"
 LIBRARY_VERSION = 1
 
 # Manual fields curated by the user + auto-detected cached fields.

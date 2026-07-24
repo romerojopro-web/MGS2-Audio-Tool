@@ -17,6 +17,7 @@ class _Mgs2McPlugin(GamePlugin):
 
     def _build_pages(self):
         if _Mgs2McPlugin._cached_pages is None:
+            from ...ui.gsa_page import GsaPage
             from ...ui.mcbgm_page import McBgmPage
             from ...ui.sdt_page import SDTPage
             from ...ui.sdx_page import SDXPage
@@ -25,6 +26,7 @@ class _Mgs2McPlugin(GamePlugin):
                 PageSpec("sdt", SDTPage, "tab_sdt"),
                 PageSpec("mcbgm", McBgmPage, "tab_mcbgm"),
                 PageSpec("sdx", SDXPage, "tab_sdx"),
+                PageSpec("gsa", GsaPage, "tab_gsa"),
                 PageSpec("seq", SeqPage, "tab_seq"),
             ]
         return _Mgs2McPlugin._cached_pages
