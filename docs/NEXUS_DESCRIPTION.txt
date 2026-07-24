@@ -1,0 +1,121 @@
+[size=6][b]MGS2 Audio Tool[/b][/size]
+[size=4]Change any voice or sound in Metal Gear Solid 2.[/size]
+
+[line]
+
+Ever wanted Snake to say something else? Wanted the codec beep, the item pickup
+chime or the alert alarm to be your own? This tool opens the game's audio, lets
+you listen to any sound, export it as a WAV, and put your own recording in its
+place.
+
+No hex editors. No command line. Point it at your game folder, click a sound,
+click your WAV.
+
+[line]
+
+[size=5][b]What you can change[/b][/size]
+
+[list]
+[*][b]Character dialogue[/b] — every voice line in the game. Record your own dub
+and drop it straight in. Works with the game as it comes; the Better Audio Mod
+is [i]not[/i] required (but is still supported if you use it).
+
+[*][b]The game's iconic sounds[/b] — picking up an item, selecting a weapon, the
+interface blips, the alert alarm. These 106 sounds sit in a place nothing could
+reach before now.
+
+[*][b]Stage sound effects[/b] — footsteps, doors, weapons, ambience. The same
+effect is copied across dozens of stage files, so the tool can find every copy
+and change them all at once. Otherwise your new sound only plays in one room.
+
+[*][b]The launcher music[/b] — the tracks on the game's start screen.
+[/list]
+
+[b]You can also just listen and export.[/b] If you only want to rip the game's
+voices or sound effects to WAV, that works too, and needs almost nothing
+installed.
+
+[line]
+
+[size=5][b]Getting started[/b][/size]
+
+[list=1]
+[*]Install Python 3.10 or newer, then run: [code]pip install PyQt6[/code]
+[*]Start the tool with: [code]python run.py[/code]
+[*]Pick your game at the top, open a tab, point it at your MGS2 folder.
+[/list]
+
+Each tab walks you through it in numbered steps: [b]1[/b] open, [b]2[/b] listen,
+[b]3[/b] export, [b]4[/b] replace.
+
+The interface is available in [b]English, French, Spanish and Russian[/b].
+
+[line]
+
+[size=5][b]What you may also need[/b][/size]
+
+All of these are optional — you only need one if you use the feature it belongs
+to. The tool tells you when something is missing and where to get it.
+
+[list]
+[*][b]ffmpeg[/b] — to [i]listen to and export[/i] the game's own dialogue.
+[*][b]xWMAEncode.exe[/b] — to [i]replace[/i] the game's own dialogue. It is a
+small Microsoft tool that cannot legally be bundled here, so you grab your own
+copy; the README explains exactly how, including what to do when its installer
+throws error S1023.
+[*][b]UnityPy[/b] — only for the launcher music tab. [code]pip install UnityPy[/code]
+[/list]
+
+[line]
+
+[size=5][b]Before you start modding[/b][/size]
+
+[list]
+[*][b]Back up your game files.[/b] The tool writes .bak copies automatically, but
+a copy of your own costs nothing and saves everything.
+[*][b]Length is fixed.[/b] A replacement keeps the original's exact size — longer
+audio is trimmed, shorter is padded with silence. Keep your recording close to
+the original's length.
+[*][b]Record at the right settings[/b] if you can. The tool converts for you, but
+starting close to the original gives the best result.
+[/list]
+
+[line]
+
+[size=5][b]What this tool does NOT do (yet)[/b][/size]
+
+[list]
+[*][b]The music that plays during missions cannot be replaced.[/b] Where the game
+keeps it is still being worked out — it is not stored the way normal audio is.
+The launcher music [i]can[/i] be changed.
+[*][b]MGS2 Substance (2003) is partly supported[/b] — you can browse and export
+its audio, but not replace it yet.
+[/list]
+
+[line]
+
+[size=5][b]Is it safe?[/b][/size]
+
+[list]
+[*]It contains [b]no game files[/b] — only original code.
+[*]It works on [b]your own copy[/b] of the game, on your machine. Nothing is
+uploaded anywhere.
+[*]It is [b]open source[/b] (MIT), so anyone can read exactly what it does.
+[*]Replacements are written carefully so the game still loads the file — this has
+been tested in-game, not just in theory.
+[/list]
+
+[line]
+
+[size=5][b]Credits[/b][/size]
+
+[list]
+[*][b]KieronJ[/b] — for [b]raven[/b], the reference that made faithful playback of
+the game's sound engine possible.
+[*][b]RockeyLol[/b] — for documenting the [b]Konami XWMA[/b] audio container,
+which is what made working with the game's own dialogue possible at all.
+[/list]
+
+Unofficial and fan-made. Not affiliated with or endorsed by Konami. Metal Gear
+Solid 2 and all related names and assets belong to Konami. For personal,
+non-commercial modding. Provided as-is — you are responsible for your own files.
