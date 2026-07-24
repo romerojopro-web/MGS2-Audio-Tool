@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Fixed — the sequencer tab no longer contradicts what the tool knows
+Two of its labels had been overtaken by the format work:
+- The hint claimed the cues are "mostly raw SPU sound effects, not the game's
+  full music — see the Musique · BGM tab for that". Both halves were wrong: a
+  **music bank** (256 cues, ~130–150 instruments) carries real musical pieces,
+  and the BGM tab only drives the **launcher's** music, not what plays during a
+  mission. It now explains the two kinds of `.sdx` instead.
+- The tuning option was labelled "(44100 Hz)". Instrument base rates are per
+  instrument — 30730, 44058 and 48381 Hz all occur; 44100 is the SPU's own
+  reference, not the instruments'. Relabelled as the fidelity option it is.
+
 ### Fixed — the SDX parser no longer invents samples in music banks
 Stage banks close their audio with frame-aligned padding, and the parser only
 recognised `0xFF`. A sweep of all **600** stage banks of a real install showed
