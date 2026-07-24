@@ -26,7 +26,7 @@ class DEMOSPage(BGMPage):
         self.btn_open.setText(self._t("bgm_browse"))
         if not self.bgm:
             self.lbl_archive.setText(self._t("bgm_no_file"))
-            self.lbl_info.setText(self._t("bgm_select_hint"))
+        self._update_info()
         self.lbl_step1.setText(self._t("bgm_open_title"))
         self.lbl_hint.setText(self._t("demos_hint"))
         self.lbl_step2.setText(self._t("bgm_listen_title"))
@@ -70,7 +70,7 @@ class DEMOSPage(BGMPage):
         self._reset_selection()
 
         self.lbl_archive.setText(path)
-        self.lbl_info.setText(self._t("bgm_select_hint"))
+        self._update_info()
         self.lbl_hint.setText(self._t("demos_hint"))
         self.btn_export_all.setEnabled(True)
         self._fill_list()

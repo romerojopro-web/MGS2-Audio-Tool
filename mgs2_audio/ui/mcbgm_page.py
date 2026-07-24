@@ -170,12 +170,30 @@ class McBgmPage(PlaybackMixin, TaggingMixin, QWidget):
 
     # ── Translation ──────────────────────────────────────────────────────────
 
+    def _update_info(self):
+        """Rebuild the info line (and the file path under it) for the current
+        state, so both follow a language change rather than staying frozen in
+        whichever language was active when the game folder was scanned."""
+        if not self.tracks:
+            self.lbl_info.setText(self._t("mcbgm_hint"))
+            self.lbl_rel_path.setText("")
+            return
+        if self.track is None:
+            self.lbl_info.setText(self._t("mcbgm_select_hint"))
+            self.lbl_rel_path.setText("")
+            return
+        t = self.track
+        ch = "stereo" if t.channels == 2 else f"{t.channels}ch"
+        self.lbl_info.setText(self._t("mcbgm_track_info", name=t.name,
+                                      sr=t.frequency, ch=ch, dur=t.length_sec))
+        self.lbl_rel_path.setText(self._t("mcbgm_rel_path", path=t.rel_path))
+
     def retranslate(self):
         self.lbl_list_title.setText(self._t("mcbgm_list_title"))
         self.btn_pick_game.setText(self._t("mcbgm_pick_game"))
         if not self.tracks:
             self.lbl_game.setText(self._t("mcbgm_no_game"))
-            self.lbl_info.setText(self._t("mcbgm_hint"))
+        self._update_info()
         self.lbl_step1.setText(self._t("mcbgm_track_title"))
         self.lbl_step2.setText(self._t("mcbgm_listen_title"))
         self.lbl_step3.setText(self._t("mcbgm_replace_title"))
@@ -230,7 +248,7 @@ class McBgmPage(PlaybackMixin, TaggingMixin, QWidget):
         self._reset_selection()
 
         self.lbl_game.setText(game_root)
-        self.lbl_info.setText(self._t("mcbgm_select_hint"))
+        self._update_info()
         self._fill_list()
         self.win.status.showMessage(self._t("mcbgm_status_loaded",
                                             n=len(tracks)))
@@ -293,11 +311,7 @@ class McBgmPage(PlaybackMixin, TaggingMixin, QWidget):
             return
         i = current.data(Qt.ItemDataRole.UserRole)
         self.track = self.tracks[i]
-        t = self.track
-        ch = "stereo" if t.channels == 2 else f"{t.channels}ch"
-        self.lbl_info.setText(self._t("mcbgm_track_info", name=t.name,
-                                      sr=t.frequency, ch=ch, dur=t.length_sec))
-        self.lbl_rel_path.setText(self._t("mcbgm_rel_path", path=t.rel_path))
+        self._update_info()
         self.new_wav_path = ""
         self.last_generated = ""
         self.lbl_wav.setText("")
