@@ -29,41 +29,67 @@ chime or the alert alarm to be your own? This tool opens the game's audio, lets
 you listen to any sound, export it as a WAV, and put your own recording in its
 place.
 
-No hex editors. No command line. Point it at your game folder, click a sound,
-click your WAV.
+No hex editors. No command line. Pick a sound, pick your WAV, done.
+
+Each kind of audio lives somewhere different inside the game, so each tab asks
+you for its own folder or file — every one is listed below, with the exact path
+starting from wherever you installed the game.
 
 [line]
 
 [size=5][b]What you can change[/b][/size]
 
 [list]
-[*][b]Character dialogue[/b] — every voice line in the game. Record your own dub
-and drop it straight in. Works with the game as it comes; the Better Audio Mod
-is [i]not[/i] required (but is still supported if you use it).
+[*][b]Character dialogue[/b] — every voice line in the game, plus the radio
+calls. Record your own dub and drop it straight in. Works with the game as it
+comes; the Better Audio Mod is [i]not[/i] required (but is still supported if
+you use it).
+[i]Tab:[/i] [b]SDT · Dialogues[/b] → point it at [code]us\vox[/code]
+(cutscene audio lives in [code]us\demo[/code] and [code]us\movie[/code])
 
 [*][b]What the guards say[/b] — hold a soldier up and he begs for his life;
-tranquillise him and he snores; spot you and he shouts, calls it in, hunts for
-you. All of it is replaceable with your own voice. This one is [b]tested in
-game[/b]: a guard's "don't kill me" was swapped for a real recording and he says
-it when you hold him up. One catch the tool handles for you — the same guard
-lines are copied into every area's files, so changing one area only works until
-you walk into the next. The tool finds every copy and changes them all, so your
-voice follows the guards through the whole game.
+tranquillise him and he snores; spot you and he shouts and hunts for you. All of
+it is replaceable with your own voice. This one is [b]tested in game[/b]: a
+guard's "don't kill me" was swapped for a real recording and he says it when you
+hold him up. One catch the tool handles for you — the same guard lines are
+copied into every area's files, so changing one area only works until you walk
+into the next. Use the scan and the tool finds every copy and changes them all,
+so your voice follows the guards through the whole game.
+[i]Tab:[/i] [b]SDX · Sound banks[/b] → give it your game folder and use
+[b]Scan[/b] (it finds [code]us\stage[/code] by itself)
 
 [*][b]The game's iconic sounds[/b] — picking up an item, selecting a weapon, the
 interface blips, the alert alarm. These 106 sounds sit in a place nothing could
 reach before now.
+[i]Tab:[/i] [b]Global Sound Archive[/b] → give it your game folder (it finds
+[code]Misc\us\BP_SE.DAT[/code] by itself)
 
-[*][b]Stage sound effects[/b] — footsteps, doors, weapons, ambience. The same
-effect is copied across dozens of stage files, so the tool can find every copy
-and change them all at once. Otherwise your new sound only plays in one room.
+[*][b]Stage sound effects[/b] — footsteps, doors, weapons, ambience. Same tab as
+the guard voices, and the same trick applies: scan once, change every copy.
+[i]Tab:[/i] [b]SDX · Sound banks[/b] → your game folder, or open a single bank
+at [code]us\stage\<area>\pk000000.sdx[/code]
 
 [*][b]The launcher music[/b] — the tracks on the game's start screen.
+[i]Tab:[/i] [b]BGM · Launcher[/b] → give it your game folder (needs UnityPy)
 [/list]
 
 [b]You can also just listen and export.[/b] If you only want to rip the game's
 voices or sound effects to WAV, that works too, and needs almost nothing
-installed.
+installed. There is also a [b]Sequencer[/b] tab that plays the little sound
+sequences hidden in the stage files (open [code]us\stage\<area>\[/code]) —
+listen and export only, no replacing.
+
+[line]
+
+[size=5][b]MGS2 Substance (2003)[/b][/size]
+
+The tool also opens the older PC release, but it is [b]not[/b] at the same level
+yet. You can [b]listen to and export most of its audio[/b] — but only the
+[b]BGM[/b] tab (its music and movie audio) comes out clean and correct. The
+voice and cutscene tabs still have their formats being worked out, so expect
+rough spots, and [b]nothing can be replaced in Substance yet[/b].
+
+If Substance is what you came for, treat this as a preview.
 
 [line]
 
@@ -118,8 +144,8 @@ starting close to the original gives the best result.
 [*][b]The music that plays during missions cannot be replaced.[/b] Where the game
 keeps it is still being worked out — it is not stored the way normal audio is.
 The launcher music [i]can[/i] be changed.
-[*][b]MGS2 Substance (2003) is partly supported[/b] — you can browse and export
-its audio, but not replace it yet.
+[*][b]Substance (2003) is listen-and-export only[/b], and only its BGM tab is
+fully reliable — see the Substance section above.
 [/list]
 
 [line]
