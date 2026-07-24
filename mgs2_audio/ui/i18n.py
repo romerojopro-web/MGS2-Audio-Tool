@@ -49,16 +49,17 @@ TRANSLATIONS = {
         "seq_exported_all": "✓ {n} morceaux exportés",
         "seq_options_title": "4 · OPTIONS DE SYNTHÈSE",
         "seq_stereo": "Stéréo (panoramique)",
-        "seq_tune": "Accorder les instruments (44100 Hz)",
+        "seq_tune": "Accorder les instruments (fidélité)",
         "seq_info": "Morceau #{i} · {tracks} piste(s) · {notes} notes",
         "seq_no_sequence": ("Cette banque ne contient pas de séquenceur "
                             "(pas de répertoire d\'instruments)."),
-        "seq_hint": ("Ces cues sont surtout des effets sonores (SE) bruts du SPU — "
-                     "pas la musique complète du jeu (voir l\'onglet Musique · BGM "
-                     "pour ça). Une reverb logicielle est appliquée, mais le preset "
-                     "exact du jeu n\'est pas stocké dans le fichier. L\'orchestration "
-                     "native (jusqu\'à 13 pistes, fichier `mdx`) n\'a jamais été "
-                     "retrouvée."),
+        "seq_hint": ("Deux sortes de banques partagent l\'extension .sdx : une banque "
+                     "« musique » (256 cues, ~130-150 instruments) porte de vraies "
+                     "pièces musicales ; une banque d\'effets porte surtout des SE "
+                     "bruts du SPU. Une reverb logicielle est appliquée, mais le "
+                     "preset exact du jeu n\'est pas stocké dans le fichier. "
+                     "À noter : l\'onglet Musique · BGM ne concerne que la musique "
+                     "du launcher, pas celle jouée en mission."),
         "bgm_list_title": "ENTRÉES DU FICHIER BGM",
         "bgm_browse": "PARCOURIR…",
         "bgm_no_file": "Aucune archive BGM chargée",
@@ -367,15 +368,17 @@ TRANSLATIONS = {
         "seq_exported_all": "✓ {n} pieces exported",
         "seq_options_title": "4 · SYNTHESIS OPTIONS",
         "seq_stereo": "Stereo (panning)",
-        "seq_tune": "Tune the instruments (44100 Hz)",
+        "seq_tune": "Tune the instruments (faithful)",
         "seq_info": "Piece #{i} · {tracks} track(s) · {notes} notes",
         "seq_no_sequence": ("This bank carries no sequencer "
                             "(no instrument directory)."),
-        "seq_hint": ("These cues are mostly raw SPU sound effects (SE) — not the "
-                     "game's full music (see the Musique · BGM tab for that). A "
-                     "software reverb is applied, but the game's exact per-sound "
-                     "preset isn't stored in the file. Native orchestration (up to "
-                     "13 tracks, an `mdx` file) has never been found."),
+        "seq_hint": ("Two kinds of bank share the .sdx extension: a “music” "
+                     "bank (256 cues, ~130-150 instruments) carries real musical "
+                     "pieces, while an effects bank carries mostly raw SPU sound "
+                     "effects. A software reverb is applied, but the game's exact "
+                     "per-sound preset isn't stored in the file. Note: the "
+                     "Musique · BGM tab only covers the launcher's music, not what "
+                     "plays during a mission."),
         "bgm_list_title": "BGM ARCHIVE ENTRIES",
         "bgm_browse": "BROWSE…",
         "bgm_no_file": "No BGM archive loaded",
@@ -682,16 +685,17 @@ TRANSLATIONS = {
         "seq_exported_all": "✓ {n} piezas exportadas",
         "seq_options_title": "4 · OPCIONES DE SÍNTESIS",
         "seq_stereo": "Estéreo (paneo)",
-        "seq_tune": "Afinar los instrumentos (44100 Hz)",
+        "seq_tune": "Afinar los instrumentos (fidelidad)",
         "seq_info": "Pieza #{i} · {tracks} pista(s) · {notes} notas",
         "seq_no_sequence": ("Este banco no contiene secuenciador "
                             "(sin directorio de instrumentos)."),
-        "seq_hint": ("Estos cues son principalmente efectos de sonido (SE) brutos "
-                     "del SPU, no la música completa del juego (para eso, ve a la "
-                     "pestaña Música · BGM). Se aplica una reverb por software, "
-                     "pero el preset exacto del juego no se guarda en el archivo. "
-                     "La orquestación nativa (hasta 13 pistas, un archivo `mdx`) "
-                     "nunca se ha encontrado."),
+        "seq_hint": ("Dos tipos de banco comparten la extensión .sdx: un banco "
+                     "«de música» (256 cues, ~130-150 instrumentos) contiene piezas "
+                     "musicales reales, mientras que un banco de efectos contiene "
+                     "sobre todo SE brutos del SPU. Se aplica una reverb por "
+                     "software, pero el preset exacto del juego no se guarda en el "
+                     "archivo. Nota: la pestaña Música · BGM solo cubre la música "
+                     "del launcher, no la que suena durante una misión."),
         "bgm_list_title": "ENTRADAS DEL ARCHIVO BGM",
         "bgm_browse": "EXAMINAR…",
         "bgm_no_file": "Ninguna archivo BGM cargado",
@@ -999,15 +1003,17 @@ TRANSLATIONS = {
         "seq_exported_all": "✓ Экспортировано фрагментов: {n}",
         "seq_options_title": "4 · ПАРАМЕТРЫ СИНТЕЗА",
         "seq_stereo": "Стерео (панорама)",
-        "seq_tune": "Настроить инструменты (44100 Гц)",
+        "seq_tune": "Настроить инструменты (точность)",
         "seq_info": "Фрагмент #{i} · дорожек: {tracks} · нот: {notes}",
         "seq_no_sequence": ("В этом банке нет секвенсора "
                             "(нет каталога инструментов)."),
-        "seq_hint": ("Эти кью — в основном сырые звуковые эффекты SPU (SE), а не "
-                     "полноценная музыка игры (для неё см. вкладку Музыка · BGM). "
-                     "Применяется программная реверберация, но точный игровой "
-                     "пресет для каждого звука в файле не хранится. Нативная "
-                     "оркестровка (до 13 дорожек, файл `mdx`) так и не найдена."),
+        "seq_hint": ("Расширение .sdx делят два вида банков: «музыкальный» банк "
+                     "(256 кью, ~130-150 инструментов) содержит настоящие "
+                     "музыкальные пьесы, а банк эффектов — в основном сырые "
+                     "звуковые эффекты SPU. Применяется программная реверберация, "
+                     "но точный игровой пресет в файле не хранится. Примечание: "
+                     "вкладка Музыка · BGM относится только к музыке лаунчера, "
+                     "а не к той, что звучит на миссии."),
         "bgm_list_title": "ЗАПИСИ АРХИВА BGM",
         "bgm_browse": "ОБЗОР…",
         "bgm_no_file": "Архив BGM не загружен",
