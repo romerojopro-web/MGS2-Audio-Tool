@@ -167,12 +167,28 @@ class GsaPage(PlaybackMixin, TaggingMixin, QWidget):
 
     # ── Translation ──────────────────────────────────────────────────────────
 
+    def _update_info(self):
+        """Rebuild the info line for the current state.
+
+        Called on selection *and* on retranslate, so the line follows a language
+        change instead of staying frozen in whichever language was active when
+        the archive was opened.
+        """
+        if self.sound is None:
+            self.lbl_info.setText(self._t("gsa_select_hint"))
+            return
+        s = self.sound
+        self.lbl_info.setText(self._t(
+            "gsa_sound_info", index=s.index, id=f"{s.sound_id:#05x}",
+            ch=("stereo" if s.channels == 2 else "mono"),
+            dur=s.duration_seconds, bytes=f"{s.total_bytes:,}"))
+
     def retranslate(self):
         self.lbl_list_title.setText(self._t("gsa_list_title"))
         self.btn_pick_game.setText(self._t("gsa_pick_game"))
         if not self.archive:
             self.lbl_archive.setText(self._t("gsa_no_archive"))
-            self.lbl_info.setText(self._t("gsa_select_hint"))
+        self._update_info()
         self.lbl_hint.setText(self._t("gsa_hint"))
         self.lbl_step1.setText(self._t("gsa_open_title"))
         self.lbl_step2.setText(self._t("gsa_listen_title"))
@@ -220,7 +236,7 @@ class GsaPage(PlaybackMixin, TaggingMixin, QWidget):
         self._reset_selection()
 
         self.lbl_archive.setText(path)
-        self.lbl_info.setText(self._t("gsa_select_hint"))
+        self._update_info()
         self.btn_export_all.setEnabled(True)
         self._fill_list()
         self.win.status.showMessage(
@@ -293,11 +309,7 @@ class GsaPage(PlaybackMixin, TaggingMixin, QWidget):
         self.sound = self._sound_by_index(current.data(Qt.ItemDataRole.UserRole))
         if self.sound is None:
             return
-        s = self.sound
-        self.lbl_info.setText(self._t(
-            "gsa_sound_info", index=s.index, id=f"{s.sound_id:#05x}",
-            ch=("stereo" if s.channels == 2 else "mono"),
-            dur=s.duration_seconds, bytes=f"{s.total_bytes:,}"))
+        self._update_info()
         self.new_wav_path = ""
         self.lbl_wav.setText("")
         self.lbl_result.setText("")

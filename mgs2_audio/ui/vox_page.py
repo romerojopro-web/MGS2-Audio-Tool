@@ -145,12 +145,24 @@ class VoxPage(PlaybackMixin, TaggingMixin, QWidget):
 
     # ── Translation ──────────────────────────────────────────────────────────
 
+    def _update_info(self):
+        """Rebuild the info line for the current state, so it follows a language
+        change instead of staying in whichever language opened the archive."""
+        if not self.sdt or self.block_index is None:
+            self.lbl_info.setText(self._t("vox_select_hint"))
+            return
+        block = self.sdt.blocks[self.block_index]
+        dur = (block.data_size // 16) * 28 / self.sdt.sample_rate
+        self.lbl_info.setText(self._t(
+            "vox_block_info", index=self.block_index,
+            sr=self.sdt.sample_rate, dur=dur))
+
     def retranslate(self):
         self.lbl_list_title.setText(self._t("vox_list_title"))
         self.btn_open.setText(self._t("vox_browse"))
         if not self.sdt:
             self.lbl_archive.setText(self._t("vox_no_file"))
-            self.lbl_info.setText(self._t("vox_select_hint"))
+        self._update_info()
         self.lbl_step1.setText(self._t("vox_open_title"))
         self.lbl_hint.setText(self._t("vox_hint"))
         self.lbl_step2.setText(self._t("vox_listen_title"))
@@ -266,11 +278,7 @@ class VoxPage(PlaybackMixin, TaggingMixin, QWidget):
         if index < 0 or index >= len(self.sdt.blocks):
             return
         self.block_index = index
-        block = self.sdt.blocks[index]
-        dur = (block.data_size // 16) * 28 / self.sdt.sample_rate
-        self.lbl_info.setText(self._t(
-            "vox_block_info", index=index, sr=self.sdt.sample_rate,
-            dur=dur))
+        self._update_info()
         self._fill_tag_fields()
         self._set_tag_fields_enabled(True)
         self._decode_block()

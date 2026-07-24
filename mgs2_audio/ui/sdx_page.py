@@ -184,13 +184,36 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
 
     # ── Translation ──────────────────────────────────────────────────────────
 
+    def _update_info(self):
+        """Rebuild the info line for the current state, so it follows a language
+        change instead of staying in whichever language opened the bank."""
+        if self.mode == "scan":
+            g = self.group
+            if g is None:
+                self.lbl_info.setText(self._t("sdx_select_hint"))
+                return
+            self.lbl_info.setText(
+                f"{g.key} · {g.duration_seconds:.2f} {self._t('unit_seconds')} · "
+                f"{g.size:,} {self._t('unit_bytes')} · "
+                f"{self._t('sdx_group_count', n=g.count)}")
+            return
+        s = self.sample
+        if not self.bank or s is None:
+            self.lbl_info.setText(self._t("sdx_select_hint"))
+            return
+        self.lbl_info.setText(
+            f"{self._t('sdx_info_samples')} #{s.index} · "
+            f"{s.duration_seconds:.2f} {self._t('unit_seconds')} · "
+            f"{s.size:,} {self._t('unit_bytes')} · "
+            f"{self.bank.sample_rate} Hz {self._t('unit_mono')}")
+
     def retranslate(self):
         self.lbl_list_title.setText(self._t("sdx_list_title"))
         self.btn_open.setText(self._t("sdx_browse"))
         self.btn_scan.setText(self._t("sdx_scan"))
         if not self.bank and self.mode != "scan":
             self.lbl_bank.setText(self._t("sdx_no_file"))
-            self.lbl_info.setText(self._t("sdx_select_hint"))
+        self._update_info()
         self.lbl_step1.setText(self._t("sdx_open_title"))
         self.lbl_step2.setText(self._t("sdx_listen_title"))
         self.btn_export.setText(self._t("sdx_export"))
@@ -373,10 +396,7 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
             if not self.group:
                 return
             g = self.group
-            self.lbl_info.setText(
-                f"{g.key} · {g.duration_seconds:.2f} {self._t('unit_seconds')} · "
-                f"{g.size:,} {self._t('unit_bytes')} · "
-                f"{self._t('sdx_group_count', n=g.count)}")
+            self._update_info()
             self._prepare_preview_pcm(sdx.read_group_sample(g))
             self._fill_tag_fields()
             self._set_tag_fields_enabled(True)
@@ -387,11 +407,7 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
             idx = current.data(Qt.ItemDataRole.UserRole)
             self.sample = self.bank.samples[idx]
             s = self.sample
-            self.lbl_info.setText(
-                f"{self._t('sdx_info_samples')} #{s.index} · "
-                f"{s.duration_seconds:.2f} {self._t('unit_seconds')} · "
-                f"{s.size:,} {self._t('unit_bytes')} · "
-                f"{self.bank.sample_rate} Hz {self._t('unit_mono')}")
+            self._update_info()
             self._prepare_preview_pcm(sdx.decode_sample(self.bank, s))
             self.win.status.showMessage(self._t(
                 "sdx_status_sample", i=s.index, dur=s.duration_seconds,

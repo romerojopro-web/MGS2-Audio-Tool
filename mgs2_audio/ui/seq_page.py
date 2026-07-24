@@ -173,13 +173,23 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
 
     # ── Translation ──────────────────────────────────────────────────────────
 
+    def _update_info(self):
+        """Rebuild the info line for the current state, so it follows a language
+        change instead of staying in whichever language opened the bank."""
+        if not self.bank or self.cue is None:
+            self.lbl_info.setText(self._t("seq_select_hint"))
+            return
+        self.lbl_info.setText(self._t(
+            "seq_info", i=self.cue.index, tracks=self.cue.track_count,
+            notes=self.bank.note_count(self.cue)))
+
     def retranslate(self):
         self.lbl_list_title.setText(self._t("seq_list_title"))
         self.btn_open.setText(self._t("seq_browse"))
         self.btn_open_stage.setText(self._t("seq_open_stage"))
         if not self.bank:
             self.lbl_bank.setText(self._t("seq_no_file"))
-            self.lbl_info.setText(self._t("seq_select_hint"))
+        self._update_info()
         for i in range(self.combo_filter.count()):
             self.combo_filter.setItemText(i, self._t(self.combo_filter.itemData(i)))
         self.lbl_step1.setText(self._t("seq_open_title"))
@@ -367,9 +377,7 @@ class SeqPage(PlaybackMixin, TaggingMixin, QWidget):
         self.cue = next((c for c in self.bank.cues if c.index == index), None)
         if self.cue is None:
             return
-        self.lbl_info.setText(self._t(
-            "seq_info", i=self.cue.index, tracks=self.cue.track_count,
-            notes=self.bank.note_count(self.cue)))
+        self._update_info()
         self._fill_tag_fields()
         self._set_tag_fields_enabled(True)
         self._render_current()

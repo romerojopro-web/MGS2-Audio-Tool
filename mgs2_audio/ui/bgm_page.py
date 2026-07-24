@@ -145,12 +145,23 @@ class BGMPage(PlaybackMixin, TaggingMixin, QWidget):
 
     # ── Translation ──────────────────────────────────────────────────────────
 
+    def _update_info(self):
+        """Rebuild the info line for the current state, so it follows a language
+        change instead of staying in whichever language opened the archive."""
+        if not self.bgm or self.bgm_entry is None:
+            self.lbl_info.setText(self._t("bgm_select_hint"))
+            return
+        e = self.bgm_entry
+        self.lbl_info.setText(self._t(
+            "bgm_entry_info", index=e.index, sr=e.sample_rate,
+            ch=e.channels, dur=e.duration_seconds))
+
     def retranslate(self):
         self.lbl_list_title.setText(self._t("bgm_list_title"))
         self.btn_open.setText(self._t("bgm_browse"))
         if not self.bgm:
             self.lbl_archive.setText(self._t("bgm_no_file"))
-            self.lbl_info.setText(self._t("bgm_select_hint"))
+        self._update_info()
         self.lbl_step1.setText(self._t("bgm_open_title"))
         self.lbl_hint.setText(self._t("bgm_hint"))
         self.lbl_step2.setText(self._t("bgm_listen_title"))
@@ -254,10 +265,7 @@ class BGMPage(PlaybackMixin, TaggingMixin, QWidget):
             (e for e in self.bgm.entries if e.index == index), None)
         if self.bgm_entry is None:
             return
-        e = self.bgm_entry
-        self.lbl_info.setText(self._t(
-            "bgm_entry_info", index=e.index, sr=e.sample_rate,
-            ch=e.channels, dur=e.duration_seconds))
+        self._update_info()
         self._fill_tag_fields()
         self._set_tag_fields_enabled(True)
         self._decode_entry()
