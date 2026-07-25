@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import (
 
 from .config import load_config, save_config
 from .i18n import LANGUAGE_ORDER, TRANSLATIONS, tr
-from .theme import STYLE, STYLE_SUBSTANCE
+from .theme import STYLE
 
 # ── Game plugin discovery ────────────────────────────────────────────────────
 # Importing ``games`` triggers discover(), which imports every game subpackage
@@ -52,7 +52,6 @@ def _build_mode_index():
 # Theme lookup: mode_data["style"] -> stylesheet (see each plugin's `modes`)
 _THEME_MAP = {
     "": STYLE,
-    "substance": STYLE_SUBSTANCE,
 }
 
 

@@ -4,7 +4,7 @@ Living punch-list for `mgs2_audio/`. Replaces `REPRISE.md`, `SESSION_DECOUVERTES
 and `AUDIT_REPRISE.md` (three overlapping, partly-contradicting session logs) with one
 place to check what's fixed, what's verified-fine, and what's still open. Historical
 narrative stays in `CHANGELOG.md`; format/reverse-engineering knowledge stays in
-`docs/FORMATS.md`, `docs/AUDIT_SDX.md`, `docs/ORCHESTRATION.md`.
+`docs/FORMATS.md` and `docs/AUDIT_SDX.md`.
 
 This audit was produced by reading every file in `mgs2_audio/` end to end (UI, codec,
 formats, render, cli) against real game data (`scripts/sdx_mgs2_MC/`,
@@ -180,15 +180,8 @@ citations below point at code instead.
   16-bit/stereo PCM WAV, ~120s). A companion `MonoBehaviour` catalog
   (`sounddata_scenariobgm.asset.bundle`) lists all 6 named tracks (`ARMS DEPOT`,
   `BATTLE`, `COUNTDOWN TO DISASTER`, `INFILTRATION`, `IT'S THE HARRIER`,
-  `YELL "DEAD CELL"`) by name, readable via `obj.read_typetree()`. Full details
-  and the extraction recipe: `docs/ORCHESTRATION.md`'s new top section. What
-  decides *when* each track plays (infiltration/alert/evasion) is still
-  unconfirmed — likely a C# script (Mono runtime, not IL2CPP), not decoded yet.
-  For **Substance**, the `mdx` (if it exists at all in that release) is still
-  unfound; `cache.dar`/`cache.qar`/`scenerio.gcx`/`data.cnf` were all checked
-  this session and ruled out (confirmed to be mission/script data via
-  `idlist.txt` cross-reference and the KCEJ-Wiki, not audio-related) — no
-  remaining unexplored candidate in that folder.
+  `YELL "DEAD CELL"`) by name, readable via `obj.read_typetree()`. Format notes
+  live in `docs/FORMATS.md`.
   Confirmed by measurement (RMS per channel across all significant cues in
   `pk000002.sdx`): the Séquenceur tab's pan handling itself is correct (matches
   the documented reference cue 58 exactly, 1:1 balance); a few cues (155, 160,

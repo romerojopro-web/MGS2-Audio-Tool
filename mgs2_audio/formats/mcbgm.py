@@ -6,7 +6,6 @@ Master Collection (2023) does not carry the PS2 `mdx` music system at all: its
 scenario music is 6 standard Unity `AudioClip`s, one per `UnityFS` AssetBundle,
 plus a catalog bundle whose `SoundData_ScenarioBGM` MonoBehaviour lists the
 tracks by their real names (ARMS DEPOT, BATTLE, …) with the PathID of each clip.
-See docs/ORCHESTRATION.md for the full discovery notes.
 
 The launcher's own music follows the same scheme in two more folders: the
 main-menu theme (+ its `sounddata_bgm.asset.bundle` catalog) under

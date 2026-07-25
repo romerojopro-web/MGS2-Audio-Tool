@@ -34,14 +34,14 @@ def test_db_folder_is_isolated_per_mode():
     w = _window()
     w.mode = "mc"
     w.db_folder = "C:/tags/mc"
-    w.mode = "substance"
+    w.mode = "other"
     assert w.db_folder == ""          # untouched by the mc-mode write
 
-    w.db_folder = "C:/tags/substance"
+    w.db_folder = "C:/tags/other"
     w.mode = "mc"
-    assert w.db_folder == "C:/tags/mc"  # untouched by the substance-mode write
+    assert w.db_folder == "C:/tags/mc"  # untouched by the other-mode write
 
-    assert w.cfg["db_folder"] == {"mc": "C:/tags/mc", "substance": "C:/tags/substance"}
+    assert w.cfg["db_folder"] == {"mc": "C:/tags/mc", "other": "C:/tags/other"}
 
 
 def test_db_folder_migrates_legacy_flat_string():
@@ -49,14 +49,13 @@ def test_db_folder_migrates_legacy_flat_string():
     w = _window()
     w.cfg = {"db_folder": "C:/legacy/shared"}
     w.mode = "mc"
-    assert w.db_folder == "C:/legacy/shared"
-    w.mode = "substance"
-    assert w.db_folder == "C:/legacy/shared"  # same value, applied to every mode
+    assert w.db_folder == "C:/legacy/shared"  # legacy string honoured for the mode
 
-    # Migrated in place: subsequent per-mode writes no longer affect each other.
-    w.db_folder = "C:/new/substance"
-    w.mode = "mc"
-    assert w.db_folder == "C:/legacy/shared"
+    # Migrated in place to the per-mode dict: a later write updates only the
+    # current mode's entry.
+    w.db_folder = "C:/new/mc"
+    assert w.db_folder == "C:/new/mc"
+    assert w.cfg["db_folder"] == {"mc": "C:/new/mc"}
 
 
 def test_db_folder_ignores_malformed_cfg_value():

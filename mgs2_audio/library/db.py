@@ -29,15 +29,6 @@ from ..formats import sdt as _sdt
 
 LIBRARY_FILENAME = "mgs2_sdt_library.json"
 SDX_LIBRARY_FILENAME = "mgs2_sdx_library.json"
-# Substance's .sdx layout differs from Master Collection's, and the two games'
-# sound effects are unrelated — give Substance its own file rather than
-# sharing (and co-mingling tags in) the Master Collection one.
-SUBSTANCE_SDX_LIBRARY_FILENAME = "mgs2_substance_sdx_library.json"
-# One tab per game, so no MC/Substance naming collision needed here (unlike SDX,
-# which exists in both).
-VOX_LIBRARY_FILENAME = "mgs2_vox_library.json"
-BGM_LIBRARY_FILENAME = "mgs2_bgm_library.json"
-DEMOS_LIBRARY_FILENAME = "mgs2_demos_library.json"
 SEQ_LIBRARY_FILENAME = "mgs2_seq_library.json"
 MCBGM_LIBRARY_FILENAME = "mgs2_mc_bgm_library.json"
 GSA_LIBRARY_FILENAME = "mgs2_gsa_library.json"

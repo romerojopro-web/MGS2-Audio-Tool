@@ -16,12 +16,10 @@ TRANSLATIONS = {
         "window_title": "MGS2 SDT Tool — Doublage",
         "app_title": "MGS2 · SDT TOOL",
         "app_subtitle_mc": "EXTRACTION & DOUBLAGE — MASTER COLLECTION (PC)",
-        "app_subtitle_substance": "EXTRACTION & DOUBLAGE — SUBSTANCE (2003)",
         "language_label": "Langue :",
         "mode_label": "Version :",
         "db_folder_label": "Base :",
         "mode_mc": "Master Collection",
-        "mode_substance": "Substance (2003)",
 
         "lib_title": "BIBLIOTHÈQUE",
         "tab_sdt": "SDT · DIALOGUES",
@@ -53,9 +51,6 @@ TRANSLATIONS = {
         "gsa_installed": "✓ Installé dans {path}",
         "gsa_status_loaded": "Archive chargée : {n} sons",
         "tab_seq": "SÉQUENCEUR · CUES SDX",
-        "tab_bgm": "MUSIQUE · BGM",
-        "tab_vox": "VOX · VOIX",
-        "tab_demos": "DÉMOS · CUTSCENES",
         "seq_open_title": "1 · OUVRIR UNE BANQUE",
         "seq_browse": "PARCOURIR…",
         "seq_open_stage": "OUVRIR UN STAGE…",
@@ -121,8 +116,7 @@ TRANSLATIONS = {
                        "morceaux du scénario plus la musique du menu et des "
                        "crédits, les écouter, les exporter — ou les remplacer "
                        "par vos propres WAV. Attention : ces fichiers ne "
-                       "pilotent que le launcher, pas la musique en partie "
-                       "(recherche en cours, voir docs/ORCHESTRATION.md)."),
+                       "pilotent que le launcher, pas la musique en partie."),
         "mcbgm_select_hint": "Sélectionnez un morceau dans la liste",
         "mcbgm_no_unitypy": ("La librairie UnityPy est requise pour lire les "
                              "bundles Unity de Master Collection.\n"
@@ -357,12 +351,10 @@ TRANSLATIONS = {
         "window_title": "MGS2 SDT Tool — Dubbing",
         "app_title": "MGS2 · SDT TOOL",
         "app_subtitle_mc": "EXTRACTION & DUBBING — MASTER COLLECTION (PC)",
-        "app_subtitle_substance": "EXTRACTION & DUBBING — SUBSTANCE (2003)",
         "language_label": "Language:",
         "mode_label": "Version:",
         "db_folder_label": "Database:",
         "mode_mc": "Master Collection",
-        "mode_substance": "Substance (2003)",
 
         "lib_title": "LIBRARY",
         "tab_sdt": "SDT · DIALOGUE",
@@ -394,9 +386,6 @@ TRANSLATIONS = {
         "gsa_installed": "✓ Installed into {path}",
         "gsa_status_loaded": "Archive loaded: {n} sounds",
         "tab_seq": "SEQUENCER · SDX CUES",
-        "tab_bgm": "MUSIC · BGM",
-        "tab_vox": "VOX · VOICES",
-        "tab_demos": "DEMOS · CUTSCENES",
         "seq_open_title": "1 · OPEN A BANK",
         "seq_browse": "BROWSE…",
         "seq_open_stage": "OPEN A STAGE…",
@@ -462,7 +451,7 @@ TRANSLATIONS = {
                        "menu and credits music, listen to them, export them — "
                        "or replace them with your own WAVs. Note: these files "
                        "only drive the launcher, not the in-game gameplay "
-                       "music (research ongoing, see docs/ORCHESTRATION.md)."),
+                       "music."),
         "mcbgm_select_hint": "Select a track from the list",
         "mcbgm_no_unitypy": ("The UnityPy library is required to read Master "
                              "Collection's Unity bundles.\n"
@@ -696,12 +685,10 @@ TRANSLATIONS = {
         "window_title": "MGS2 SDT Tool — Doblaje",
         "app_title": "MGS2 · SDT TOOL",
         "app_subtitle_mc": "EXTRACCIÓN Y DOBLAJE — MASTER COLLECTION (PC)",
-        "app_subtitle_substance": "EXTRACCIÓN Y DOBLAJE — SUBSTANCE (2003)",
         "language_label": "Idioma:",
         "mode_label": "Versión:",
         "db_folder_label": "Base:",
         "mode_mc": "Master Collection",
-        "mode_substance": "Substance (2003)",
 
         "lib_title": "BIBLIOTECA",
         "tab_sdt": "SDT · DIÁLOGOS",
@@ -733,9 +720,6 @@ TRANSLATIONS = {
         "gsa_installed": "✓ Instalado en {path}",
         "gsa_status_loaded": "Archivo cargado: {n} sonidos",
         "tab_seq": "SECUENCIADOR · CUES SDX",
-        "tab_bgm": "MÚSICA · BGM",
-        "tab_vox": "VOX · VOCES",
-        "tab_demos": "DEMOS · CUTSCENES",
         "seq_open_title": "1 · ABRIR UN BANCO",
         "seq_browse": "EXAMINAR…",
         "seq_open_stage": "ABRIR UN ESCENARIO…",
@@ -801,8 +785,7 @@ TRANSLATIONS = {
                        "escenario más la música del menú y de los créditos, "
                        "escucharlas, exportarlas — o reemplazarlas con tus "
                        "propios WAV. Atención: estos archivos solo controlan "
-                       "el launcher, no la música dentro de la partida "
-                       "(investigación en curso, ver docs/ORCHESTRATION.md)."),
+                       "el launcher, no la música dentro de la partida."),
         "mcbgm_select_hint": "Selecciona una pista de la lista",
         "mcbgm_no_unitypy": ("Se necesita la librería UnityPy para leer los "
                              "bundles de Unity de Master Collection.\n"
@@ -1036,12 +1019,10 @@ TRANSLATIONS = {
         "window_title": "MGS2 SDT Tool — Озвучивание",
         "app_title": "MGS2 · SDT TOOL",
         "app_subtitle_mc": "ИЗВЛЕЧЕНИЕ И ОЗВУЧИВАНИЕ — MASTER COLLECTION (PC)",
-        "app_subtitle_substance": "ИЗВЛЕЧЕНИЕ И ОЗВУЧИВАНИЕ — SUBSTANCE (2003)",
         "language_label": "Язык:",
         "mode_label": "Версия:",
         "db_folder_label": "База:",
         "mode_mc": "Master Collection",
-        "mode_substance": "Substance (2003)",
 
         "lib_title": "БИБЛИОТЕКА",
         "tab_sdt": "SDT · ДИАЛОГИ",
@@ -1073,9 +1054,6 @@ TRANSLATIONS = {
         "gsa_installed": "✓ Установлено в {path}",
         "gsa_status_loaded": "Архив загружен: звуков {n}",
         "tab_seq": "СЕКВЕНСОР · SDX-КЬЮ",
-        "tab_bgm": "МУЗЫКА · BGM",
-        "tab_vox": "VOX · ГОЛОСА",
-        "tab_demos": "ДЕМО · КАТСЦЕНЫ",
         "seq_open_title": "1 · ОТКРЫТЬ БАНК",
         "seq_browse": "ОБЗОР…",
         "seq_open_stage": "ОТКРЫТЬ ЭТАП…",
@@ -1140,8 +1118,7 @@ TRANSLATIONS = {
                        "чтобы увидеть 6 треков сценария плюс музыку меню и "
                        "титров, прослушать их, экспортировать — или заменить "
                        "своими WAV. Внимание: эти файлы управляют только "
-                       "лаунчером, а не игровой музыкой (идёт исследование, "
-                       "см. docs/ORCHESTRATION.md)."),
+                       "лаунчером, а не игровой музыкой."),
         "mcbgm_select_hint": "Выберите трек из списка",
         "mcbgm_no_unitypy": ("Для чтения Unity-бандлов Master Collection нужна "
                              "библиотека UnityPy.\n"

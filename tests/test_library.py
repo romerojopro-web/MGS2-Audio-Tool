@@ -67,7 +67,7 @@ def test_the_two_databases_are_separate_files(tmp_path):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Every tab gets its own file — MC SDX, Substance SDX, VOX, BGM, Dém, Séquenceur
+# Every tab gets its own file — SDT, SDX, BGM (MC), GSA, Séquenceur
 # ─────────────────────────────────────────────────────────────────────────────
 
 # The full set of per-tab database filenames the tool writes today. If a new
@@ -76,58 +76,14 @@ def test_the_two_databases_are_separate_files(tmp_path):
 ALL_LIBRARY_FILENAMES = [
     db.LIBRARY_FILENAME,
     db.SDX_LIBRARY_FILENAME,
-    db.SUBSTANCE_SDX_LIBRARY_FILENAME,
-    db.VOX_LIBRARY_FILENAME,
-    db.BGM_LIBRARY_FILENAME,
-    db.DEMOS_LIBRARY_FILENAME,
+    db.MCBGM_LIBRARY_FILENAME,
+    db.GSA_LIBRARY_FILENAME,
     db.SEQ_LIBRARY_FILENAME,
 ]
 
 
 def test_all_library_filenames_are_distinct():
     assert len(ALL_LIBRARY_FILENAMES) == len(set(ALL_LIBRARY_FILENAMES))
-
-
-def test_substance_sdx_entry_round_trips(tmp_path):
-    folder = str(tmp_path)
-    data = db.load_library(folder, db.SUBSTANCE_SDX_LIBRARY_FILENAME)
-    db.set_entry(data, "cafef00d", db.SDX_ENTRY_DEFAULTS,
-                 done=True, tag="Splash", banks=6)
-    assert db.save_library(folder, data, db.SUBSTANCE_SDX_LIBRARY_FILENAME)
-
-    reloaded = db.load_library(folder, db.SUBSTANCE_SDX_LIBRARY_FILENAME)
-    entry = db.get_entry(reloaded, "cafef00d", db.SDX_ENTRY_DEFAULTS)
-    assert entry["done"] is True
-    assert entry["tag"] == "Splash"
-    assert entry["banks"] == 6
-
-
-def test_vox_entry_round_trips(tmp_path):
-    folder = str(tmp_path)
-    data = db.load_library(folder, db.VOX_LIBRARY_FILENAME)
-    db.set_entry(data, "12", db.TAG_ENTRY_DEFAULTS,
-                 done=True, tag="Codec", notes="Otacon line")
-    assert db.save_library(folder, data, db.VOX_LIBRARY_FILENAME)
-
-    entry = db.get_entry(db.load_library(folder, db.VOX_LIBRARY_FILENAME),
-                         "12", db.TAG_ENTRY_DEFAULTS)
-    assert entry["done"] is True
-    assert entry["tag"] == "Codec"
-    assert entry["notes"] == "Otacon line"
-
-
-def test_bgm_and_demos_entries_use_separate_files(tmp_path):
-    folder = str(tmp_path)
-    bgm_data = db.load_library(folder, db.BGM_LIBRARY_FILENAME)
-    db.set_entry(bgm_data, "bgm.dat#0", db.TAG_ENTRY_DEFAULTS, tag="Theme")
-    db.save_library(folder, bgm_data, db.BGM_LIBRARY_FILENAME)
-
-    demos_data = db.load_library(folder, db.DEMOS_LIBRARY_FILENAME)
-    db.set_entry(demos_data, "demo.dat#0", db.TAG_ENTRY_DEFAULTS, tag="Intro")
-    db.save_library(folder, demos_data, db.DEMOS_LIBRARY_FILENAME)
-
-    assert "demo.dat#0" not in db.load_library(folder, db.BGM_LIBRARY_FILENAME)["entries"]
-    assert "bgm.dat#0" not in db.load_library(folder, db.DEMOS_LIBRARY_FILENAME)["entries"]
 
 
 def test_seq_entry_keyed_by_bank_and_cue(tmp_path):

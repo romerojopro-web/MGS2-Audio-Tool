@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.5.0 — 2026-07-25
+
+Final stabilisation: the tool ships as a focused **Master Collection** editor.
+The multi-game plugin architecture stays in place so others can add games — the
+low-level format decoders remain as worked examples — but only the MC plugin is
+registered now.
+
+### Removed
+- **The experimental Orchestration tab** (and its `formats/orchestration.py`):
+  it never produced correct results and has been dropped.
+- **The MGS2 Substance (2003) plugin and its tabs** (VOX, BGM, Dém, and the
+  Substance mode of SDX), the amber theme, and their translation keys. Substance
+  support leaves the shipped app; the shared codec/container/sequencer code it
+  used stays as reference for future game plugins.
+
+### Changed
+- The game selector now lists a single stable game (Master Collection); the app
+  is green-themed throughout. Tag databases: SDT, SDX and Séquenceur.
+- **Docs trimmed to the shipping tabs.** On the in-game (gameplay) music: it is
+  **not stored as a separate file** in the game's data — only the launcher music
+  (Unity bundles) is file-based and replaceable. README and CHANGELOG say just
+  that; the standalone orchestration document has been removed.
+
 ## 4.4.0 — 2026-07-24
 
 A whole category of the game's audio becomes reachable for the first time. The
@@ -219,15 +242,9 @@ over-generalised: **the Unity `.wav.bundle`s only feed the launcher**
 (pre-launcher/menu music, credits, the scenario app's music player). The
 replacement pipeline itself (FSB5 rebuild, audio conforming, Addressables
 catalog CRC patch) works exactly as described — the launcher does play the
-replaced audio — but gameplay music is served elsewhere. README,
-`docs/ORCHESTRATION.md` and the tab's interface text now say so.
-
-The in-game music trail is under active research: `METAL GEAR SOLID2.exe`
-still contains the PS2 path `host0:./sound/mdx1/`, and the per-stage
-`assets/sar/us/gbs_stage_*.sar` files (15-18 KB — the predicted `mdx`
-size) contain records typed in the raven expression-opcode range
-(pan/transpose/detune/vibrato/random-pitch) plus `.sdx` cue references.
-Analysis scripts live in `scripts/`.
+replaced audio — but gameplay music is served elsewhere. README and the tab's
+interface text now say so. The gameplay music is not stored as a separate file
+in the game's data.
 
 ## 4.0.0 — 2026-07-13
 
@@ -243,8 +260,8 @@ in Master Collection once both locks below are handled — the FSB5 container
 and the Addressables catalog CRC.
 Master Collection's real scenario music turned out not to use the PS2 `mdx`
 system at all: it's 6 standard Unity `AudioClip`s in `UnityFS` AssetBundles
-under `launcher_Data/StreamingAssets/…/mgs2/bgm/` (full discovery notes in
-`docs/ORCHESTRATION.md`). A new MC-only tab exposes them, built for modding:
+under `launcher_Data/StreamingAssets/…/mgs2/bgm/` (format notes in
+`docs/FORMATS.md`). A new MC-only tab exposes them, built for modding:
 - **Browse** the 6 tracks by their real catalog names (ARMS DEPOT, BATTLE,
   COUNTDOWN TO DISASTER, INFILTRATION, IT'S THE HARRIER, YELL "DEAD CELL")
   after picking the game's install folder once (remembered). The launcher's

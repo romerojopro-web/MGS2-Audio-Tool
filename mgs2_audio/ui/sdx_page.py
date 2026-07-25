@@ -38,7 +38,7 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
     def __init__(self, window, mode="mc"):
         super().__init__()
         self.win = window                 # to reach _t(), status bar, config
-        self.game_mode = mode             # "mc" or "substance" — the game version
+        self.game_mode = mode             # "mc" — the game version
         self.mode = "bank"                # "bank" (one .sdx) or "scan" (whole folder)
         self.bank = None                  # sdx.SDXFile
         self.bank_path = ""
@@ -82,8 +82,6 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
         self.btn_scan = QPushButton(); self.btn_scan.setObjectName("small")
         self.btn_scan.clicked.connect(self.scan_stage_folder)
         lay.addWidget(self.btn_scan)
-        if self.game_mode == "substance":
-            self.btn_scan.hide()
 
         self.lbl_bank = QLabel(); self.lbl_bank.setObjectName("dim")
         self.lbl_bank.setWordWrap(True)
@@ -428,10 +426,6 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
     # key, the extra cached fields, and how to redraw a row after a save.
 
     def _sdx_library_filename(self) -> str:
-        """MC and Substance banks are unrelated — keep their tags in separate
-        files so a shared db_folder doesn't co-mingle the two games' sounds."""
-        if self.game_mode == "substance":
-            return lib.SUBSTANCE_SDX_LIBRARY_FILENAME
         return lib.SDX_LIBRARY_FILENAME
 
     def _tag_key(self):

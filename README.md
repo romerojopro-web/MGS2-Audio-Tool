@@ -1,38 +1,30 @@
 # MGS2 Audio Tool
 
-An audio-modding tool for **Metal Gear Solid** games on PC — currently
-**Metal Gear Solid 2: Master Collection** (2023) and **Substance** (2003),
-with an architecture designed to support more games in the future
-(MGS3, ZoE, etc.).
+An audio-modding tool for **Metal Gear Solid 2: Master Collection** (2023) on
+PC, built on a game-plugin architecture designed to support more games in the
+future (Substance, MGS3, ZoE, …) — each game registers its own set of tabs.
 
-Open the game's audio, listen, export to WAV, and (for dialogue) replace it
-with your own. A **game selector** at the top switches which tabs are shown
-and recolours the whole window. Each game gets its own colour theme: green for
-Master Collection, amber for Substance.
+Open the game's audio, listen, export to WAV, and (for dialogue and launcher
+music) replace it with your own. A **game selector** at the top switches which
+tabs are shown; today it lists the one stable game, Master Collection.
 
 ## Project status
 
-- **MGS2 Master Collection — stable.** Every MC tab works on real game data:
-  dialogue browsing/export/replacement (SDT), sound-bank scan and replacement
-  (SDX), the **Global Sound Archive** (the game's iconic UI/item/alarm sounds,
-  decoded from `BP_SE.DAT` — see below), the cue sequencer, and **launcher**
-  music replacement (BGM · Launcher) — confirmed working (the launcher plays the
-  replaced audio), including the Unity FSB5/Addressables-CRC handling that makes
-  replaced bundles load.
-- **In-game music replacement is under active research** — the Unity bundles
-  turned out to drive only the launcher's music; the gameplay music follows
-  the original PS2 engine model (`gbs_stage_*.sar` files are the prime
-  suspects, see `docs/ORCHESTRATION.md`). Other MC features are also in
-  development (e.g. the launcher's 13 UI sounds share one bundle and can't
-  be replaced individually yet).
-- **MGS2 Substance (2003) — work in progress.** Browsing and WAV export work
-  (VOX, BGM, Dém, SDX open-only), but several formats are still being
-  reverse-engineered: the `vox.dat` codec is unconfirmed, `demo.dat` decodes
-  with artefacts, the Substance `.sdx` layout diverges from MC's, and no
-  Substance replacement path exists yet. See `docs/AUDIT.md` for the open
-  questions.
+**MGS2 Master Collection — stable.** Every tab works on real game data:
+dialogue browsing/export/replacement (SDT), sound-bank scan and replacement
+(SDX), the **Global Sound Archive** (the game's iconic UI/item/alarm sounds,
+decoded from `BP_SE.DAT` — see below), the cue sequencer (SDX SE cues), and
+**launcher** music replacement (BGM · Launcher) — confirmed working (the
+launcher plays the replaced audio), including the Unity FSB5/Addressables-CRC
+handling that makes replaced bundles load.
 
-### Master Collection tabs
+> **On the in-game (gameplay) music.** There is **no separate music file** in
+> the game's data for the gameplay BGM. The launcher music (Unity bundles) is
+> the only file-based, replaceable music; the gameplay music is produced by the
+> engine at runtime rather than stored as a standalone file the tool could
+> open, so it is out of scope here.
+
+### Tabs
 
 - **SDT · Dialogues** — character voice lines (replaceable, for custom dubs).
 - **BGM · Launcher** — the launcher's music: the 6 scenario tracks (ARMS
@@ -40,9 +32,8 @@ Master Collection, amber for Substance.
   stored as Unity AssetBundles. Listen, export to WAV, and **replace a track
   with your own WAV** — the tool rebuilds a valid `.bundle` and shows each
   file's exact path inside the game folder. Note: these bundles drive the
-  **launcher**, not the in-game gameplay music (that one follows the original
-  PS2 engine model and is under active research — see
-  `docs/ORCHESTRATION.md`). Requires the optional `UnityPy` dependency.
+  **launcher**, not the in-game gameplay music. Requires the optional `UnityPy`
+  dependency.
 - **SDX · Sound banks** — the stage sample banks (footsteps, doors, weapons…).
   Full scan mode: index every bank in the game, group identical sounds, edit
   one and rewrite all copies at once.
@@ -55,32 +46,12 @@ Master Collection, amber for Substance.
   keep each sound's exact size, and the archive is backed up to `.bak` before
   the first write.
 - **Séquenceur · Cues SDX** — the raven-accurate synth that renders the SE cue
-  sequences hidden in the `.sdx` banks. **These are raw sound effects, not the
-  game's full orchestrated music** — real orchestration needs a separate `mdx`
-  file (see below) that has never been found; if one turns up, it would likely
-  get its own dedicated tab rather than folding into this one.
-
-### Substance (2003) tabs
-
-- **VOX · Voices** — `vox.dat`, the game's full voice archive (53 K PS-ADPCM
-  blocks at 44 100 Hz). Listen, export, or dub individual blocks.
-- **SDX · Sound effects** — `pk000000`–`pk000005.sdx`, six banks of stage
-  samples (22 050 Hz). Open one at a time.
-- **Musique · BGM** — `bgm.dat`, `movie.dat`: pre-rendered MS-ADPCM music
-  streams (98 + 90 entries), decoded straight to WAV.
-- **Dém Cutscenes** — `demo.dat`: the cutscene and demo audio (135 MS-ADPCM
-  entries), same decode-and-export workflow.
-
-> **How the music works.** The `.sdx` cue sequences are driven like a MIDI file
-> by the PS2 sound driver — faithfully reproduced here from the **`KieronJ/raven`**
-> reference (tempo, pitch via `freq_tbl`, per-instrument tuning/pan/ADSR, sweep,
-> glissandi, portamento, vibrato, reverb). Those cues are mostly **sound effects**;
-> the actual orchestrated **BGM** is streamed as MS-ADPCM in `bgm.dat` on PC and
-> extracted directly. See `docs/AUDIT_SDX.md`, `docs/ORCHESTRATION.md`, `docs/AUDIT.md`.
->
-> Reading works everywhere. **Replacing** works for Master Collection music
-> (the BGM · Launcher tab, via Unity bundles) and for dialogue — not yet for
-> Substance's streamed `bgm.dat` music.
+  sequences hidden in the `.sdx` banks. These are the raw **sound effects** the
+  engine assembles at runtime; the cue engine is faithfully reproduced from the
+  **`KieronJ/raven`** reference — tempo, pitch via `freq_tbl`, per-instrument
+  tuning/pan/ADSR, sweep, glissandi, portamento, vibrato and reverb. See
+  `docs/AUDIT_SDX.md` for the fidelity audit and `docs/FORMATS.md` for the
+  format itself.
 
 > **Two `.sdt` audio formats are supported.** The Better Audio Mod ships
 > PS-ADPCM (PS3 HD Collection audio) — decoded in pure Python. The **stock**
@@ -164,38 +135,22 @@ python run.py
 Search by name, tag, speaker or notes; filter by *done / to do* or by tag.
 Tagging is entirely manual — the tool never guesses whether a line is finished.
 
-> **Every tab can be tagged**, not just SDT — SDX, VOX, BGM, Dém and Séquenceur
-> each keep a done/tag/notes panel and their own database file. The **database
-> folder is picked once per game** (a control in the app header, next to the
-> mode selector) — Master Collection and Substance never share tags.
-
-### The VOX tab — voice archive (Substance)
-
-Open `vox.dat` (the Substance voice archive). Its 53 K PS-ADPCM blocks are
-listed; pick one to listen and export, or pick a WAV to dub it. The file
-dialogue opens on `.dat` by default.
+> **Every tab can be tagged**, not just SDT — SDX and Séquenceur also keep a
+> done/tag/notes panel and their own database file. The **database folder is
+> picked once per game** (a control in the app header, next to the game
+> selector).
 
 ### The SDX tab — sound effects
 
-**Master Collection** — open a single bank, or **scan the whole game**: point
-it at your MGS2 folder and it finds `us/stage` on its own, indexes every bank,
-and groups identical sounds.
+Open a single bank, or **scan the whole game**: point it at your MGS2 folder and
+it finds `us/stage` on its own, indexes every bank, and groups identical sounds.
 
-**Substance** — open one of the six `pk*.sdx` banks (scan mode is not available:
-Substance banks use a different internal layout). The open dialog filters on
-`.sdx` by default.
+### The Séquenceur tab — SDX cues
 
-### The BGM / Dém tabs — streamed music
-
-**Master Collection** — open a `.sdx` bank and its musical pieces appear in a
-list. Click one and it is synthesised and played, right there. Export a piece,
-or every piece at once. Two options change the synthesis: **stereo** (uses each
-track's pan) and **tune** (uses each instrument's base rate, 44 100 Hz).
-
-**Substance** — the **BGM** tab opens `bgm.dat` or `movie.dat` (pre-rendered
-MS-ADPCM streams). The **Dém** tab opens `demo.dat` (cutscene audio). Both
-list entries with sample rate, channel count and duration; select one to listen
-and export, or export all at once.
+Open a `.sdx` bank and its cue pieces appear in a list. Click one and it is
+synthesised and played, right there. Export a piece, or every piece at once. Two
+options change the synthesis: **stereo** (uses each track's pan) and **tune**
+(uses each instrument's base rate, 44 100 Hz).
 
 ### The music sequencer, from the command line
 
@@ -269,8 +224,7 @@ mgs2_audio/
         base.py        GamePlugin, PageSpec, AudioFormat, AudioContainer
         registry.py    Plugin discovery and global registry
     games/             Each game is a subpackage that registers itself.
-        mgs2_mc/       MGS2 Master Collection (SDT, SDX, Sequencer)
-        mgs2_substance/ MGS2 Substance 2003 (VOX, SDX, BGM, DEMOS)
+        mgs2_mc/       MGS2 Master Collection (SDT, BGM, SDX, GSA, Sequencer)
     ui/                PyQt6 interface (app.py = shell, one page per tab).
     cli.py             the command line.
 docs/FORMATS.md        the reverse-engineering notes.
@@ -337,15 +291,8 @@ default while developing.
   replacement always pads or trims to the target's exact byte size, and the
   padding/trimmed-away portion is often mostly silence), but the real recorded
   audio itself still goes through the full search. Decoding is fast.
-- **Scanning the whole game** (Master Collection only) reads ~200 banks of about
-  1 MB each. Give it a minute; the progress bar is honest, and you can cancel.
-- **Substance `.sdx` banks** use a different internal layout (`voice_tbl` not at
-  `0x800`); they don't parse in the raven sequencer yet. Open-only mode.
-- **Substance `vox.dat` playback is suspect.** It's currently decoded as PS-ADPCM,
-  but the container structure suggests the actual codec may be Konami's
-  DPCM_KCEJ instead — unconfirmed by ear. See `docs/AUDIT.md` before relying on it.
-- **Substance `codec.dat`** (`b9 2a 90 3d` header) is an unknown format; reverse
-  engineering is still needed. It is excluded from the UI for now.
+- **Scanning the whole game** reads ~200 banks of about 1 MB each. Give it a
+  minute; the progress bar is honest, and you can cancel.
 - **Stereo dubs are duplicated** across both channels. True left/right stereo
   replacement is not supported.
 - **`replace-all` writes to your game files** in place (with `.bak` backups).

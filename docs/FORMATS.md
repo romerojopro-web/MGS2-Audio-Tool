@@ -790,16 +790,10 @@ is still needed. Excluded from the UI for now.
 
 ## 7. What is still unknown
 
-- **Song orchestration is in the Unity binary** — for Master Collection (2023),
-  the release this section documents. The `.sdx` files contain only individual
-  cues (phrases, jingles, layers); their ordering into a complete stage song is
-  compiled into `METAL GEAR SOLID 2.exe` (il2cpp). There are no JSON, XML, or
-  Lua config files to read. This is not in tension with `docs/ORCHESTRATION.md`'s
-  external **`mdx`** file hypothesis — that file belongs to the original PS2
-  driver (`raven`), which MC's Unity reimplementation doesn't necessarily carry
-  forward in the same form. Whether an `mdx`-equivalent still exists somewhere in
-  MC's data (or only in the original PS2/Substance release) is exactly what's
-  still unresolved.
+- **A stage's complete song is not one of these files.** The `.sdx` files
+  contain only individual cues (phrases, jingles, layers); how those cues are
+  ordered into a full stage song is not stored as a separate file in the game's
+  data. This section documents the cue format itself.
 - **The `.sdx` header** below `0x800`: a handful of small u32 values, the rest
   zero. Their meaning is unknown.
 - **The cue table's `kind` byte** and its two flags.
