@@ -1,5 +1,20 @@
-# ── Game data: NEVER in the repo (copyrighted Konami files) ──────────────────
-# Dumps, archives, banks, bundles, extracted audio — whatever the folder.
+# Keep the repository source-only: no local caches, build output, or data files.
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build / packaging output
+dist/
+build/
+
+# Editor / tooling settings
+.claude/
+.vscode/
+.idea/
+
+# Large binary and local data files — not part of the source tree.
 *.dat
 *.sdx
 *.sdt
@@ -10,27 +25,10 @@
 *.gcx
 *.cnf
 *.bak
+*.exe
 *.DMP
 *.dmp
 
-# Game executables and any unprotected image of them — NEVER in the repo.
-# The reverse-engineering notes in docs/ are interoperability research on your
-# own legally-owned copy; the binary itself must not be committed.
-*.exe
-*.unpacked
-*unpacked*.exe
+# Local test / data folders
 tests/mgs2_substance_2003/
 scripts/sdx_mgs2_MC/
-
-# ── Build / packaging output ─────────────────────────────────────────────────
-dist/
-
-# ── Python noise ─────────────────────────────────────────────────────────────
-__pycache__/
-*.py[cod]
-.pytest_cache/
-
-# ── Tooling / IDE ────────────────────────────────────────────────────────────
-.claude/
-.vscode/
-.idea/
