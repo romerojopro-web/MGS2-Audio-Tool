@@ -22,12 +22,14 @@ class _Mgs2McPlugin(GamePlugin):
             from ...ui.sdt_page import SDTPage
             from ...ui.sdx_page import SDXPage
             from ...ui.seq_page import SeqPage
+            from ...ui.voiceswap_page import VoiceSwapPage
             _Mgs2McPlugin._cached_pages = [
                 PageSpec("sdt", SDTPage, "tab_sdt"),
                 PageSpec("mcbgm", McBgmPage, "tab_mcbgm"),
                 PageSpec("sdx", SDXPage, "tab_sdx"),
                 PageSpec("gsa", GsaPage, "tab_gsa"),
                 PageSpec("seq", SeqPage, "tab_seq"),
+                PageSpec("voiceswap", VoiceSwapPage, "tab_voiceswap"),
             ]
         return _Mgs2McPlugin._cached_pages
 

@@ -292,6 +292,36 @@ TRANSLATIONS = {
 
         "step4_title": "4 · GÉNÉRER LE SDT MODIFIÉ",
         "generate": "REMPLACER L'AUDIO ET SAUVEGARDER…",
+        "sdt_allow_longer": "Autoriser un audio plus long (agrandit le fichier — mono)",
+        "tab_voiceswap": "VOIX JP",
+        "vsw_title": "SWAP — VOIX JAPONAISES",
+        "vsw_intro": ("Remplace les voix US par les voix japonaises natives (dialogue et "
+                      "cutscenes). Les sous-titres restent dans la langue réglée dans le "
+                      "jeu. Les appels codec et les données non-vocales sont détectés et "
+                      "épargnés, pour ne jamais japoniser tes sous-titres par erreur. "
+                      "Nécessite les deux mods Better Audio (US + JP) installés.\n\n"
+                      "À noter : les voix de gameplay in-game (soldats, Snake, Raiden, boss) "
+                      "ne sont pas swappables pour le moment — elles vivent dans les banques "
+                      "de son des stages, sans source japonaise disponible."),
+        "vsw_step1": "1 · Dossier du jeu",
+        "vsw_pick_game": "Choisir le dossier MGS2…",
+        "vsw_no_game": "Aucun dossier sélectionné.",
+        "vsw_step2": "2 · Analyse",
+        "vsw_scan_none": "Choisis d'abord le dossier du jeu.",
+        "vsw_scan_empty": ("Aucune paire JP↔US trouvée. Vérifie le dossier et que les deux "
+                           "Better Audio (US + JP) sont installés."),
+        "vsw_scan_result": ("{total} fichiers de voix à swapper ({folders}). Les codecs et "
+                            "fichiers avec texte sont protégés."),
+        "vsw_step3": "3 · Swap",
+        "vsw_warn": ("Écrase les fichiers US sur place, sans backup. Pour revenir en "
+                     "arrière : Steam → Propriétés → Fichiers installés → Vérifier l'intégrité."),
+        "vsw_swap": "SWAPPER LES VOIX JP",
+        "vsw_confirm_title": "Confirmer le swap",
+        "vsw_confirm": "Écraser {total} fichiers de voix US par les versions japonaises ? (sans backup)",
+        "vsw_swapping": "Swap… {done}/{total}",
+        "vsw_failed": "Échec du swap : {e}",
+        "vsw_done_status": "Swap terminé.",
+        "vsw_done": "Terminé : {total} fichiers, {gb:.2f} Go. Lance le jeu et profite des voix japonaises. 🎌",
         "result_ok": "✓ Fichier généré",
         "result_detail": ("Même taille que l'original ({size} octets) — "
                           "prêt à remettre dans le jeu."),
@@ -627,6 +657,36 @@ TRANSLATIONS = {
 
         "step4_title": "4 · GENERATE THE MODIFIED SDT",
         "generate": "REPLACE AUDIO AND SAVE…",
+        "sdt_allow_longer": "Allow longer audio (grows the file — mono)",
+        "tab_voiceswap": "JP VOICES",
+        "vsw_title": "SWAP — JAPANESE VOICES",
+        "vsw_intro": ("Replaces the US voices with the native Japanese takes (dialogue and "
+                      "cutscenes). Subtitles stay in whatever language the game is set to. "
+                      "Codec calls and non-voice data are detected and left untouched, so "
+                      "your subtitles never turn Japanese by accident. Requires both Better "
+                      "Audio mods (US + JP) installed.\n\n"
+                      "Note: in-game gameplay voices (soldiers, Snake, Raiden, bosses) can't "
+                      "be swapped for now — they live in the stage sound banks, with no "
+                      "Japanese source available."),
+        "vsw_step1": "1 · Game folder",
+        "vsw_pick_game": "Choose the MGS2 folder…",
+        "vsw_no_game": "No folder selected.",
+        "vsw_step2": "2 · Scan",
+        "vsw_scan_none": "Choose the game folder first.",
+        "vsw_scan_empty": ("No JP↔US pairs found. Check the folder and that both Better "
+                           "Audio mods (US + JP) are installed."),
+        "vsw_scan_result": ("{total} voice files to swap ({folders}). Codec and text-bearing "
+                            "files are protected."),
+        "vsw_step3": "3 · Swap",
+        "vsw_warn": ("Overwrites the US files in place, no backup. To undo: Steam → "
+                     "Properties → Installed Files → Verify integrity."),
+        "vsw_swap": "SWAP IN JP VOICES",
+        "vsw_confirm_title": "Confirm swap",
+        "vsw_confirm": "Overwrite {total} US voice files with their Japanese versions? (no backup)",
+        "vsw_swapping": "Swapping… {done}/{total}",
+        "vsw_failed": "Swap failed: {e}",
+        "vsw_done_status": "Swap complete.",
+        "vsw_done": "Done: {total} files, {gb:.2f} GB. Launch the game and enjoy the Japanese voices. 🎌",
         "result_ok": "✓ File generated",
         "result_detail": ("Same size as the original ({size} bytes) — "
                           "ready to put back into the game."),
@@ -960,6 +1020,36 @@ TRANSLATIONS = {
 
         "step4_title": "4 · GENERAR EL SDT MODIFICADO",
         "generate": "REEMPLAZAR AUDIO Y GUARDAR…",
+        "sdt_allow_longer": "Permitir audio más largo (agranda el archivo — mono)",
+        "tab_voiceswap": "VOCES JP",
+        "vsw_title": "SWAP — VOCES JAPONESAS",
+        "vsw_intro": ("Reemplaza las voces US por las voces japonesas nativas (diálogos y "
+                      "cinemáticas). Los subtítulos se quedan en el idioma configurado en el "
+                      "juego. Las llamadas de códec y los datos no vocales se detectan y se "
+                      "respetan, para no poner nunca tus subtítulos en japonés por error. "
+                      "Requiere los dos mods Better Audio (US + JP) instalados.\n\n"
+                      "Nota: las voces de gameplay in-game (soldados, Snake, Raiden, jefes) "
+                      "no se pueden intercambiar por ahora — están en los bancos de sonido "
+                      "de los escenarios, sin fuente japonesa disponible."),
+        "vsw_step1": "1 · Carpeta del juego",
+        "vsw_pick_game": "Elegir la carpeta MGS2…",
+        "vsw_no_game": "Ninguna carpeta seleccionada.",
+        "vsw_step2": "2 · Análisis",
+        "vsw_scan_none": "Elige primero la carpeta del juego.",
+        "vsw_scan_empty": ("No se encontraron pares JP↔US. Revisa la carpeta y que ambos "
+                           "mods Better Audio (US + JP) estén instalados."),
+        "vsw_scan_result": ("{total} archivos de voz para intercambiar ({folders}). Los "
+                            "códecs y archivos con texto están protegidos."),
+        "vsw_step3": "3 · Swap",
+        "vsw_warn": ("Sobrescribe los archivos US in situ, sin copia de seguridad. Para "
+                     "deshacer: Steam → Propiedades → Archivos instalados → Verificar integridad."),
+        "vsw_swap": "INTERCAMBIAR VOCES JP",
+        "vsw_confirm_title": "Confirmar swap",
+        "vsw_confirm": "¿Sobrescribir {total} archivos de voz US con sus versiones japonesas? (sin copia)",
+        "vsw_swapping": "Intercambiando… {done}/{total}",
+        "vsw_failed": "Error en el swap: {e}",
+        "vsw_done_status": "Swap completado.",
+        "vsw_done": "Hecho: {total} archivos, {gb:.2f} GB. Inicia el juego y disfruta de las voces japonesas. 🎌",
         "result_ok": "✓ Archivo generado",
         "result_detail": ("Mismo tamaño que el original ({size} bytes) — "
                           "listo para volver al juego."),
@@ -1294,6 +1384,35 @@ TRANSLATIONS = {
 
         "step4_title": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ SDT",
         "generate": "ЗАМЕНИТЬ ЗВУК И СОХРАНИТЬ…",
+        "sdt_allow_longer": "Разрешить более длинный звук (увеличивает файл — моно)",
+        "tab_voiceswap": "ЯП. ГОЛОСА",
+        "vsw_title": "SWAP — ЯПОНСКИЕ ГОЛОСА",
+        "vsw_intro": ("Заменяет американские голоса на родные японские (диалоги и катсцены). "
+                      "Субтитры остаются на языке, выбранном в игре. Кодек-звонки и "
+                      "неголосовые данные распознаются и не трогаются, чтобы субтитры "
+                      "случайно не стали японскими. Требуются оба мода Better Audio (US + JP).\n\n"
+                      "Примечание: игровые голоса в геймплее (солдаты, Снейк, Райден, боссы) "
+                      "пока нельзя заменить — они в звуковых банках уровней, без доступного "
+                      "японского источника."),
+        "vsw_step1": "1 · Папка игры",
+        "vsw_pick_game": "Выбрать папку MGS2…",
+        "vsw_no_game": "Папка не выбрана.",
+        "vsw_step2": "2 · Анализ",
+        "vsw_scan_none": "Сначала выберите папку игры.",
+        "vsw_scan_empty": ("Пары JP↔US не найдены. Проверьте папку и что оба мода Better "
+                           "Audio (US + JP) установлены."),
+        "vsw_scan_result": ("{total} голосовых файлов для замены ({folders}). Кодек- и "
+                            "текстовые файлы защищены."),
+        "vsw_step3": "3 · Замена",
+        "vsw_warn": ("Перезаписывает файлы US на месте, без резервной копии. Откат: Steam → "
+                     "Свойства → Установленные файлы → Проверить целостность."),
+        "vsw_swap": "ЗАМЕНИТЬ НА ЯП. ГОЛОСА",
+        "vsw_confirm_title": "Подтвердить замену",
+        "vsw_confirm": "Перезаписать {total} файлов US японскими версиями? (без резервной копии)",
+        "vsw_swapping": "Замена… {done}/{total}",
+        "vsw_failed": "Ошибка замены: {e}",
+        "vsw_done_status": "Замена завершена.",
+        "vsw_done": "Готово: {total} файлов, {gb:.2f} ГБ. Запустите игру и наслаждайтесь японскими голосами. 🎌",
         "result_ok": "✓ Файл создан",
         "result_detail": ("Тот же размер, что и оригинал ({size} байт) — "
                           "готов к возврату в игру."),

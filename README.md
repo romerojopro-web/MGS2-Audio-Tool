@@ -52,6 +52,14 @@ handling that makes replaced bundles load.
   tuning/pan/ADSR, sweep, glissandi, portamento, vibrato and reverb. See
   `docs/AUDIT_SDX.md` for the fidelity audit and `docs/FORMATS.md` for the
   format itself.
+- **VOIX JP · JP Voices** — swap the native Japanese voices into a US install so
+  the game speaks Japanese while your subtitles stay in the game's language.
+  Point it at the game folder and it copies each JP voice file over its US
+  namesake, **detecting and skipping** codec calls (which embed multilingual
+  subtitle text) so a wholesale swap never turns subtitles Japanese by accident.
+  Requires both the US and JP *Better Audio* mods. Covers dialogue, cutscenes and
+  codec voices; in-game gameplay barks have no Japanese source in the install and
+  are out of scope for now.
 
 > **Two `.sdt` audio formats are supported.** The Better Audio Mod ships
 > PS-ADPCM (PS3 HD Collection audio) — decoded in pure Python. The **stock**

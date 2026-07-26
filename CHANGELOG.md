@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.6.0 — 2026-07-26
+
+### Added — "JP Voices" tab: swap Japanese voices into a US install
+A new MC tab copies the native Japanese voice files over their US namesakes, so
+the game speaks Japanese while subtitles stay in whatever language the game is
+set to. The value over a blind copy is **detection**: codec calls (which embed
+multilingual subtitle text) and non-voice data are recognised and left untouched,
+so a wholesale swap never turns your subtitles Japanese by accident. Point it at
+the game folder, scan, swap — requires both the US and JP *Better Audio* mods,
+and writes no backup (restore via Steam's "Verify integrity"). Covers dialogue,
+cutscenes and codec voices. In-game gameplay barks (soldiers, Snake, Raiden,
+bosses) live in the stage sound banks, for which no Japanese source is available
+in the install, so they are out of scope for now — the tab states this.
+
+### Added — SDT re-dub: "allow longer audio"
+The SDT replace step gains an opt-in checkbox (mono only) that **grows** the file
+to fit a longer take instead of truncating it — appending audio chunks before the
+container terminator and scaling its length field — for dubbing a longer line
+over a shorter one.
+
 ## 4.5.0 — 2026-07-25
 
 Final stabilisation: the tool ships as a focused **Master Collection** editor.
