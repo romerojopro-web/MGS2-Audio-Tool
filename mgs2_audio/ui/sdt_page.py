@@ -316,11 +316,6 @@ class SDTPage(PlaybackMixin, QWidget):
 
         self.lbl_step4 = QLabel(); self.lbl_step4.setObjectName("step")
         lay.addWidget(self.lbl_step4)
-        # Mono PS-ADPCM only: grow the file instead of truncating a longer take
-        # (e.g. dubbing a longer Japanese line over a shorter English one).
-        self.chk_allow_longer = QCheckBox()
-        self.chk_allow_longer.setChecked(False)
-        lay.addWidget(self.chk_allow_longer)
         self.btn_generate = QPushButton(); self.btn_generate.setObjectName("primary")
         self.btn_generate.setEnabled(False)
         self.btn_generate.clicked.connect(self.generate_sdt)
@@ -371,7 +366,6 @@ class SDTPage(PlaybackMixin, QWidget):
 
         self.lbl_step4.setText(self._t("step4_title"))
         self.btn_generate.setText(self._t("generate"))
-        self.chk_allow_longer.setText(self._t("sdt_allow_longer"))
 
         # Refresh the info if a file is loaded
         if self.sdt:
@@ -1092,8 +1086,7 @@ class SDTPage(PlaybackMixin, QWidget):
 
         try:
             samples, _ = core.load_wav_mono(self.new_wav_path, self.sdt.sample_rate)
-            new_raw = core.replace_audio(self.sdt, samples,
-                                         allow_longer=self.chk_allow_longer.isChecked())
+            new_raw = core.replace_audio(self.sdt, samples)
             core.save_sdt(new_raw, out_path)
         except Exception as e:
             self.btn_generate.setEnabled(True)

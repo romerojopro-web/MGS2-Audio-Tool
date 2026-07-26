@@ -42,11 +42,6 @@ from ..codec.wav import DEFAULT_SAMPLE_RATE, load_wav_mono, save_wav
 BLOCK_HEADER_SIZE = 16          # header of each MG block
 FULL_BLOCK_DATA = 0x4000        # data size of a full block
 
-# When growing a file for a longer take, how much to overshoot the terminator's
-# length budget (see _replace_audio_grown). >1 trades a hair of trailing silence
-# for the guarantee that the whole take plays rather than getting cut short.
-TERMINATOR_LEN_OVERSHOOT = 1.5
-
 # Stereo interleave step, in bytes. One 0x4000 data block = 8 chunks of 0x800
 # (L R L R L R L R).
 CHANNEL_INTERLEAVE = 0x800
@@ -504,65 +499,7 @@ def sdt_to_wav(sdt: SDTFile, out_path: str):
     save_wav(samples, out_path, sdt.sample_rate, channels=sdt.channels)
     return len(samples) // sdt.channels
 
-def _replace_audio_grown(sdt: SDTFile, full_adpcm: bytes) -> bytes:
-    """Replace a mono SDT's audio with a stream *larger* than the original.
-
-    The `.sdt` is a multiplexed container: a stream-register record (type 0x10),
-    then audio chunks (type 1) interleaved with lip-sync/subtitle metadata
-    (type 5), closed by a single terminator record (type 0xF0 — always the last
-    16 bytes). To hold audio that doesn't fit the existing chunks, we append new
-    full audio chunks (type 1, 0x4000 data each) **right before the terminator**,
-    leaving every original record — including all the timing metadata — untouched.
-
-    The original chunks keep the start of the new audio; the appended chunks carry
-    the tail. The subtitle/facial streams still follow the original (English)
-    timing, so they simply end a little before the longer line finishes — an
-    inherent, acceptable trade-off when swapping in a longer take.
-
-    NOTE: the terminator's +8 field varies per file and is the prime suspect for a
-    total length/tick counter. It is left unchanged here; if the game caps the
-    audio to the original duration, that field is where to look next.
-    """
-    blocks = sdt.blocks
-    total_capacity = sum(b.data_size for b in blocks)
-    extra = full_adpcm[total_capacity:]          # bytes beyond existing capacity
-
-    # Build new full audio chunks (type 1) for the overflow.
-    new_chunks = bytearray()
-    FULL = FULL_BLOCK_DATA                        # 0x4000 data per chunk
-    for o in range(0, len(extra), FULL):
-        data = extra[o:o + FULL]
-        new_chunks += struct.pack("<II", 1, BLOCK_HEADER_SIZE + len(data))
-        new_chunks += b"\x00" * 8                 # sequence/unknown fields (zero, as in stock)
-        new_chunks += data
-
-    # The terminator (type 0xF0) is the final 16-byte record; insert before it.
-    term_off = len(sdt.raw) - BLOCK_HEADER_SIZE
-    out = bytearray(sdt.raw[:term_off]) + new_chunks + sdt.raw[term_off:]
-
-    # Fill the ORIGINAL chunks (offsets unchanged — we only inserted at the end)
-    # with the head of the new audio; the appended chunks already carry the tail.
-    cursor = 0
-    for b in blocks:
-        out[b.data_offset:b.data_offset + b.data_size] = full_adpcm[cursor:cursor + b.data_size]
-        cursor += b.data_size
-
-    # The terminator's +8 field (the last record's 3rd u32) is the clip's length
-    # budget: too small and the engine stops early and cuts the take. Its exact
-    # relation to duration is content-dependent (not a clean formula), so a plain
-    # proportional bump still undershoots. We overshoot on purpose — the engine
-    # stops at the audio's real end (the terminator) anyway, so a generous budget
-    # lets the whole take play, at worst with a hair of trailing silence.
-    if total_capacity > 0:
-        old_len = struct.unpack_from("<I", out, len(out) - 8)[0]
-        new_len = round(old_len * len(full_adpcm) / total_capacity * TERMINATOR_LEN_OVERSHOOT)
-        struct.pack_into("<I", out, len(out) - 8, new_len)
-
-    return bytes(out)
-
-
-def replace_audio(sdt: SDTFile, new_samples: List[int],
-                  allow_longer: bool = False) -> bytes:
+def replace_audio(sdt: SDTFile, new_samples: List[int]) -> bytes:
     """
     Replace the SDT's audio with new 16-bit PCM samples (mono — the user's
     dub recording).
@@ -571,10 +508,6 @@ def replace_audio(sdt: SDTFile, new_samples: List[int],
     blocks (same sizes). If the new audio is shorter it is padded with silence;
     if it is longer it is truncated to the blocks' total capacity, so the file
     structure stays EXACTLY the same (required for the game to read it back).
-
-    `allow_longer` (mono only): instead of truncating, grow the file — append new
-    audio chunks before the terminator so a longer take (e.g. a Japanese line
-    dubbed over a shorter English one) plays in full. See `_replace_audio_grown`.
 
     On a stereo file (channels == 2), the mono dub is encoded once and then
     duplicated onto both channels, which are re-interleaved in chunks of
@@ -586,14 +519,6 @@ def replace_audio(sdt: SDTFile, new_samples: List[int],
     channels = sdt.channels
     original_stream = get_audio_stream(sdt)
     total_capacity = len(original_stream)   # PS-ADPCM bytes available (all channels)
-
-    # Grow path: mono file, caller opts in, and the new audio overflows capacity.
-    if allow_longer and channels <= 1:
-        full_adpcm = encode_psadpcm(list(new_samples))
-        if len(full_adpcm) % 16:
-            full_adpcm += b"\x00" * (16 - len(full_adpcm) % 16)
-        if len(full_adpcm) > total_capacity:
-            return _replace_audio_grown(sdt, full_adpcm)
 
     if channels <= 1:
         # ── Mono case: original behavior ─────────────────────────────────────
@@ -713,15 +638,12 @@ def _cli_replace(args) -> int:
     sdt = parse_sdt(args.sdt)
     print(describe(sdt))
     samples, src_rate = load_wav_mono(args.dub_wav, sdt.sample_rate)
-    new_raw = replace_audio(sdt, samples, allow_longer=args.allow_longer)
+    new_raw = replace_audio(sdt, samples)
     save_sdt(new_raw, args.out_sdt)
     ch = "stereo (dub duplicated on both channels)" if sdt.channels == 2 else "mono"
-    grew = len(new_raw) != len(sdt.raw)
-    size_note = (f"{len(new_raw) - len(sdt.raw):+,} bytes vs original — grew to fit a "
-                 f"longer take") if grew else "same size as original"
     print(f"\nDub source : {args.dub_wav}  ({src_rate} Hz)")
     print(f"Re-encoded : PS-ADPCM, {ch}")
-    print(f"→ SDT written: {args.out_sdt}  ({len(new_raw):,} bytes, {size_note})")
+    print(f"→ SDT written: {args.out_sdt}  ({len(new_raw):,} bytes, same size as original)")
     return 0
 
 
@@ -746,9 +668,6 @@ def build_cli():
     p_rep.add_argument("sdt", help="path to the original .sdt file")
     p_rep.add_argument("dub_wav", help="your dub recording (.wav)")
     p_rep.add_argument("out_sdt", help="output .sdt path (keep the original name for the game)")
-    p_rep.add_argument("--allow-longer", action="store_true",
-                       help="mono only: if the dub is longer than the original, grow "
-                            "the file (append audio chunks) instead of truncating it")
     p_rep.set_defaults(func=_cli_replace)
 
     return p

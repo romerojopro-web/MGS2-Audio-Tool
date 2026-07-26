@@ -14,12 +14,6 @@ cutscenes and codec voices. In-game gameplay barks (soldiers, Snake, Raiden,
 bosses) live in the stage sound banks, for which no Japanese source is available
 in the install, so they are out of scope for now — the tab states this.
 
-### Added — SDT re-dub: "allow longer audio"
-The SDT replace step gains an opt-in checkbox (mono only) that **grows** the file
-to fit a longer take instead of truncating it — appending audio chunks before the
-container terminator and scaling its length field — for dubbing a longer line
-over a shorter one.
-
 ## 4.5.0 — 2026-07-25
 
 Final stabilisation: the tool ships as a focused **Master Collection** editor.

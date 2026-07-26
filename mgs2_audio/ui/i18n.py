@@ -292,7 +292,6 @@ TRANSLATIONS = {
 
         "step4_title": "4 · GÉNÉRER LE SDT MODIFIÉ",
         "generate": "REMPLACER L'AUDIO ET SAUVEGARDER…",
-        "sdt_allow_longer": "Autoriser un audio plus long (agrandit le fichier — mono)",
         "tab_voiceswap": "VOIX JP",
         "vsw_title": "SWAP — VOIX JAPONAISES",
         "vsw_intro": ("Remplace les voix US par les voix japonaises natives (dialogue et "
@@ -657,7 +656,6 @@ TRANSLATIONS = {
 
         "step4_title": "4 · GENERATE THE MODIFIED SDT",
         "generate": "REPLACE AUDIO AND SAVE…",
-        "sdt_allow_longer": "Allow longer audio (grows the file — mono)",
         "tab_voiceswap": "JP VOICES",
         "vsw_title": "SWAP — JAPANESE VOICES",
         "vsw_intro": ("Replaces the US voices with the native Japanese takes (dialogue and "
@@ -1020,7 +1018,6 @@ TRANSLATIONS = {
 
         "step4_title": "4 · GENERAR EL SDT MODIFICADO",
         "generate": "REEMPLAZAR AUDIO Y GUARDAR…",
-        "sdt_allow_longer": "Permitir audio más largo (agranda el archivo — mono)",
         "tab_voiceswap": "VOCES JP",
         "vsw_title": "SWAP — VOCES JAPONESAS",
         "vsw_intro": ("Reemplaza las voces US por las voces japonesas nativas (diálogos y "
@@ -1384,7 +1381,6 @@ TRANSLATIONS = {
 
         "step4_title": "4 · СОЗДАТЬ ИЗМЕНЁННЫЙ SDT",
         "generate": "ЗАМЕНИТЬ ЗВУК И СОХРАНИТЬ…",
-        "sdt_allow_longer": "Разрешить более длинный звук (увеличивает файл — моно)",
         "tab_voiceswap": "ЯП. ГОЛОСА",
         "vsw_title": "SWAP — ЯПОНСКИЕ ГОЛОСА",
         "vsw_intro": ("Заменяет американские голоса на родные японские (диалоги и катсцены). "
