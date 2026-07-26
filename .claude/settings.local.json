@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(xargs wc -l)",
-      "Bash(python -m pytest -q)",
-      "Bash(python -m pytest tests/test_sdt.py tests/test_app.py -q)"
-    ]
-  }
-}
