@@ -16,8 +16,8 @@ import tempfile
 
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtWidgets import (
-    QApplication, QFileDialog, QFrame,
-    QHBoxLayout, QLabel, QListWidgetItem, QMessageBox,
+    QApplication, QComboBox, QFileDialog, QFrame,
+    QHBoxLayout, QLabel, QLineEdit, QListWidgetItem, QMessageBox,
     QProgressDialog, QPushButton, QSlider, QSplitter, QVBoxLayout, QWidget,
 )
 
@@ -86,6 +86,22 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
         self.lbl_bank = QLabel(); self.lbl_bank.setObjectName("dim")
         self.lbl_bank.setWordWrap(True)
         lay.addWidget(self.lbl_bank)
+
+        # Search + filters — scan mode only (sounds are identified/tagged by hash).
+        # Hidden until a scan produces a tag library to filter.
+        self.edit_search = QLineEdit()
+        self.edit_search.textChanged.connect(self._on_filter_changed)
+        lay.addWidget(self.edit_search)
+        self.combo_filter = QComboBox()
+        self.combo_filter.addItem("", "all")
+        self.combo_filter.addItem("", "todo")
+        self.combo_filter.addItem("", "done")
+        self.combo_filter.currentIndexChanged.connect(self._on_filter_changed)
+        lay.addWidget(self.combo_filter)
+        self.combo_tag = QComboBox()
+        self.combo_tag.currentIndexChanged.connect(self._on_filter_changed)
+        lay.addWidget(self.combo_tag)
+        self._show_filters(False)
 
         self.list_samples = PlayOnSpaceList(self.toggle_play)
         self.list_samples.currentItemChanged.connect(self._on_sample_selected)
@@ -224,6 +240,10 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
         self.btn_generate.setText(
             self._t("sdx_replace_all") if self.mode == "scan"
             else self._t("sdx_generate"))
+        self.edit_search.setPlaceholderText(self._t("lib_search"))
+        for i, key in enumerate(("lib_filter_all", "lib_filter_todo", "lib_filter_done")):
+            self.combo_filter.setItemText(i, self._t(key))
+        self._refresh_tag_filter()
         self._retranslate_tag_fields()
         self._refresh_count()
 
@@ -249,6 +269,7 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
 
         self.lbl_bank.setText(path)
         self._reset_sample_state()
+        self._show_filters(False)
         self._fill_list()
 
         if not self.bank.has_audio:
@@ -324,6 +345,8 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
         self.lbl_bank.setText(self._t("sdx_stage_found", path=folder))
         self._reset_sample_state()
         self.reload_library()
+        self._refresh_tag_filter()
+        self._show_filters(True)
         self._fill_group_list()
 
         self.lbl_info.setText(self._t("sdx_select_hint"))
@@ -331,20 +354,76 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
             "sdx_scan_done", banks=len(paths), sounds=len(self.groups)))
 
     def _fill_group_list(self):
+        keep = self.group.key if self.group else None
+        found = False
         self.list_samples.blockSignals(True)
         self.list_samples.clear()
         for g in self.groups:
+            if not self._group_passes_filter(g):
+                continue
             item = QListWidgetItem(self._group_row_text(g))
             item.setData(Qt.ItemDataRole.UserRole, g.key)
             self.list_samples.addItem(item)
+            if g.key == keep:
+                self.list_samples.setCurrentItem(item)
+                found = True
         self.list_samples.blockSignals(False)
+        if keep and not found:
+            # the selected sound was filtered out from under the tag panel
+            self.group = None
+            self._set_tag_fields_enabled(False)
         self._refresh_count()
+
+    def _on_filter_changed(self):
+        # The search/filter widgets only mean anything in scan mode.
+        if self.mode == "scan":
+            self._fill_group_list()
+
+    def _show_filters(self, visible):
+        for w in (self.edit_search, self.combo_filter, self.combo_tag):
+            w.setVisible(visible)
+
+    def _group_passes_filter(self, g) -> bool:
+        entry = lib.get_entry(self._tag_library, g.key, lib.SDX_ENTRY_DEFAULTS)
+        q = self.edit_search.text().strip().lower()
+        if q and q not in f"{g.key} {entry.get('tag', '')} {entry.get('notes', '')}".lower():
+            return False
+        mode = self.combo_filter.currentData() or "all"
+        if mode == "done" and not entry["done"]:
+            return False
+        if mode == "todo" and entry["done"]:
+            return False
+        wanted = self.combo_tag.currentData()
+        if wanted and (entry.get("tag") or "").strip() != wanted:
+            return False
+        return True
+
+    def _refresh_tag_filter(self, tags=None):
+        """Rebuild the tag filter combo, keeping the current choice when possible."""
+        if not hasattr(self, "combo_tag"):
+            return
+        if tags is None:
+            tags = lib.collect_tags(self._tag_library)
+        current = self.combo_tag.currentData()
+        counts = lib.tag_counts(self._tag_library)
+        self.combo_tag.blockSignals(True)
+        self.combo_tag.clear()
+        self.combo_tag.addItem(self._t("filter_all_tags"), "")
+        for t in tags:
+            self.combo_tag.addItem(f"{t} ({counts.get(t, 0)})", t)
+        if current:
+            i = self.combo_tag.findData(current)
+            if i >= 0:
+                self.combo_tag.setCurrentIndex(i)
+        self.combo_tag.blockSignals(False)
 
     def _refresh_count(self):
         if self.mode == "scan":
             if self.groups:
-                c = lib.counts(self._tag_library, [g.key for g in self.groups],
-                               lib.SDX_ENTRY_DEFAULTS)
+                # Count over the *filtered* set, so the tally follows the selected
+                # tag/filter ("how many done on this label").
+                keys = [g.key for g in self.groups if self._group_passes_filter(g)]
+                c = lib.counts(self._tag_library, keys, lib.SDX_ENTRY_DEFAULTS)
                 self.lbl_count.setText(self._t(
                     "lib_count", total=c["total"], done=c["done"], todo=c["todo"]))
             else:
@@ -443,6 +522,7 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
             self._select_key(key)
         else:
             self._update_row_inplace(key)
+        self._refresh_tag_filter()
 
     def _select_key(self, key):
         for i in range(self.list_samples.count()):
@@ -612,6 +692,28 @@ class SDXPage(PlaybackMixin, TaggingMixin, QWidget):
 
         self.lbl_result.setText(self._t("sdx_done_all", n=changed))
         self.win.status.showMessage(self._t("sdx_done_all", n=changed))
+        self._retag_after_replace()
+
+    def _retag_after_replace(self):
+        """A replaced sound gets a new content hash, which would orphan its
+        tag/"done" entry on the next scan. Migrate the entry to the new hash and
+        mark it done, so dubbing progress survives a re-scan."""
+        g = self.group
+        if not g:
+            return
+        old = lib.get_entry(self._tag_library, g.key, lib.SDX_ENTRY_DEFAULTS)
+        new_key = sdx.recompute_group_key(g)
+        target = new_key or g.key
+        lib.set_entry(self._tag_library, target, lib.SDX_ENTRY_DEFAULTS,
+                      done=True, tag=old.get("tag", ""), notes=old.get("notes", ""),
+                      banks=g.count, duration=g.duration_seconds, size=g.size)
+        lib.save_library(self.win.db_folder, self._tag_library,
+                         self._tag_library_filename)
+        if new_key and new_key != g.key:
+            g.key = new_key
+        self._fill_group_list()
+        self._select_key(target)
+        self._refresh_tag_filter()
 
     def _replace_single_bank(self):
         if not (self.bank and self.sample):

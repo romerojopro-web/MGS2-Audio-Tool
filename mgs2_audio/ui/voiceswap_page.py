@@ -15,7 +15,6 @@ No backups are written — restore with Steam's "Verify integrity of game files"
 """
 import os
 
-from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QLabel, QMessageBox,
     QProgressBar, QPushButton, QVBoxLayout, QWidget,
@@ -37,9 +36,9 @@ class VoiceSwapPage(QWidget):
 
         self._build()
 
-        saved = self.win.cfg.get("dir_voiceswap_game", "")
-        if saved:
-            QTimer.singleShot(50, lambda: self._load(saved))
+        # The last folder is remembered as the picker's default, but we do NOT
+        # scan on startup: find_pairs walks thousands of files and would freeze
+        # the window while it loads. The user clicks "Choose folder" to scan.
 
     def _t(self, key, **kw):
         return self.win._t(key, **kw)

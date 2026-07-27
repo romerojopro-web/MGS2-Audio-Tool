@@ -1,5 +1,21 @@
 # Changelog
 
+## 4.7.0 — 2026-07-27
+
+### Fixed
+- **Faster launch.** The JP Voices tab no longer re-scans the whole game on
+  startup — that walk of thousands of files could freeze the window while it
+  loaded. It scans when you pick the folder instead.
+- **SDX dubbing progress survives a re-scan.** Sounds are tagged by a content
+  hash, so replacing one changed its hash and orphaned its tag/"done" on the
+  next scan. Replacing now re-keys the entry to the sound's new hash and marks
+  it done, so progress sticks.
+
+### Added
+- **SDX tab: search and filter by tag** (scan mode), like the SDT tab — a search
+  box, a done/to-do filter, and a per-tag filter whose counter follows the
+  selected tag ("how many done on this label").
+
 ## 4.6.0 — 2026-07-26
 
 ### Added — "JP Voices" tab: swap Japanese voices into a US install

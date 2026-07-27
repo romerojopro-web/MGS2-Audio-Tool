@@ -291,6 +291,26 @@ class SoundGroup:
         return sorted({r.bank_path for r in self.refs})
 
 
+def recompute_group_key(group: SoundGroup) -> Optional[str]:
+    """Re-hash a group's sound from its first bank after an in-place edit.
+
+    Replacing a sound rewrites its bytes, so its content hash — the group key —
+    changes. Callers use this to follow a sound across the edit (e.g. to keep a
+    tag/'done' entry attached after a replacement).
+    """
+    if not group.refs:
+        return None
+    ref = group.refs[0]
+    with open(ref.bank_path, "rb") as f:
+        raw = f.read()
+    if ref.offset + ref.size > len(raw):
+        return None
+    data = bytearray(raw[ref.offset:ref.offset + ref.size])
+    for i in range(ref.size // FRAME_SIZE):
+        data[i * FRAME_SIZE + 1] = 0
+    return hashlib.sha1(bytes(data)).hexdigest()[:16]
+
+
 def find_banks(root: str) -> List[str]:
     """Every .sdx below `root` (recursively), sorted."""
     pattern = os.path.join(root, "**", "*.sdx")
