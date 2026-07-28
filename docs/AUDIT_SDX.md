@@ -139,4 +139,4 @@ Reste ouvert :
 7. **Optimisation** — le rendu est lent (Python pur, échantillon par échantillon).
    Pistes : vectoriser `_play`/l'ADSR (numpy), précalculer les samples décodés par
    instrument, réduire les boucles chaudes. Objectif : écouter une partition sans
-   faire chauffer le CPU. 🥵
+   faire chauffer le CPU.
